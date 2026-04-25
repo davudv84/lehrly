@@ -1,7 +1,7 @@
 import PageHeader from "@/components/PageHeader";
 
 type StubPageProps = {
-  title: string;
+  title?: string;
   eyebrow?: string;
   brand?: boolean;
   description?: string;
