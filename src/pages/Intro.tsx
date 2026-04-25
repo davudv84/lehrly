@@ -117,29 +117,6 @@ const SLIDES: Slide[] = [
   },
 ];
 
-const Step = ({
-  n,
-  icon,
-  title,
-  body,
-}: {
-  n: string;
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-}) => (
-  <div className="flex items-start gap-3 rounded-card border border-white/[0.06] bg-surface p-4">
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-pill border border-brand/30 bg-brand/10 text-[14px] font-semibold text-brand">
-      {n}
-    </div>
-    <div className="flex-1 pt-0.5">
-      <p className="text-[15px] font-semibold text-text-primary">{title}</p>
-      <p className="mt-0.5 text-[13px] text-text-secondary">{body}</p>
-    </div>
-    <span className="mt-1.5">{icon}</span>
-  </div>
-);
-
 const Intro = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
