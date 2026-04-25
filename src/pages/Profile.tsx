@@ -29,10 +29,10 @@ const Profile = () => {
       editing === "kuerzel"
         ? draft.replace(/[^A-Za-zÄÖÜäöüß]/g, "").slice(0, 2).toUpperCase() || null
         : draft.trim() || null;
-    const { error } = await supabase
-      .from("profiles")
-      .update({ [editing]: value })
-      .eq("id", user.id);
+    const patch: Partial<{ name: string | null; kuerzel: string | null; school: string | null }> = {
+      [editing]: value,
+    };
+    const { error } = await supabase.from("profiles").update(patch).eq("id", user.id);
     if (error) {
       toast({ title: "Fehler", description: error.message, variant: "destructive" });
       return;
