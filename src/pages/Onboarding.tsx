@@ -98,7 +98,16 @@ const Onboarding = () => {
 
   const canSaveStep3 = useMemo(() => name.trim().length >= 2, [name]);
 
-  const persist = async (patch: Record<string, unknown>) => {
+  type ProfilePatch = Partial<{
+    name: string;
+    kuerzel: string | null;
+    school: string | null;
+    default_niveau: string;
+    default_kurstyp: string;
+    onboarding_completed: boolean;
+  }>;
+
+  const persist = async (patch: ProfilePatch) => {
     if (!user) return false;
     const { error } = await supabase
       .from("profiles")
