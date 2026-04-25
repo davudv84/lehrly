@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      collection_worksheets: {
+        Row: {
+          added_at: string
+          collection_id: string
+          worksheet_id: string
+        }
+        Insert: {
+          added_at?: string
+          collection_id: string
+          worksheet_id: string
+        }
+        Update: {
+          added_at?: string
+          collection_id?: string
+          worksheet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_worksheets_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collection_worksheets_worksheet_id_fkey"
+            columns: ["worksheet_id"]
+            isOneToOne: false
+            referencedRelation: "worksheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collections: {
+        Row: {
+          color: string
+          created_at: string
+          icon: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -50,12 +113,102 @@ export type Database = {
         }
         Relationships: []
       }
+      templates: {
+        Row: {
+          created_at: string
+          id: string
+          is_new: boolean
+          last_used_at: string | null
+          niveau: string
+          task_count: number
+          task_types: string[]
+          title: string
+          topic: string | null
+          updated_at: string
+          usage_count: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_new?: boolean
+          last_used_at?: string | null
+          niveau: string
+          task_count?: number
+          task_types?: string[]
+          title: string
+          topic?: string | null
+          updated_at?: string
+          usage_count?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_new?: boolean
+          last_used_at?: string | null
+          niveau?: string
+          task_count?: number
+          task_types?: string[]
+          title?: string
+          topic?: string | null
+          updated_at?: string
+          usage_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      worksheets: {
+        Row: {
+          created_at: string
+          has_solution: boolean
+          id: string
+          is_favorite: boolean
+          niveau: string
+          preview_url: string | null
+          task_count: number
+          task_types: string[]
+          title: string
+          topic: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          has_solution?: boolean
+          id?: string
+          is_favorite?: boolean
+          niveau: string
+          preview_url?: string | null
+          task_count?: number
+          task_types?: string[]
+          title: string
+          topic?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          has_solution?: boolean
+          id?: string
+          is_favorite?: boolean
+          niveau?: string
+          preview_url?: string | null
+          task_count?: number
+          task_types?: string[]
+          title?: string
+          topic?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      seed_demo_content: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
