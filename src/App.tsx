@@ -5,7 +5,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
+import { AuthProvider } from "@/context/AuthContext";
+import { RequireAuth, RedirectIfAuthed } from "@/components/RouteGuards";
 import AppShell from "@/components/AppShell";
+
 import Index from "./pages/Index";
 import Library from "./pages/Library";
 import Templates from "./pages/Templates";
@@ -13,32 +16,62 @@ import Profile from "./pages/Profile";
 import Generate from "./pages/Generate";
 import Onboarding from "./pages/Onboarding";
 import Intro from "./pages/Intro";
-import { Login, Register } from "./pages/Auth";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const AnimatedRoutes = () => {
   const location = useLocation();
-  // Generate is rendered as an overlay route on top of the previous location
   const state = location.state as { backgroundLocation?: Location } | null;
   const backgroundLocation = state?.backgroundLocation;
 
   return (
     <>
       <Routes location={backgroundLocation ?? location}>
-        {/* In-app routes share the bottom tab bar */}
-        <Route element={<AppShell />}>
+        {/* Protected in-app routes share the bottom tab bar */}
+        <Route
+          element={
+            <RequireAuth>
+              <AppShell />
+            </RequireAuth>
+          }
+        >
           <Route path="/" element={<Index />} />
           <Route path="/library" element={<Library />} />
           <Route path="/templates" element={<Templates />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
 
-        {/* Auth + onboarding render outside the shell */}
-        <Route path="/auth/login" element={<Login />} />
-        <Route path="/auth/register" element={<Register />} />
-        <Route path="/onboarding" element={<Onboarding />} />
+        {/* Onboarding requires auth but renders outside the shell */}
+        <Route
+          path="/onboarding"
+          element={
+            <RequireAuth>
+              <Onboarding />
+            </RequireAuth>
+          }
+        />
+
+        {/* Auth screens — redirect away if already signed in */}
+        <Route
+          path="/auth/login"
+          element={
+            <RedirectIfAuthed>
+              <Login />
+            </RedirectIfAuthed>
+          }
+        />
+        <Route
+          path="/auth/register"
+          element={
+            <RedirectIfAuthed>
+              <Register />
+            </RedirectIfAuthed>
+          }
+        />
+
         <Route path="/intro" element={<Intro />} />
         <Route path="/generate" element={<Generate />} />
 
@@ -62,7 +95,9 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AnimatedRoutes />
+        <AuthProvider>
+          <AnimatedRoutes />
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
