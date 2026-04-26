@@ -16,6 +16,8 @@ import Profile from "./pages/Profile";
 import Generate from "./pages/Generate";
 import Onboarding from "./pages/Onboarding";
 import Intro from "./pages/Intro";
+import Welcome from "./pages/Welcome";
+import WorksheetDetail from "./pages/WorksheetDetail";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import NotFound from "./pages/NotFound";
@@ -42,7 +44,10 @@ const AnimatedRoutes = () => {
           <Route path="/library" element={<Library />} />
           <Route path="/templates" element={<Templates />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/worksheets/:id" element={<WorksheetDetail />} />
         </Route>
+
+        <Route path="/welcome" element={<Welcome />} />
 
         {/* Onboarding requires auth but renders outside the shell */}
         <Route

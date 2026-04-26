@@ -160,6 +160,7 @@ export type Database = {
       }
       worksheets: {
         Row: {
+          content: Json
           created_at: string
           has_solution: boolean
           id: string
@@ -174,6 +175,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          content?: Json
           created_at?: string
           has_solution?: boolean
           id?: string
@@ -188,6 +190,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          content?: Json
           created_at?: string
           has_solution?: boolean
           id?: string

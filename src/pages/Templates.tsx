@@ -64,7 +64,24 @@ const Templates = () => {
 
       <div className="flex flex-col gap-3 pb-24">
         {items.map((t, i) => (
-          <TemplateCard key={t.id} template={t} featured={i === 0} />
+          <TemplateCard
+            key={t.id}
+            template={t}
+            featured={i === 0}
+            onUse={() =>
+              navigate("/generate", {
+                state: {
+                  prefill: {
+                    niveau: t.niveau,
+                    topics: t.topic ? [t.topic] : [],
+                    taskTypes: t.task_types,
+                    count: t.task_count,
+                    templateId: t.id,
+                  },
+                },
+              })
+            }
+          />
         ))}
         {items.length === 0 && (
           <div className="mt-10 rounded-card border border-dashed border-white/10 px-5 py-10 text-center">
@@ -87,7 +104,15 @@ const Templates = () => {
   );
 };
 
-const TemplateCard = ({ template, featured }: { template: Template; featured?: boolean }) => {
+const TemplateCard = ({
+  template,
+  featured,
+  onUse,
+}: {
+  template: Template;
+  featured?: boolean;
+  onUse: () => void;
+}) => {
   const lastUsed = formatLastUsed(template.last_used_at);
   return (
     <motion.article
@@ -135,11 +160,12 @@ const TemplateCard = ({ template, featured }: { template: Template; featured?: b
             </>
           )}
         </div>
-        {featured && (
-          <TapButton className="flex items-center gap-1 text-[13px] font-semibold text-brand hover:text-brand-hover">
-            Verwenden <ArrowRight size={14} />
-          </TapButton>
-        )}
+        <TapButton
+          onClick={onUse}
+          className="flex items-center gap-1 text-[13px] font-semibold text-brand hover:text-brand-hover"
+        >
+          Verwenden <ArrowRight size={14} />
+        </TapButton>
       </div>
     </motion.article>
   );
