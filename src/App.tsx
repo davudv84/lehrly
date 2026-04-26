@@ -16,6 +16,8 @@ import Profile from "./pages/Profile";
 import Generate from "./pages/Generate";
 import Onboarding from "./pages/Onboarding";
 import Intro from "./pages/Intro";
+import Welcome from "./pages/Welcome";
+import WorksheetDetail from "./pages/WorksheetDetail";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import NotFound from "./pages/NotFound";
