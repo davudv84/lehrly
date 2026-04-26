@@ -44,7 +44,10 @@ const AnimatedRoutes = () => {
           <Route path="/library" element={<Library />} />
           <Route path="/templates" element={<Templates />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/worksheets/:id" element={<WorksheetDetail />} />
         </Route>
+
+        <Route path="/welcome" element={<Welcome />} />
 
         {/* Onboarding requires auth but renders outside the shell */}
         <Route
