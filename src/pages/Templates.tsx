@@ -160,11 +160,12 @@ const TemplateCard = ({
             </>
           )}
         </div>
-        {featured && (
-          <TapButton className="flex items-center gap-1 text-[13px] font-semibold text-brand hover:text-brand-hover">
-            Verwenden <ArrowRight size={14} />
-          </TapButton>
-        )}
+        <TapButton
+          onClick={onUse}
+          className="flex items-center gap-1 text-[13px] font-semibold text-brand hover:text-brand-hover"
+        >
+          Verwenden <ArrowRight size={14} />
+        </TapButton>
       </div>
     </motion.article>
   );
