@@ -4,6 +4,7 @@ import NiveauBadge from "@/components/NiveauBadge";
 export type Exercise = {
   type: string;
   instruction: string;
+  context?: string;
   content: string;
   solution: string;
   options?: string[];
@@ -16,6 +17,8 @@ export type WorksheetData = {
   task_count: number;
   competencies?: string[];
   duration_min?: number | null;
+  learning_goal?: string | null;
+  teacher_notes?: string[];
   exercises: Exercise[];
 };
 
@@ -103,6 +106,9 @@ const ExerciseBlock = ({
       <p className="ui mt-2 text-[13px] font-semibold text-zinc-800">
         {ex.instruction}
       </p>
+      {ex.context && (
+        <p className="ui mt-1 text-[12px] italic text-zinc-500">{ex.context}</p>
+      )}
 
       {isMC && (
         <div className="mt-2.5">
@@ -258,6 +264,17 @@ const WorksheetSheet = ({
             </>
           )}
         </div>
+
+        {ws.learning_goal && (
+          <div className="mt-3 rounded-md border border-emerald-200 bg-emerald-50/60 px-3 py-2">
+            <p className="ui text-[10px] font-bold uppercase tracking-[0.1em] text-emerald-700">
+              Lernziel
+            </p>
+            <p className="mt-0.5 text-[12.5px] leading-snug text-zinc-800">
+              {ws.learning_goal}
+            </p>
+          </div>
+        )}
 
         {/* Name / Datum / Klasse line — for student to fill */}
         {studentView !== false && (

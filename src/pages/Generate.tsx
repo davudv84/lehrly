@@ -10,8 +10,33 @@ import GenerationOverlay from "@/components/GenerationOverlay";
 import { toast } from "sonner";
 
 const NIVEAUS = ["A1", "A2", "B1", "B2", "C1"] as const;
-const TOPICS = ["Einkaufen", "Arztbesuch", "Arbeit", "Familie", "Verkehr"];
-const TASK_TYPES = ["Lückentext", "Multiple Choice", "Zuordnung", "Grammatik"];
+const TOPICS = [
+  "Arzt",
+  "Wohnung",
+  "Arbeit",
+  "Kita",
+  "Schule",
+  "Einkauf",
+  "Bahn",
+  "Termin",
+  "Behörde",
+  "Bewerbung",
+  "Telefon",
+  "Nachbarn",
+  "Supermarkt",
+  "Ausbildung",
+];
+const TASK_TYPES = [
+  "Lückentext",
+  "Multiple Choice",
+  "Zuordnung",
+  "Grammatik",
+  "Schreibaufgabe",
+  "Wortschatz",
+  "Satzbau",
+  "Dialog",
+  "Leseverstehen",
+];
 
 type Niveau = (typeof NIVEAUS)[number];
 
