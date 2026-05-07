@@ -9,17 +9,17 @@ type ChipProps = {
   size?: "sm" | "md";
 };
 
-/** Pill-shaped filter/select chip. */
+/** Pill-shaped filter/select chip — calm, editorial. */
 const Chip = ({ active, onClick, children, className, size = "md" }: ChipProps) => {
   const base = active
-    ? "border-brand bg-brand-muted text-brand"
-    : "border-white/10 bg-bg-elevated text-text-secondary";
+    ? "bg-brand-soft text-brand-hover ring-1 ring-brand/30"
+    : "bg-surface-2 text-text-secondary ring-1 ring-hairline/40 hover:text-text-primary hover:bg-surface-3";
   return (
     <TapButton
       onClick={onClick}
       className={cn(
-        "rounded-pill border transition-colors whitespace-nowrap font-medium",
-        size === "md" ? "h-9 px-4 text-[13px]" : "h-7 px-3 text-[12px]",
+        "rounded-pill transition-all duration-200 whitespace-nowrap font-medium",
+        size === "md" ? "h-9 px-4 text-[13px]" : "h-8 px-3.5 text-[12.5px]",
         base,
         className,
       )}
