@@ -295,6 +295,7 @@ const Generate = () => {
           )}
         </AnimatePresence>
       </motion.div>
+      <GenerationOverlay active={phase === "loading"} />
     </div>
   );
 };
