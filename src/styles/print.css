@@ -1,57 +1,13 @@
-/* Lehrly print engine — A4, professional worksheet layout */
+/* Lehrly print engine — A4, professional worksheet layout
+ * Independent from mobile UI. Optimized for iOS Safari, Chrome, AirPrint.
+ */
 
 @page {
-  size: A4;
-  margin: 18mm 16mm 20mm 16mm;
+  size: A4 portrait;
+  margin: 14mm;
 }
 
-@media print {
-  html,
-  body {
-    background: #fff !important;
-    color: #111 !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  /* Hide everything by default in print */
-  body * {
-    visibility: hidden;
-  }
-  .print-root,
-  .print-root * {
-    visibility: visible;
-  }
-  .print-root {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-  }
-
-  .no-print {
-    display: none !important;
-  }
-
-  .page-break-before {
-    page-break-before: always;
-    break-before: page;
-  }
-  .avoid-break {
-    page-break-inside: avoid;
-    break-inside: avoid;
-  }
-  .ws-exercise {
-    page-break-inside: avoid;
-    break-inside: avoid;
-  }
-
-  a {
-    color: inherit !important;
-    text-decoration: none !important;
-  }
-}
-
-/* On-screen "paper" preview that mimics A4 */
+/* On-screen "paper" preview (used by WorksheetSheet) */
 .paper {
   background: #ffffff;
   color: #111418;
@@ -95,3 +51,119 @@
 .stripe-sprechen { background: #db2777; }
 .stripe-wortschatz { background: #7c3aed; }
 .stripe-grammatik { background: #0891b2; }
+
+/* ============================================================
+ * PRINT-ONLY view — fully isolated from mobile UI
+ * ============================================================ */
+
+/* On-screen, the dedicated print component is hidden. */
+.print-only {
+  display: none;
+}
+
+@media print {
+  /* Reset page + html/body scaling so iOS Safari does not zoom */
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #111 !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    -webkit-text-size-adjust: 100% !important;
+    text-size-adjust: 100% !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide ALL app UI by default. Only the dedicated print tree shows. */
+  body > *:not(.print-only) {
+    display: none !important;
+  }
+  .no-print,
+  nav,
+  header[data-app-header],
+  [data-bottom-nav],
+  [data-action-bar],
+  .fixed,
+  .sticky {
+    display: none !important;
+  }
+
+  /* Show + reset the dedicated print tree */
+  .print-only {
+    display: block !important;
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    filter: none !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    color: #000 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .print-only * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* A4 page container — one per sheet */
+  .a4-page {
+    width: 100%;
+    max-width: 182mm; /* 210mm − 2*14mm @page margins */
+    min-height: calc(297mm - 28mm);
+    margin: 0 auto;
+    padding: 0;
+    background: #ffffff;
+    color: #000;
+    page-break-after: always;
+    break-after: page;
+    page-break-inside: auto;
+    display: block;
+    position: relative;
+  }
+  .a4-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  /* Page break helpers */
+  .page-break-before {
+    page-break-before: always;
+    break-before: page;
+  }
+  .avoid-break,
+  .ws-exercise {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Headings should not be orphaned at the bottom of a page */
+  h1, h2, h3 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  /* Links plain */
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+
+  /* Remove rounded corners / rings for print */
+  .a4-page * {
+    border-radius: 0 !important;
+  }
+}
