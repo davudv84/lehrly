@@ -97,6 +97,7 @@ const WorksheetDetail = () => {
 
   const handlePrint = () => {
     window.print();
+    setTimeout(() => toast.success("Arbeitsblatt druckbereit ✓"), 400);
   };
 
   const handleShare = async () => {
