@@ -303,6 +303,24 @@ const WorksheetDetail = () => {
           </div>
         </div>
 
+        {/* Teacher notes — only visible in teacher view */}
+        {view === "teacher" && (sheet.teacher_notes?.length ?? 0) > 0 && (
+          <div className="mt-4 rounded-card border border-amber-500/20 bg-amber-500/[0.04] p-4">
+            <p className="section-label mb-2 text-amber-300/80">Lehrerhinweise</p>
+            <ul className="space-y-1.5">
+              {sheet.teacher_notes!.map((n, i) => (
+                <li
+                  key={i}
+                  className="flex gap-2 text-[12.5px] leading-snug text-text-secondary"
+                >
+                  <span className="text-amber-400">•</span>
+                  <span>{n}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {/* Meta tags */}
         <div className="mt-4 flex flex-wrap gap-1.5">
           {ws.topic && <Tag>{ws.topic}</Tag>}
