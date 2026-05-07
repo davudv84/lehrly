@@ -3,10 +3,10 @@ import { cn } from "@/lib/utils";
 export const Shimmer = ({ className }: { className?: string }) => (
   <div
     className={cn(
-      "relative overflow-hidden rounded-md bg-white/[0.04]",
+      "relative overflow-hidden rounded-md bg-surface-2",
       "before:absolute before:inset-0 before:-translate-x-full",
       "before:animate-[shimmer_1.6s_infinite]",
-      "before:bg-gradient-to-r before:from-transparent before:via-white/[0.06] before:to-transparent",
+      "before:bg-gradient-to-r before:from-transparent before:via-white/[0.04] before:to-transparent",
       className,
     )}
   />
@@ -15,7 +15,7 @@ export const Shimmer = ({ className }: { className?: string }) => (
 export const WorksheetCardSkeleton = ({ row = false }: { row?: boolean }) => (
   <div
     className={cn(
-      "shrink-0 overflow-hidden rounded-card border border-white/[0.06] bg-surface p-2.5",
+      "shrink-0 overflow-hidden rounded-card bg-surface-1 ring-hairline p-3",
       row ? "w-40" : "",
     )}
   >
@@ -30,9 +30,9 @@ export const WorksheetCardSkeleton = ({ row = false }: { row?: boolean }) => (
 );
 
 export const StatCardSkeleton = () => (
-  <div className="flex-1 rounded-card border border-white/[0.06] bg-surface/80 p-3.5">
+  <div className="flex-1 rounded-card bg-surface-1 ring-hairline px-4 py-3.5">
     <Shimmer className="h-3 w-16" />
-    <Shimmer className="mt-3 h-7 w-12" />
+    <Shimmer className="mt-3 h-6 w-10" />
   </div>
 );
 
