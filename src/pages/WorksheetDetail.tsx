@@ -37,6 +37,8 @@ type DBWorksheet = {
     exercises?: WorksheetData["exercises"];
     competencies?: string[];
     duration_min?: number;
+    learning_goal?: string | null;
+    teacher_notes?: string[];
   } | null;
 };
 
