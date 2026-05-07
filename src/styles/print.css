@@ -1,0 +1,97 @@
+/* Lehrly print engine — A4, professional worksheet layout */
+
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm 16mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff !important;
+    color: #111 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide everything by default in print */
+  body * {
+    visibility: hidden;
+  }
+  .print-root,
+  .print-root * {
+    visibility: visible;
+  }
+  .print-root {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .page-break-before {
+    page-break-before: always;
+    break-before: page;
+  }
+  .avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .ws-exercise {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+}
+
+/* On-screen "paper" preview that mimics A4 */
+.paper {
+  background: #ffffff;
+  color: #111418;
+  font-family: "Source Serif 4", Georgia, serif;
+  line-height: 1.55;
+  font-size: 13.5px;
+}
+.paper h1,
+.paper h2,
+.paper h3,
+.paper .ui {
+  font-family: "Inter", system-ui, sans-serif;
+  color: #0b0d10;
+}
+.paper .mono {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* writing line for handwriting */
+.writing-line {
+  border-bottom: 1px solid #c9ced6;
+  height: 22px;
+}
+.writing-line + .writing-line {
+  margin-top: 6px;
+}
+
+/* a "blank" inline gap inside a Lückentext sentence */
+.blank {
+  display: inline-block;
+  min-width: 80px;
+  border-bottom: 1.5px solid #2a3340;
+  margin: 0 4px;
+  vertical-align: baseline;
+}
+
+/* competence stripe colors */
+.stripe-lesen { background: #2563eb; }
+.stripe-schreiben { background: #16a34a; }
+.stripe-hoeren { background: #f59e0b; }
+.stripe-sprechen { background: #db2777; }
+.stripe-wortschatz { background: #7c3aed; }
+.stripe-grammatik { background: #0891b2; }

@@ -106,6 +106,26 @@ Deno.serve(async (req) => {
                       description:
                         "Kurzer prägnanter Titel z. B. 'A2 Wortschatz Einkaufen'.",
                     },
+                    competencies: {
+                      type: "array",
+                      description:
+                        "1–3 trainierte Kompetenzen aus: Lesen, Schreiben, Hören, Sprechen, Wortschatz, Grammatik.",
+                      items: {
+                        type: "string",
+                        enum: [
+                          "Lesen",
+                          "Schreiben",
+                          "Hören",
+                          "Sprechen",
+                          "Wortschatz",
+                          "Grammatik",
+                        ],
+                      },
+                    },
+                    duration_min: {
+                      type: "number",
+                      description: "Geschätzte Bearbeitungszeit in Minuten (10–60).",
+                    },
                     exercises: {
                       type: "array",
                       minItems: count,
@@ -114,8 +134,15 @@ Deno.serve(async (req) => {
                         type: "object",
                         properties: {
                           type: { type: "string", enum: taskTypes },
-                          instruction: { type: "string" },
-                          content: { type: "string" },
+                          instruction: {
+                            type: "string",
+                            description: "Klare, kurze Aufgabenanweisung auf Deutsch.",
+                          },
+                          content: {
+                            type: "string",
+                            description:
+                              "Aufgabentext. Bei Lückentext: Lücken als '_____' (5 Unterstriche). Bei Multiple Choice: Stamm + 'a) …\\nb) …\\nc) …' in neuen Zeilen. Bei Zuordnung/Wortschatz: ein Eintrag pro Zeile.",
+                          },
                           solution: { type: "string" },
                         },
                         required: ["type", "instruction", "content", "solution"],
@@ -123,7 +150,7 @@ Deno.serve(async (req) => {
                       },
                     },
                   },
-                  required: ["title", "exercises"],
+                  required: ["title", "exercises", "competencies", "duration_min"],
                   additionalProperties: false,
                 },
               },
@@ -166,7 +193,12 @@ Deno.serve(async (req) => {
       return json({ error: "Antwort des AI-Modells unvollständig" }, 502);
     }
 
-    let parsed: { title: string; exercises: Array<Record<string, string>> };
+    let parsed: {
+      title: string;
+      competencies?: string[];
+      duration_min?: number;
+      exercises: Array<Record<string, string>>;
+    };
     try {
       parsed = typeof toolCall === "string" ? JSON.parse(toolCall) : toolCall;
     } catch {
@@ -175,6 +207,13 @@ Deno.serve(async (req) => {
 
     const title = parsed.title?.trim() || `${niveau} ${topics[0] ?? "Arbeitsblatt"}`;
     const exercises = (parsed.exercises ?? []).slice(0, count);
+    const competencies = Array.isArray(parsed.competencies)
+      ? parsed.competencies.slice(0, 3)
+      : [];
+    const duration_min =
+      typeof parsed.duration_min === "number"
+        ? Math.max(5, Math.min(90, Math.round(parsed.duration_min)))
+        : null;
 
     const { data: inserted, error: insertErr } = await supa
       .from("worksheets")
@@ -186,7 +225,7 @@ Deno.serve(async (req) => {
         task_types: taskTypes,
         task_count: exercises.length,
         has_solution: true,
-        content: { title, exercises },
+        content: { title, exercises, competencies, duration_min },
       })
       .select("id")
       .single();
