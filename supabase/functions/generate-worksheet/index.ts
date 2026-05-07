@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
       `• teacher_notes: 2–4 kurze Hinweise für die Lehrkraft (Sozialform, Stolpersteine, Erweiterung).\n` +
       `• competencies: 1–3 trainierte Kompetenzen.\n` +
       `• duration_min: realistische Bearbeitungszeit (15–60 Min).\n` +
-      `• Pro Aufgabe: type, instruction (klare TN-Anweisung in Du- oder Sie-Form, konsistent), context " +
+      `• Pro Aufgabe: type, instruction (klare TN-Anweisung in Du- oder Sie-Form, konsistent), context ` +
       `(optional: 1 Satz Situation), content (Aufgabentext nach Typvorgabe), solution (vollständig + korrekt).\n`;
 
     const aiRes = await fetch(
