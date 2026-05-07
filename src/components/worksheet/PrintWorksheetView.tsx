@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import type { WorksheetData, Exercise } from "./WorksheetSheet";
 
 type Meta = {
