@@ -2,24 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Lehrly Design System — dark mode first, all colors HSL */
+/*
+ * Lehrly Design System v2 — Premium / Editorial
+ * Reference: Apple Education + Linear + Notion. Calm, professional, dark-first.
+ * All colors HSL.
+ */
 
 @layer base {
   :root {
-    /* Lehrly tokens (dark by default) */
-    --bg-base: 220 11% 5%;            /* #0A0B0D */
-    --bg-elevated: 225 10% 7%;        /* #111114 */
-    --surface: 220 12% 10%;           /* #16181C */
-    --surface-elevated: 220 12% 13%;  /* #1C1F24 */
-    --border-subtle: 0 0% 100%;       /* used with /6 alpha */
-    --border-default: 0 0% 100%;      /* used with /10 alpha */
-    --text-primary: 220 14% 97%;      /* #F5F6F8 */
-    --text-secondary: 220 14% 97%;    /* used with /65 */
-    --text-tertiary: 220 14% 97%;     /* used with /40 */
-    --brand: 158 84% 39%;             /* #10B981 */
-    --brand-hover: 156 72% 53%;       /* #34D399 */
+    /* ---------- Surfaces (softer, layered dark) ---------- */
+    --bg-base: 222 18% 6%;            /* App background — softer than pure black */
+    --bg-elevated: 222 16% 8%;        /* Page surface */
+    --surface: 222 14% 10%;           /* Card */
+    --surface-elevated: 222 13% 13%;  /* Elevated card / sheet */
+    --surface-1: 222 14% 10%;
+    --surface-2: 222 13% 13%;
+    --surface-3: 222 12% 16%;
 
-    /* shadcn aliases mapped to Lehrly */
+    /* ---------- Borders (hairline) ---------- */
+    --hairline: 0 0% 100%;            /* used with /5 → /10 alpha */
+    --border-subtle: 0 0% 100%;
+    --border-default: 0 0% 100%;
+
+    /* ---------- Text ---------- */
+    --text-primary: 220 15% 96%;
+    --text-secondary: 220 10% 72%;
+    --text-tertiary: 220 8% 52%;
+
+    /* ---------- Brand (calmer green) ---------- */
+    --brand: 152 56% 46%;             /* sober editorial green */
+    --brand-hover: 152 60% 54%;
+    --brand-soft: 152 48% 16%;        /* soft brand surface */
+
+    /* ---------- shadcn aliases ---------- */
     --background: var(--bg-base);
     --foreground: var(--text-primary);
 
@@ -30,38 +45,37 @@
     --popover-foreground: var(--text-primary);
 
     --primary: var(--brand);
-    --primary-foreground: 220 11% 5%;
+    --primary-foreground: 222 30% 8%;
 
-    --secondary: var(--surface-elevated);
+    --secondary: var(--surface-2);
     --secondary-foreground: var(--text-primary);
 
     --muted: var(--surface);
-    --muted-foreground: 220 14% 60%;
+    --muted-foreground: var(--text-secondary);
 
-    --accent: var(--surface-elevated);
+    --accent: var(--surface-2);
     --accent-foreground: var(--text-primary);
 
-    --destructive: 0 72% 55%;
+    --destructive: 4 64% 56%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 100%;
-    --input: 220 12% 13%;
+    --border: 0 0% 100%;              /* used with /8 alpha via .border-hairline */
+    --input: var(--surface-2);
     --ring: var(--brand);
 
-    --radius: 0.75rem;
+    --radius: 14px;
 
     /* Safe-area insets */
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --safe-top: env(safe-area-inset-top, 0px);
   }
 
-  /* dark class uses the same tokens — single mode in this phase */
   .dark {
     color-scheme: dark;
   }
 
   * {
-    @apply border-border/10;
+    border-color: hsl(var(--hairline) / 0.07);
   }
 
   html,
@@ -76,61 +90,147 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overscroll-behavior-y: none;
+    line-height: 1.6;
   }
 
-  /* Hide scrollbars but keep scrolling */
   ::-webkit-scrollbar {
     width: 0;
     height: 0;
   }
+
+  /* ---------- Type scale (editorial) ---------- */
+  .text-display {
+    font-family: "Inter Tight", Inter, system-ui, sans-serif;
+    font-size: clamp(28px, 5vw, 34px);
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    font-weight: 600;
+  }
+  .text-h1 {
+    font-family: "Inter Tight", Inter, system-ui, sans-serif;
+    font-size: 26px;
+    line-height: 1.15;
+    letter-spacing: -0.022em;
+    font-weight: 600;
+  }
+  .text-h2 {
+    font-family: "Inter Tight", Inter, system-ui, sans-serif;
+    font-size: 19px;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    font-weight: 600;
+  }
+  .text-h3 {
+    font-size: 15px;
+    line-height: 1.35;
+    letter-spacing: -0.005em;
+    font-weight: 600;
+  }
+  .text-body {
+    font-size: 14.5px;
+    line-height: 1.55;
+    font-weight: 400;
+  }
+  .text-caption {
+    font-size: 12px;
+    line-height: 1.4;
+    font-weight: 400;
+    color: hsl(var(--text-tertiary));
+  }
 }
 
 @layer components {
+  /* ---------- Surfaces ---------- */
+  .surface-card {
+    background: hsl(var(--surface-1));
+    border: 1px solid hsl(var(--hairline) / 0.06);
+    border-radius: var(--radius);
+  }
+  .surface-elevated {
+    background: hsl(var(--surface-2));
+    border: 1px solid hsl(var(--hairline) / 0.07);
+  }
+  .hairline {
+    border-color: hsl(var(--hairline) / 0.07);
+  }
+  .hairline-divider {
+    height: 1px;
+    background: hsl(var(--hairline) / 0.07);
+  }
+
+  /* ---------- Glass (subtle) ---------- */
   .glass-bar {
-    background-color: hsl(var(--bg-base) / 0.85);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background-color: hsl(var(--bg-base) / 0.72);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border-color: hsl(var(--hairline) / 0.06);
   }
-
   .glass {
-    background-color: hsl(var(--surface) / 0.55);
-    backdrop-filter: blur(18px) saturate(160%);
-    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    background-color: hsl(var(--surface-2) / 0.62);
+    backdrop-filter: blur(28px) saturate(150%);
+    -webkit-backdrop-filter: blur(28px) saturate(150%);
   }
 
-  .brand-dot {
-    background: radial-gradient(circle at 30% 30%, hsl(var(--brand-hover)), hsl(var(--brand)));
-    box-shadow: 0 0 12px hsl(var(--brand) / 0.7);
-  }
-
+  /* ---------- Section labels ---------- */
   .section-label {
-    @apply text-section-label uppercase text-text-tertiary;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: hsl(var(--text-tertiary));
   }
 
+  /* ---------- Cards ---------- */
   .float-card {
     transition:
-      transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1),
-      box-shadow 0.28s cubic-bezier(0.22, 0.61, 0.36, 1),
-      border-color 0.28s ease;
+      transform 0.32s cubic-bezier(0.22, 0.61, 0.36, 1),
+      box-shadow 0.32s cubic-bezier(0.22, 0.61, 0.36, 1),
+      border-color 0.32s ease;
   }
   .float-card:hover {
-    transform: translateY(-2px);
-    border-color: hsl(0 0% 100% / 0.16);
+    transform: translateY(-1px);
+    border-color: hsl(var(--hairline) / 0.12);
     box-shadow:
-      0 12px 30px -18px hsl(var(--brand) / 0.45),
-      0 6px 18px -10px rgb(0 0 0 / 0.5);
+      0 1px 0 0 hsl(var(--hairline) / 0.04) inset,
+      0 12px 24px -16px rgb(0 0 0 / 0.55);
   }
 
-  .ring-glow-brand {
-    box-shadow:
-      0 0 0 1px hsl(var(--brand) / 0.25),
-      0 0 24px -6px hsl(var(--brand) / 0.45);
+  /* ---------- Brand soft pill (calm CTA) ---------- */
+  .brand-soft {
+    background: hsl(var(--brand-soft));
+    color: hsl(var(--brand-hover));
+  }
+
+  /* ---------- Editorial dot ---------- */
+  .brand-dot {
+    background: hsl(var(--brand));
+    box-shadow: 0 0 0 4px hsl(var(--brand) / 0.14);
   }
 }
 
 @layer utilities {
+  .shadow-xs {
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.18);
+  }
+  .shadow-soft {
+    box-shadow:
+      0 1px 0 0 hsl(var(--hairline) / 0.04) inset,
+      0 2px 8px -4px rgb(0 0 0 / 0.35);
+  }
+  .shadow-elevated {
+    box-shadow:
+      0 1px 0 0 hsl(var(--hairline) / 0.05) inset,
+      0 24px 48px -24px rgb(0 0 0 / 0.55);
+  }
+
+  .ring-hairline {
+    box-shadow: inset 0 0 0 1px hsl(var(--hairline) / 0.07);
+  }
+
   @keyframes shimmer {
-    100% { transform: translateX(100%); }
+    100% {
+      transform: translateX(100%);
+    }
   }
   .animate-shimmer::before {
     content: "";
@@ -138,10 +238,25 @@
     inset: 0;
     transform: translateX(-100%);
     animation: shimmer 1.6s infinite;
-    background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.06), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(0 0% 100% / 0.04),
+      transparent
+    );
+  }
+
+  .pause-on-print {
+    @media print {
+      animation: none !important;
+    }
   }
 }
 
 @media print {
-  .glass, .glass-bar { background: white !important; backdrop-filter: none !important; }
+  .glass,
+  .glass-bar {
+    background: white !important;
+    backdrop-filter: none !important;
+  }
 }

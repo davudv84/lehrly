@@ -61,7 +61,7 @@ const Generate = () => {
   const [niveau, setNiveau] = useState<Niveau>(
     (prefill?.niveau as Niveau) ?? (profile?.default_niveau as Niveau) ?? "B1",
   );
-  const [topics, setTopics] = useState<string[]>(prefill?.topics ?? ["Einkaufen"]);
+  const [topics, setTopics] = useState<string[]>(prefill?.topics ?? ["Einkauf"]);
   const [taskTypes, setTaskTypes] = useState<string[]>(
     prefill?.taskTypes ?? ["Lückentext"],
   );
@@ -107,7 +107,6 @@ const Generate = () => {
         setPhase("error");
         return;
       }
-      // bump template usage if prefilled
       if (prefill?.templateId) {
         await supabase
           .from("templates")
@@ -127,19 +126,19 @@ const Generate = () => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-bg-base/70 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-bg-base/65 backdrop-blur-md"
       onClick={phase === "form" ? close : undefined}
     >
       <motion.div
         initial={{ y: 60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 60, opacity: 0 }}
-        transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
+        transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
         onClick={(e) => e.stopPropagation()}
-        className="mx-auto w-full max-w-md rounded-t-large border-t border-white/[0.06] bg-bg-elevated"
+        className="mx-auto w-full max-w-md rounded-t-large bg-bg-elevated ring-hairline shadow-elevated"
         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       >
-        <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-white/15" />
+        <div className="mx-auto mt-2.5 h-1 w-9 rounded-full bg-hairline/15" />
 
         <AnimatePresence mode="wait">
           {phase === "form" && (
@@ -148,21 +147,23 @@ const Generate = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="px-5 pb-5 pt-4"
+              className="px-5 pb-6 pt-4"
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="text-h2 text-text-primary">Neues Arbeitsblatt</h2>
-                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-pill border border-brand/30 bg-brand/15 px-3 py-1 text-[12px] font-semibold text-brand">
-                    <Sparkles size={12} /> Vorschau: {previewBadge}
-                  </div>
+                  <h2 className="font-display text-[20px] font-semibold tracking-[-0.018em] text-text-primary">
+                    Neues Arbeitsblatt
+                  </h2>
+                  <p className="mt-1 text-[12.5px] text-text-tertiary">
+                    Vorschau: {previewBadge}
+                  </p>
                 </div>
                 <TapButton
                   aria-label="Schließen"
                   onClick={close}
-                  className="h-9 w-9 rounded-pill bg-surface text-text-secondary"
+                  className="h-9 w-9 rounded-pill bg-surface-2 text-text-secondary hover:bg-surface-3 transition-colors"
                 >
-                  <X size={18} />
+                  <X size={17} />
                 </TapButton>
               </div>
 
@@ -216,7 +217,9 @@ const Generate = () => {
                   <span className="text-[12px] text-text-tertiary">
                     3–15 Aufgaben
                   </span>
-                  <span className="text-[16px] font-bold text-brand">{count}</span>
+                  <span className="font-display text-[18px] font-semibold tabular-nums text-text-primary">
+                    {count}
+                  </span>
                 </div>
                 <input
                   type="range"
@@ -224,20 +227,20 @@ const Generate = () => {
                   max={15}
                   value={count}
                   onChange={(e) => setCount(Number(e.target.value))}
-                  className="mt-2 h-1.5 w-full appearance-none rounded-full bg-white/10 accent-brand"
+                  className="mt-2 h-1 w-full appearance-none rounded-full bg-hairline/10 accent-brand"
                   style={{
                     background: `linear-gradient(to right, hsl(var(--brand)) ${
                       ((count - 3) / 12) * 100
-                    }%, hsl(0 0% 100% / 0.1) ${((count - 3) / 12) * 100}%)`,
+                    }%, hsl(0 0% 100% / 0.08) ${((count - 3) / 12) * 100}%)`,
                   }}
                 />
               </Section>
 
               <button
                 onClick={submit}
-                className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-input bg-brand-gradient text-button text-white shadow-brand-glow transition-opacity active:opacity-80"
+                className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-pill bg-brand text-[14px] font-medium text-primary-foreground transition-all hover:bg-brand-hover active:scale-[0.99]"
               >
-                <Sparkles size={16} /> Arbeitsblatt erstellen
+                <Sparkles size={15} /> Arbeitsblatt erstellen
               </button>
             </motion.div>
           )}
@@ -247,42 +250,39 @@ const Generate = () => {
           {phase === "success" && (
             <motion.div
               key="success"
-              initial={{ opacity: 0, scale: 0.96 }}
+              initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
-              className="flex flex-col items-center px-5 pb-8 pt-10"
+              className="flex flex-col items-center px-5 pb-8 pt-12"
             >
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 250, damping: 15 }}
-                className="relative flex h-20 w-20 items-center justify-center"
+                transition={{ type: "spring", stiffness: 280, damping: 18 }}
+                className="flex h-14 w-14 items-center justify-center rounded-full bg-brand"
               >
-                <div className="absolute inset-0 rounded-full bg-brand/20 blur-xl" />
-                <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-brand-gradient shadow-brand-glow">
-                  <Check size={32} className="text-white" strokeWidth={3} />
-                </div>
+                <Check size={26} className="text-primary-foreground" strokeWidth={3} />
               </motion.div>
-              <p className="mt-6 text-[22px] font-bold text-text-primary">
-                Fertig! ✨
+              <p className="mt-5 font-display text-[20px] font-semibold tracking-[-0.018em] text-text-primary">
+                Fertig
               </p>
-              <p className="mt-1 text-center text-[14px] text-text-secondary">
+              <p className="mt-1 text-center text-[13.5px] text-text-secondary">
                 Dein Arbeitsblatt ist druckbereit.
               </p>
 
-              <div className="mt-8 flex w-full flex-col gap-2">
+              <div className="mt-7 flex w-full flex-col gap-2">
                 <button
                   onClick={() => {
                     if (createdId) navigate(`/worksheets/${createdId}`);
                     else close();
                   }}
-                  className="flex h-12 w-full items-center justify-center rounded-input bg-brand-gradient text-button text-white shadow-brand-glow"
+                  className="flex h-12 w-full items-center justify-center rounded-pill bg-brand text-[14px] font-medium text-primary-foreground hover:bg-brand-hover transition-colors"
                 >
                   Anzeigen
                 </button>
                 <button
                   onClick={close}
-                  className="flex h-12 w-full items-center justify-center rounded-input border border-white/10 bg-surface text-button text-text-primary"
+                  className="flex h-12 w-full items-center justify-center rounded-pill bg-surface-2 text-[14px] font-medium text-text-primary ring-hairline hover:bg-surface-3 transition-colors"
                 >
                   Schließen
                 </button>
@@ -296,22 +296,24 @@ const Generate = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex flex-col items-center px-5 pb-8 pt-10"
+              className="flex flex-col items-center px-5 pb-8 pt-12"
             >
-              <p className="text-[18px] font-bold text-text-primary">Hoppla.</p>
-              <p className="mt-2 text-center text-[14px] text-text-secondary">
+              <p className="font-display text-[18px] font-semibold tracking-[-0.015em] text-text-primary">
+                Hoppla.
+              </p>
+              <p className="mt-2 text-center text-[13.5px] text-text-secondary">
                 {errorMsg ?? "Etwas ist schiefgelaufen."}
               </p>
               <div className="mt-6 flex w-full flex-col gap-2">
                 <button
                   onClick={() => setPhase("form")}
-                  className="flex h-12 w-full items-center justify-center rounded-input bg-brand-gradient text-button text-white"
+                  className="flex h-12 w-full items-center justify-center rounded-pill bg-brand text-[14px] font-medium text-primary-foreground hover:bg-brand-hover transition-colors"
                 >
                   Erneut versuchen
                 </button>
                 <button
                   onClick={close}
-                  className="flex h-12 w-full items-center justify-center rounded-input border border-white/10 bg-surface text-button text-text-primary"
+                  className="flex h-12 w-full items-center justify-center rounded-pill bg-surface-2 text-[14px] font-medium text-text-primary ring-hairline hover:bg-surface-3 transition-colors"
                 >
                   Schließen
                 </button>
@@ -332,8 +334,8 @@ const Section = ({
   label: string;
   children: React.ReactNode;
 }) => (
-  <div className="mt-5">
-    <p className="section-label mb-2">{label}</p>
+  <div className="mt-6">
+    <p className="section-label mb-2.5">{label}</p>
     {children}
   </div>
 );

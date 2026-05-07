@@ -19,7 +19,11 @@ import { supabase } from "@/integrations/supabase/client";
 import TapButton from "@/components/TapButton";
 import WorksheetCard, { type WorksheetCardData } from "@/components/WorksheetCard";
 import StatCard from "@/components/StatCard";
-import { WorksheetCardSkeleton, StatCardSkeleton } from "@/components/skeletons/WorksheetCardSkeleton";
+import SectionHeader from "@/components/SectionHeader";
+import {
+  WorksheetCardSkeleton,
+  StatCardSkeleton,
+} from "@/components/skeletons/WorksheetCardSkeleton";
 import EmptyState from "@/components/EmptyState";
 import { stagger, fadeUp } from "@/lib/motion";
 import { toast } from "sonner";
@@ -41,9 +45,18 @@ const ICON_MAP: Record<string, typeof Folder> = {
 };
 
 const COLOR_MAP: Record<string, string> = {
-  brand: "bg-brand-muted text-brand",
-  amber: "bg-amber-500/10 text-amber-400",
-  muted: "bg-white/[0.06] text-text-secondary",
+  brand: "bg-brand-soft text-brand-hover",
+  amber: "bg-amber-400/10 text-amber-300",
+  muted: "bg-surface-3 text-text-secondary",
+};
+
+const todayLabel = () => {
+  const d = new Date();
+  return d.toLocaleDateString("de-DE", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
 };
 
 const Greeting = ({ name }: { name: string | null }) => {
@@ -51,15 +64,15 @@ const Greeting = ({ name }: { name: string | null }) => {
   const greeting = hour < 11 ? "Guten Morgen" : hour < 18 ? "Hallo" : "Guten Abend";
   const display = name?.trim() ? name.split(" ").slice(-1)[0] : null;
   return (
-    <p className="text-[22px] font-bold tracking-[-0.02em] text-text-primary">
+    <h1 className="font-display text-[28px] font-semibold leading-[1.1] tracking-[-0.025em] text-text-primary">
       {greeting}
-      {display ? `, ${display}` : ""} <span className="inline-block">👋</span>
-    </p>
+      {display ? `, ${display}` : ""}
+    </h1>
   );
 };
 
 const Avatar = ({ kuerzel }: { kuerzel: string | null }) => (
-  <div className="flex h-10 w-10 items-center justify-center rounded-pill bg-brand/15 text-[13px] font-semibold text-brand ring-1 ring-brand/30">
+  <div className="flex h-10 w-10 items-center justify-center rounded-pill bg-surface-2 text-[12.5px] font-medium text-text-secondary ring-hairline">
     {kuerzel?.slice(0, 2).toUpperCase() || "L"}
   </div>
 );
@@ -148,54 +161,51 @@ const Index = () => {
 
   return (
     <div className="px-5">
+      {/* Editorial header */}
       <header
-        className="flex items-start justify-between pb-5"
-        style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}
+        className="flex items-start justify-between pb-7"
+        style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 22px)" }}
       >
         <div className="min-w-0">
-          <Greeting name={profile?.name ?? null} />
-          <p className="mt-1 text-[14px] text-text-secondary">Bereit für heute?</p>
+          <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-text-tertiary">
+            {todayLabel()}
+          </p>
+          <div className="mt-2">
+            <Greeting name={profile?.name ?? null} />
+          </div>
+          <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
+            Bereit, deinen Unterricht vorzubereiten?
+          </p>
         </div>
-        <Link to="/profile">
+        <Link to="/profile" className="mt-2">
           <Avatar kuerzel={profile?.kuerzel ?? null} />
         </Link>
       </header>
 
-      {/* Hero CTA */}
+      {/* Calm CTA — soft brand surface */}
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.22, 0.61, 0.36, 1] }}
       >
         <TapButton
           onClick={() => navigate("/generate")}
-          className="relative block w-full overflow-hidden rounded-large p-5 text-left shadow-brand-glow animate-pulse-glow"
-          style={{
-            background:
-              "linear-gradient(135deg, hsl(var(--brand)) 0%, hsl(var(--brand-hover)) 100%)",
-          }}
+          className={cn(
+            "relative block w-full overflow-hidden rounded-card p-5 text-left",
+            "bg-gradient-to-br from-[hsl(var(--brand-soft))] to-[hsl(var(--surface-2))]",
+            "ring-1 ring-brand/20 hover:ring-brand/30 transition-all",
+          )}
         >
-          <div
-            aria-hidden
-            className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/15 blur-2xl"
-          />
-          <div
-            aria-hidden
-            className="absolute -left-6 -bottom-10 h-32 w-32 rounded-full bg-white/10 blur-2xl"
-          />
-          <div className="relative flex items-start gap-3">
-            <motion.div
-              animate={{ rotate: [0, 8, -8, 0] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <Sparkles size={22} className="mt-0.5 text-white" />
-            </motion.div>
+          <div className="flex items-start gap-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand text-primary-foreground shadow-xs">
+              <Sparkles size={18} />
+            </div>
             <div className="flex-1">
-              <p className="text-[20px] font-bold tracking-[-0.01em] text-white">
+              <p className="font-display text-[17px] font-semibold tracking-[-0.015em] text-text-primary">
                 Neues Arbeitsblatt
               </p>
-              <p className="mt-1 text-[13px] text-white/85">
-                In unter 30 Sekunden druckfertig.
+              <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
+                Niveau, Thema, Aufgabentypen wählen — fertig in unter 30 Sekunden.
               </p>
             </div>
           </div>
@@ -220,9 +230,9 @@ const Index = () => {
       </section>
 
       {/* Quick actions */}
-      <section className="mt-5">
-        <p className="section-label mb-2.5 px-1">Schnellaktionen</p>
-        <div className="flex gap-2 overflow-x-auto -mx-5 px-5 pb-1">
+      <section className="mt-7">
+        <SectionHeader label="Schnellaktionen" className="mb-3" />
+        <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
           <QuickAction icon={<Copy size={14} />} label="Letztes duplizieren" onClick={duplicateLast} />
           <QuickAction
             icon={<Calendar size={14} />}
@@ -243,15 +253,13 @@ const Index = () => {
       </section>
 
       {/* Recents */}
-      <section className="mt-7">
-        <div className="flex items-center justify-between px-1">
-          <p className="section-label">Zuletzt erstellt</p>
-          <Link to="/library" className="text-[13px] font-medium text-brand hover:text-brand-hover">
-            Alle anzeigen →
-          </Link>
-        </div>
+      <section className="mt-8">
+        <SectionHeader
+          label="Zuletzt erstellt"
+          action={{ label: "Alle anzeigen", to: "/library" }}
+        />
         {loading ? (
-          <div className="-mx-5 mt-3 flex gap-3 overflow-x-auto px-5 pb-2">
+          <div className="-mx-5 mt-3.5 flex gap-3 overflow-x-auto px-5 pb-2">
             {[0, 1, 2].map((i) => (
               <WorksheetCardSkeleton key={i} row />
             ))}
@@ -263,7 +271,7 @@ const Index = () => {
             action={
               <TapButton
                 onClick={() => navigate("/generate")}
-                className="flex h-10 items-center gap-1.5 rounded-pill bg-brand-gradient px-4 text-[13px] font-semibold text-white shadow-brand-glow"
+                className="flex h-10 items-center gap-1.5 rounded-pill bg-brand px-4 text-[13px] font-medium text-primary-foreground hover:bg-brand-hover transition-colors"
               >
                 <Plus size={14} /> Arbeitsblatt erstellen
               </TapButton>
@@ -271,10 +279,10 @@ const Index = () => {
           />
         ) : (
           <motion.div
-            variants={stagger(0.05)}
+            variants={stagger(0.04)}
             initial="hidden"
             animate="show"
-            className="-mx-5 mt-3 flex gap-3 overflow-x-auto px-5 pb-2"
+            className="-mx-5 mt-3.5 flex gap-3 overflow-x-auto px-5 pb-2"
           >
             {recents.map((w) => (
               <motion.div key={w.id} variants={fadeUp}>
@@ -286,47 +294,42 @@ const Index = () => {
       </section>
 
       {/* Collections */}
-      <section className="mt-7 pb-6">
-        <div className="flex items-center justify-between px-1">
-          <p className="section-label">Sammlungen</p>
-          <button
-            onClick={() => toast.info("Bald verfügbar")}
-            className="text-[13px] font-medium text-brand hover:text-brand-hover"
-          >
-            + Neu
-          </button>
-        </div>
+      <section className="mt-8 pb-8">
+        <SectionHeader
+          label="Sammlungen"
+          action={{ label: "Neu", onClick: () => toast.info("Bald verfügbar") }}
+        />
         <motion.div
           variants={stagger(0.04)}
           initial="hidden"
           animate="show"
-          className="mt-3 grid grid-cols-2 gap-3"
+          className="mt-3.5 grid grid-cols-2 gap-3"
         >
           {collections.map((c) => {
             const Icon = ICON_MAP[c.icon] ?? Folder;
             return (
               <motion.div key={c.id} variants={fadeUp}>
-                <TapButton className="float-card flex w-full items-center gap-3 rounded-card border border-white/[0.06] bg-surface p-3.5 text-left">
+                <TapButton className="float-card flex w-full items-center gap-3 rounded-card bg-surface-1 ring-hairline p-3.5 text-left">
                   <div
                     className={cn(
-                      "flex h-9 w-9 items-center justify-center rounded-md",
+                      "flex h-9 w-9 items-center justify-center rounded-lg",
                       COLOR_MAP[c.color] ?? COLOR_MAP.brand,
                     )}
                   >
-                    <Icon size={18} />
+                    <Icon size={16} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[14px] font-semibold text-text-primary">
+                    <p className="truncate text-[13.5px] font-medium text-text-primary">
                       {c.title}
                     </p>
-                    <p className="text-[11px] text-text-tertiary">{c.count} Blätter</p>
+                    <p className="text-[11.5px] text-text-tertiary">{c.count} Blätter</p>
                   </div>
                 </TapButton>
               </motion.div>
             );
           })}
           {collections.length === 0 && !loading && (
-            <div className="col-span-2 flex items-center justify-center rounded-card border border-dashed border-white/10 p-6 text-[13px] text-text-tertiary">
+            <div className="col-span-2 flex items-center justify-center rounded-card border border-dashed border-hairline/10 px-6 py-10 text-[13px] text-text-tertiary">
               Sammlungen erscheinen hier.
             </div>
           )}
@@ -347,9 +350,9 @@ const QuickAction = ({
 }) => (
   <TapButton
     onClick={onClick}
-    className="flex h-10 shrink-0 items-center gap-2 rounded-pill border border-white/[0.08] bg-surface px-3.5 text-[12.5px] font-medium text-text-secondary hover:border-white/15 hover:text-text-primary"
+    className="flex h-9 shrink-0 items-center gap-2 rounded-pill bg-surface-2 ring-hairline px-3.5 text-[12.5px] font-medium text-text-secondary hover:text-text-primary hover:bg-surface-3 transition-colors"
   >
-    <span className="text-brand">{icon}</span>
+    <span className="text-text-tertiary">{icon}</span>
     {label}
   </TapButton>
 );
