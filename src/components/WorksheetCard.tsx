@@ -23,6 +23,32 @@ const formatRelative = (iso: string) => {
   return d.toLocaleDateString("de-DE", { day: "2-digit", month: "short" });
 };
 
+/** Mini paper preview shown inside cards. */
+const PaperPreview = ({ ws }: { ws: WorksheetCardData }) => (
+  <div className="relative aspect-[1/1.414] w-full overflow-hidden rounded-md bg-white shadow-[0_2px_10px_-4px_rgba(0,0,0,0.5)]">
+    <div className="absolute inset-x-0 top-0 flex h-[3px]">
+      <div className="flex-1 bg-emerald-500" />
+      <div className="flex-1 bg-sky-500" />
+      <div className="flex-1 bg-amber-500" />
+    </div>
+    <div className="px-3 pt-3">
+      <p
+        className="line-clamp-2 text-[8.5px] font-semibold leading-tight text-zinc-900"
+        style={{ fontFamily: '"Source Serif 4", serif' }}
+      >
+        {ws.title}
+      </p>
+      <div className="mt-2 space-y-1">
+        <div className="h-[3px] w-3/4 rounded-full bg-zinc-200" />
+        <div className="h-[3px] w-2/3 rounded-full bg-zinc-200" />
+        <div className="h-[3px] w-4/5 rounded-full bg-zinc-200" />
+        <div className="mt-1.5 h-[3px] w-1/2 rounded-full bg-zinc-300" />
+        <div className="h-[3px] w-3/5 rounded-full bg-zinc-200" />
+      </div>
+    </div>
+  </div>
+);
+
 type Props = {
   ws: WorksheetCardData;
   variant?: "grid" | "row";
@@ -35,29 +61,20 @@ const WorksheetCard = ({ ws, variant = "grid", className }: Props) => {
       <Link
         to={`/worksheets/${ws.id}`}
         className={cn(
-          "block w-44 shrink-0 overflow-hidden rounded-card border border-white/[0.06] bg-surface",
+          "group block w-40 shrink-0 overflow-hidden rounded-card border border-white/[0.06] bg-surface p-2.5 transition-colors hover:border-white/15",
           className,
         )}
       >
-        <div className="relative h-28 bg-gradient-to-br from-white/[0.04] to-white/[0.01] p-3">
-          <div className="flex items-start justify-between">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-brand text-[11px] font-bold text-white">
-              {ws.title.slice(0, 1)}
-            </div>
+        <PaperPreview ws={ws} />
+        <div className="mt-2.5">
+          <div className="flex items-center justify-between">
             <NiveauBadge niveau={ws.niveau} />
+            <span className="text-[10.5px] text-text-tertiary">
+              {formatRelative(ws.created_at)}
+            </span>
           </div>
-          <div className="mt-3 space-y-1.5">
-            <div className="h-2 w-3/4 rounded-full bg-white/10" />
-            <div className="h-2 w-1/2 rounded-full bg-white/[0.06]" />
-            <div className="h-2 w-2/3 rounded-full bg-white/[0.06]" />
-          </div>
-        </div>
-        <div className="p-3">
-          <p className="line-clamp-2 text-[13px] font-semibold leading-snug text-text-primary">
+          <p className="mt-1.5 line-clamp-2 text-[12.5px] font-semibold leading-snug text-text-primary">
             {ws.title}
-          </p>
-          <p className="mt-1.5 text-[11px] text-text-tertiary">
-            {formatRelative(ws.created_at)}
           </p>
         </div>
       </Link>
@@ -68,32 +85,25 @@ const WorksheetCard = ({ ws, variant = "grid", className }: Props) => {
     <Link
       to={`/worksheets/${ws.id}`}
       className={cn(
-        "group block overflow-hidden rounded-card border border-white/[0.06] bg-surface",
+        "group block overflow-hidden rounded-card border border-white/[0.06] bg-surface p-3 transition-colors hover:border-white/15",
         className,
       )}
     >
-      <div className="relative h-32 bg-gradient-to-br from-white/[0.05] to-white/[0.01] p-3">
-        <div className="flex items-start justify-between">
-          <div className="flex h-6 w-6 items-center justify-center rounded bg-brand text-[10px] font-bold text-white">
-            {ws.title.slice(0, 1)}
-          </div>
-          <NiveauBadge niveau={ws.niveau} />
-        </div>
-        <div className="mt-3 space-y-1.5">
-          <div className="h-1.5 w-3/4 rounded-full bg-white/10" />
-          <div className="h-1.5 w-1/2 rounded-full bg-white/[0.06]" />
-          <div className="h-1.5 w-2/3 rounded-full bg-white/[0.06]" />
-        </div>
+      <PaperPreview ws={ws} />
+      <div className="mt-2.5 flex items-center justify-between">
+        <NiveauBadge niveau={ws.niveau} />
+        <span className="text-[10.5px] text-text-tertiary">
+          {formatRelative(ws.created_at)}
+        </span>
       </div>
-      <div className="p-3">
-        <p className="line-clamp-2 text-[13px] font-semibold leading-snug text-text-primary">
-          {ws.title}
+      <p className="mt-1.5 line-clamp-2 text-[12.5px] font-semibold leading-snug text-text-primary">
+        {ws.title}
+      </p>
+      {ws.task_types.length > 0 && (
+        <p className="mt-1 line-clamp-1 text-[10.5px] text-text-tertiary">
+          {ws.task_types.slice(0, 2).join(" · ")}
         </p>
-        <div className="mt-2 flex items-center justify-between">
-          <NiveauBadge niveau={ws.niveau} />
-          <span className="text-[11px] text-text-tertiary">{formatRelative(ws.created_at)}</span>
-        </div>
-      </div>
+      )}
     </Link>
   );
 };
