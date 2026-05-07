@@ -93,6 +93,8 @@ const WorksheetDetail = () => {
         task_count: ws.task_count,
         competencies: ws.content?.competencies ?? [],
         duration_min: ws.content?.duration_min ?? null,
+        learning_goal: ws.content?.learning_goal ?? null,
+        teacher_notes: ws.content?.teacher_notes ?? [],
         exercises: ws.content?.exercises ?? [],
       }
     : null;
