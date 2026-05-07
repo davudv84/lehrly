@@ -217,44 +217,7 @@ const Generate = () => {
             </motion.div>
           )}
 
-          {phase === "loading" && (
-            <motion.div
-              key="loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col items-center px-5 pb-10 pt-6"
-            >
-              <h2 className="text-h2 text-text-primary">Neues Arbeitsblatt</h2>
-              <div className="mt-2 inline-flex items-center gap-1.5 rounded-pill border border-brand/30 bg-brand/15 px-3 py-1 text-[12px] font-semibold text-brand">
-                <Sparkles size={12} /> Vorschau: {previewBadge}
-              </div>
-
-              <div className="mt-12 mb-8 flex flex-col items-center gap-4">
-                <p className="text-[14px] text-text-secondary">
-                  Aufgaben werden formuliert…
-                </p>
-                <div className="flex gap-1.5">
-                  {[0, 1, 2].map((i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "h-1.5 w-1.5 rounded-full transition-colors",
-                        loadingDot === i ? "bg-brand" : "bg-white/15",
-                      )}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <button
-                disabled
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-input bg-brand-gradient text-button text-white opacity-90"
-              >
-                <Loader2 size={16} className="animate-spin" /> Erstellt…
-              </button>
-            </motion.div>
-          )}
+          {phase === "loading" && null}
 
           {phase === "success" && (
             <motion.div
