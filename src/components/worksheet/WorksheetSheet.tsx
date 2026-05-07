@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import NiveauBadge from "./NiveauBadge";
+import NiveauBadge from "@/components/NiveauBadge";
 
 export type Exercise = {
   type: string;
