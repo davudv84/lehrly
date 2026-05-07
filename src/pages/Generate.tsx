@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Loader2, Sparkles, X } from "lucide-react";
+import { Check, Sparkles, X } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import TapButton from "@/components/TapButton";
 import Chip from "@/components/Chip";
+import GenerationOverlay from "@/components/GenerationOverlay";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 const NIVEAUS = ["A1", "A2", "B1", "B2", "C1"] as const;
 const TOPICS = ["Einkaufen", "Arztbesuch", "Arbeit", "Familie", "Verkehr"];
@@ -43,16 +43,8 @@ const Generate = () => {
   const [count, setCount] = useState<number>(prefill?.count ?? 6);
 
   const [phase, setPhase] = useState<Phase>("form");
-  const [loadingDot, setLoadingDot] = useState(0);
   const [createdId, setCreatedId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  // Loading dot progress animation
-  useEffect(() => {
-    if (phase !== "loading") return;
-    const t = setInterval(() => setLoadingDot((d) => (d + 1) % 3), 500);
-    return () => clearInterval(t);
-  }, [phase]);
 
   const previewBadge = useMemo(
     () => `${niveau} · ${count} Aufgaben`,
