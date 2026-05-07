@@ -116,11 +116,12 @@ const TemplateCard = ({
   const lastUsed = formatLastUsed(template.last_used_at);
   return (
     <motion.article
-      initial={{ opacity: 0, y: 6 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.28, ease: [0.22, 0.61, 0.36, 1] }}
       className={cn(
-        "rounded-card border bg-surface p-4 transition-colors",
+        "float-card rounded-card border bg-surface p-4",
         featured
           ? "border-brand/30 shadow-[0_0_30px_-10px_hsl(var(--brand)/0.45)]"
           : "border-white/[0.06]",
