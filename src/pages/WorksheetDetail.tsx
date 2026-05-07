@@ -5,8 +5,6 @@ import {
   ArrowLeft,
   Check,
   Copy,
-  Eye,
-  EyeOff,
   GraduationCap,
   Printer,
   Share2,
@@ -16,6 +14,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import TapButton from "@/components/TapButton";
+import Segmented from "@/components/ui/segmented";
 import WorksheetSheet, {
   type WorksheetData,
 } from "@/components/worksheet/WorksheetSheet";
@@ -48,8 +47,7 @@ const WorksheetDetail = () => {
   const { user, profile } = useAuth();
   const [ws, setWs] = useState<DBWorksheet | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showSolutions, setShowSolutions] = useState(false);
-  const [view, setView] = useState<"teacher" | "student">("student");
+  const [view, setView] = useState<"student" | "teacher">("student");
   const [printSolutions, setPrintSolutions] = useState(false);
 
   useEffect(() => {
@@ -101,7 +99,7 @@ const WorksheetDetail = () => {
 
   const handlePrint = () => {
     window.print();
-    setTimeout(() => toast.success("Arbeitsblatt druckbereit ✓"), 400);
+    setTimeout(() => toast.success("Arbeitsblatt druckbereit"), 400);
   };
 
   const handleShare = async () => {
@@ -168,10 +166,12 @@ const WorksheetDetail = () => {
   if (!ws || !sheet) {
     return (
       <div className="flex flex-col items-center px-6 py-20 text-center">
-        <p className="text-h3 text-text-primary">Arbeitsblatt nicht gefunden</p>
+        <p className="font-display text-[18px] text-text-primary">
+          Arbeitsblatt nicht gefunden
+        </p>
         <button
           onClick={() => navigate("/library")}
-          className="mt-4 text-brand"
+          className="mt-4 text-brand-hover"
         >
           Zur Bibliothek
         </button>
@@ -181,139 +181,106 @@ const WorksheetDetail = () => {
 
   return (
     <>
-      {/* On-screen UI */}
       <div className="px-5 pb-32 no-print">
         {/* Top bar */}
         <header
           className="flex items-center justify-between gap-3 pb-4"
-          style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 14px)" }}
+          style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}
         >
           <TapButton
             onClick={() => navigate(-1)}
             aria-label="Zurück"
-            className="h-9 w-9 rounded-pill bg-surface text-text-secondary"
+            className="h-9 w-9 rounded-pill bg-surface-2 text-text-secondary ring-hairline hover:bg-surface-3 transition-colors"
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={17} />
           </TapButton>
-          <h1 className="flex-1 truncate text-center text-[15px] font-semibold text-text-primary">
+          <h1 className="flex-1 truncate text-center text-[14px] font-medium text-text-secondary">
             {ws.title}
           </h1>
           <TapButton
             onClick={toggleFavorite}
             aria-label="Favorit"
             className={cn(
-              "h-9 w-9 rounded-pill bg-surface",
-              ws.is_favorite ? "text-amber-400" : "text-text-secondary",
+              "h-9 w-9 rounded-pill transition-colors ring-hairline",
+              ws.is_favorite
+                ? "bg-amber-400/10 text-amber-300"
+                : "bg-surface-2 text-text-secondary hover:bg-surface-3",
             )}
           >
-            <Star size={16} fill={ws.is_favorite ? "currentColor" : "none"} />
+            <Star size={15} fill={ws.is_favorite ? "currentColor" : "none"} />
           </TapButton>
         </header>
 
-        {/* View toggle */}
-        <div className="mb-3 flex gap-2">
-          <ViewTab
-            active={view === "student"}
-            onClick={() => setView("student")}
-            icon={<UserIcon size={14} />}
-            label="Schüler-Ansicht"
-          />
-          <ViewTab
-            active={view === "teacher"}
-            onClick={() => {
-              setView("teacher");
-              setShowSolutions(true);
-            }}
-            icon={<GraduationCap size={14} />}
-            label="Lehrer-Ansicht"
-          />
-        </div>
+        {/* View toggle (segmented) */}
+        <Segmented
+          value={view}
+          onChange={setView}
+          options={[
+            { value: "student", label: "Schüler", icon: <UserIcon size={13} /> },
+            { value: "teacher", label: "Lehrkraft", icon: <GraduationCap size={13} /> },
+          ]}
+        />
 
         {/* Sheet preview */}
         <motion.div
-          initial={{ opacity: 0, y: 6 }}
+          initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.32, ease: [0.22, 0.61, 0.36, 1] }}
+          className="mt-4"
         >
           <WorksheetSheet
             ws={sheet}
             meta={meta}
             studentView={view === "student"}
-            showSolutions={view === "teacher" && showSolutions}
+            showSolutions={view === "teacher"}
           />
         </motion.div>
 
-        {/* Quick options card */}
-        <div className="mt-4 rounded-card border border-white/[0.06] bg-surface p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[13px] font-semibold text-text-primary">
-                Lösungen anzeigen
+        {/* Print options */}
+        <div className="mt-5 rounded-card bg-surface-1 ring-hairline p-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-[13.5px] font-medium text-text-primary">
+                Lösungsblatt mitdrucken
               </p>
-              <p className="text-[11.5px] text-text-tertiary">
-                {view === "teacher"
-                  ? "Aktiv in der Lehrer-Ansicht."
-                  : "Wechsle zur Lehrer-Ansicht, um Lösungen zu sehen."}
-              </p>
-            </div>
-            <button
-              onClick={() => {
-                if (view === "student") setView("teacher");
-                setShowSolutions((v) => !v);
-              }}
-              className={cn(
-                "flex h-8 items-center gap-1.5 rounded-pill px-3 text-[12px] font-semibold transition-colors",
-                view === "teacher" && showSolutions
-                  ? "bg-brand text-white"
-                  : "bg-white/5 text-text-secondary",
-              )}
-            >
-              {showSolutions && view === "teacher" ? (
-                <>
-                  <Eye size={13} /> An
-                </>
-              ) : (
-                <>
-                  <EyeOff size={13} /> Aus
-                </>
-              )}
-            </button>
-          </div>
-
-          <div className="mt-3 flex items-center justify-between border-t border-white/[0.05] pt-3">
-            <div>
-              <p className="text-[13px] font-semibold text-text-primary">
-                Lösungen separat drucken
-              </p>
-              <p className="text-[11.5px] text-text-tertiary">
-                Lösungsblatt auf eigene Seite.
+              <p className="mt-0.5 text-[11.5px] text-text-tertiary">
+                Erscheint auf separater Seite.
               </p>
             </div>
             <button
               onClick={() => setPrintSolutions((v) => !v)}
+              role="switch"
+              aria-checked={printSolutions}
               className={cn(
-                "flex h-8 items-center gap-1.5 rounded-pill px-3 text-[12px] font-semibold transition-colors",
-                printSolutions
-                  ? "bg-brand text-white"
-                  : "bg-white/5 text-text-secondary",
+                "relative h-7 w-12 shrink-0 rounded-pill transition-colors",
+                printSolutions ? "bg-brand" : "bg-surface-3",
               )}
             >
-              {printSolutions ? <Check size={13} /> : null}
-              {printSolutions ? "Mit Lösungen" : "Nur Aufgaben"}
+              <motion.span
+                layout
+                transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                className={cn(
+                  "absolute top-0.5 h-6 w-6 rounded-full bg-white shadow-xs",
+                  printSolutions ? "right-0.5" : "left-0.5",
+                )}
+              />
             </button>
           </div>
         </div>
 
-        {/* Teacher notes — only visible in teacher view */}
+        {/* Teacher notes */}
         {view === "teacher" && (sheet.teacher_notes?.length ?? 0) > 0 && (
-          <div className="mt-4 rounded-card border border-amber-500/20 bg-amber-500/[0.04] p-4">
-            <p className="section-label mb-2 text-amber-300/80">Lehrerhinweise</p>
+          <div className="mt-4 rounded-card bg-amber-400/[0.04] ring-1 ring-amber-400/15 p-4">
+            <p className="section-label mb-2 text-amber-300/80">
+              Lehrerhinweise
+            </p>
             <ul className="space-y-1.5">
               {sheet.teacher_notes!.map((n, i) => (
                 <li
                   key={i}
-                  className="flex gap-2 text-[12.5px] leading-snug text-text-secondary"
+                  className="flex gap-2 text-[12.5px] leading-relaxed text-text-secondary"
                 >
-                  <span className="text-amber-400">•</span>
+                  <span className="text-amber-300/70">•</span>
                   <span>{n}</span>
                 </li>
               ))}
@@ -322,7 +289,7 @@ const WorksheetDetail = () => {
         )}
 
         {/* Meta tags */}
-        <div className="mt-4 flex flex-wrap gap-1.5">
+        <div className="mt-5 flex flex-wrap gap-1.5">
           {ws.topic && <Tag>{ws.topic}</Tag>}
           {ws.task_types.map((t) => (
             <Tag key={t}>{t}</Tag>
@@ -330,23 +297,23 @@ const WorksheetDetail = () => {
         </div>
       </div>
 
-      {/* Sticky action bar */}
+      {/* Sticky floating action bar */}
       <motion.div
-        initial={{ y: 24, opacity: 0 }}
+        initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.35, delay: 0.1, ease: [0.22, 0.61, 0.36, 1] }}
+        transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 0.61, 0.36, 1] }}
         className="fixed inset-x-0 bottom-16 z-40 mx-auto max-w-md px-5 no-print"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px))" }}
       >
-        <div className="glass flex items-center gap-2 rounded-pill border border-white/[0.08] bg-bg-elevated/80 p-1.5 shadow-2xl">
-          <ActionPill icon={<Share2 size={15} />} label="Teilen" onClick={handleShare} />
-          <ActionPill icon={<Copy size={15} />} label="Kopie" onClick={handleDuplicate} />
+        <div className="glass flex items-center gap-1 rounded-pill ring-hairline p-1.5 shadow-elevated">
+          <ActionPill icon={<Share2 size={14} />} label="Teilen" onClick={handleShare} />
+          <ActionPill icon={<Copy size={14} />} label="Kopie" onClick={handleDuplicate} />
           <motion.button
-            whileTap={{ scale: 0.97 }}
+            whileTap={{ scale: 0.98 }}
             onClick={handlePrint}
-            className="flex h-11 flex-1 items-center justify-center gap-2 rounded-pill bg-brand-gradient text-[13.5px] font-semibold text-white shadow-brand-glow"
+            className="flex h-10 flex-1 items-center justify-center gap-2 rounded-pill bg-brand text-[13px] font-medium text-primary-foreground hover:bg-brand-hover transition-colors"
           >
-            <Printer size={16} /> PDF / Drucken
+            <Printer size={15} /> Drucken
           </motion.button>
         </div>
       </motion.div>
@@ -357,7 +324,7 @@ const WorksheetDetail = () => {
           ws={sheet}
           meta={meta}
           studentView
-          className="!shadow-none !border-0 !rounded-none !aspect-auto"
+          className="!shadow-none !ring-0 !rounded-none !aspect-auto"
         />
         {printSolutions && ws.has_solution && (
           <div className="page-break-before paper px-7 pt-6">
@@ -365,14 +332,14 @@ const WorksheetDetail = () => {
               <p className="ui text-[11px] uppercase tracking-[0.12em] text-zinc-400">
                 Lösungsblatt
               </p>
-              <h1 className="mt-1 text-[20px] font-bold text-zinc-900">
+              <h1 className="mt-1 text-[20px] font-semibold tracking-tight text-zinc-900">
                 {ws.title} — Lösungen
               </h1>
             </header>
             <ol className="mt-4 space-y-3">
               {sheet.exercises.map((ex, i) => (
                 <li key={i} className="avoid-break">
-                  <p className="ui text-[11px] font-bold uppercase tracking-wide text-zinc-500">
+                  <p className="ui text-[10.5px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
                     Aufgabe {i + 1} · {ex.type}
                   </p>
                   <p className="mt-0.5 text-[13.5px] text-zinc-900">
@@ -388,31 +355,6 @@ const WorksheetDetail = () => {
   );
 };
 
-const ViewTab = ({
-  active,
-  onClick,
-  icon,
-  label,
-}: {
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  label: string;
-}) => (
-  <button
-    onClick={onClick}
-    className={cn(
-      "flex h-9 flex-1 items-center justify-center gap-1.5 rounded-pill border text-[12px] font-semibold transition-colors",
-      active
-        ? "border-brand/40 bg-brand-muted text-brand"
-        : "border-white/10 bg-surface text-text-secondary",
-    )}
-  >
-    {icon}
-    {label}
-  </button>
-);
-
 const ActionPill = ({
   icon,
   label,
@@ -424,7 +366,7 @@ const ActionPill = ({
 }) => (
   <button
     onClick={onClick}
-    className="flex h-11 items-center gap-1.5 rounded-pill px-3.5 text-[12.5px] font-medium text-text-primary hover:bg-white/5"
+    className="flex h-10 items-center gap-1.5 rounded-pill px-3.5 text-[12.5px] font-medium text-text-secondary hover:bg-surface-3 hover:text-text-primary transition-colors"
   >
     {icon}
     {label}
@@ -432,7 +374,7 @@ const ActionPill = ({
 );
 
 const Tag = ({ children }: { children: React.ReactNode }) => (
-  <span className="inline-flex h-6 items-center rounded-pill border border-white/10 bg-white/[0.04] px-2.5 text-[11px] font-medium text-text-secondary">
+  <span className="inline-flex h-6 items-center rounded-pill bg-surface-2 ring-hairline px-2.5 text-[11px] font-medium text-text-secondary">
     {children}
   </span>
 );
