@@ -193,7 +193,12 @@ Deno.serve(async (req) => {
       return json({ error: "Antwort des AI-Modells unvollständig" }, 502);
     }
 
-    let parsed: { title: string; exercises: Array<Record<string, string>> };
+    let parsed: {
+      title: string;
+      competencies?: string[];
+      duration_min?: number;
+      exercises: Array<Record<string, string>>;
+    };
     try {
       parsed = typeof toolCall === "string" ? JSON.parse(toolCall) : toolCall;
     } catch {
@@ -202,6 +207,13 @@ Deno.serve(async (req) => {
 
     const title = parsed.title?.trim() || `${niveau} ${topics[0] ?? "Arbeitsblatt"}`;
     const exercises = (parsed.exercises ?? []).slice(0, count);
+    const competencies = Array.isArray(parsed.competencies)
+      ? parsed.competencies.slice(0, 3)
+      : [];
+    const duration_min =
+      typeof parsed.duration_min === "number"
+        ? Math.max(5, Math.min(90, Math.round(parsed.duration_min)))
+        : null;
 
     const { data: inserted, error: insertErr } = await supa
       .from("worksheets")
@@ -213,7 +225,7 @@ Deno.serve(async (req) => {
         task_types: taskTypes,
         task_count: exercises.length,
         has_solution: true,
-        content: { title, exercises },
+        content: { title, exercises, competencies, duration_min },
       })
       .select("id")
       .single();
