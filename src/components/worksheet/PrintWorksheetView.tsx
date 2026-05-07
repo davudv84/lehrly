@@ -284,7 +284,7 @@ const PrintExercise = ({ ex, index }: { ex: Exercise; index: number }) => {
 const PrintWorksheetView = ({ ws, meta, includeSolutions = false }: Props) => {
   const competencies = ws.competencies ?? [];
 
-  return (
+  const tree = (
     <div
       className="print-only"
       style={{
