@@ -18,6 +18,7 @@ import Segmented from "@/components/ui/segmented";
 import WorksheetSheet, {
   type WorksheetData,
 } from "@/components/worksheet/WorksheetSheet";
+import PrintWorksheetView from "@/components/worksheet/PrintWorksheetView";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -318,39 +319,12 @@ const WorksheetDetail = () => {
         </div>
       </motion.div>
 
-      {/* Print-only A4 layout */}
-      <div className="print-root hidden print:block">
-        <WorksheetSheet
-          ws={sheet}
-          meta={meta}
-          studentView
-          className="!shadow-none !ring-0 !rounded-none !aspect-auto"
-        />
-        {printSolutions && ws.has_solution && (
-          <div className="page-break-before paper px-7 pt-6">
-            <header className="border-b border-zinc-200 pb-3">
-              <p className="ui text-[11px] uppercase tracking-[0.12em] text-zinc-400">
-                Lösungsblatt
-              </p>
-              <h1 className="mt-1 text-[20px] font-semibold tracking-tight text-zinc-900">
-                {ws.title} — Lösungen
-              </h1>
-            </header>
-            <ol className="mt-4 space-y-3">
-              {sheet.exercises.map((ex, i) => (
-                <li key={i} className="avoid-break">
-                  <p className="ui text-[10.5px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
-                    Aufgabe {i + 1} · {ex.type}
-                  </p>
-                  <p className="mt-0.5 text-[13.5px] text-zinc-900">
-                    <span className="font-semibold">Lösung:</span> {ex.solution}
-                  </p>
-                </li>
-              ))}
-            </ol>
-          </div>
-        )}
-      </div>
+      {/* Print-only A4 layout (independent from mobile UI) */}
+      <PrintWorksheetView
+        ws={sheet}
+        meta={meta}
+        includeSolutions={printSolutions && ws.has_solution}
+      />
     </>
   );
 };
