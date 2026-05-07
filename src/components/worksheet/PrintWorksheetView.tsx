@@ -569,6 +569,9 @@ const PrintWorksheetView = ({ ws, meta, includeSolutions = false }: Props) => {
       )}
     </div>
   );
+
+  if (typeof document === "undefined") return null;
+  return createPortal(tree, document.body);
 };
 
 export default PrintWorksheetView;
