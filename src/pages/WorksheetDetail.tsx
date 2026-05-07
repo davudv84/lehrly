@@ -212,7 +212,7 @@ const WorksheetDetail = () => {
         </header>
 
         {/* View toggle (segmented) */}
-        <Segmented
+        <Segmented<"student" | "teacher">
           value={view}
           onChange={setView}
           options={[
