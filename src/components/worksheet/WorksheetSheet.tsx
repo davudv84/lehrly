@@ -265,6 +265,17 @@ const WorksheetSheet = ({
           )}
         </div>
 
+        {ws.learning_goal && (
+          <div className="mt-3 rounded-md border border-emerald-200 bg-emerald-50/60 px-3 py-2">
+            <p className="ui text-[10px] font-bold uppercase tracking-[0.1em] text-emerald-700">
+              Lernziel
+            </p>
+            <p className="mt-0.5 text-[12.5px] leading-snug text-zinc-800">
+              {ws.learning_goal}
+            </p>
+          </div>
+        )}
+
         {/* Name / Datum / Klasse line — for student to fill */}
         {studentView !== false && (
           <div className="ui mt-4 grid grid-cols-3 gap-4 text-[11px] text-zinc-500">
