@@ -309,21 +309,25 @@ const WorksheetDetail = () => {
       </div>
 
       {/* Sticky action bar */}
-      <div
+      <motion.div
+        initial={{ y: 24, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.35, delay: 0.1, ease: [0.22, 0.61, 0.36, 1] }}
         className="fixed inset-x-0 bottom-16 z-40 mx-auto max-w-md px-5 no-print"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px))" }}
       >
-        <div className="flex items-center gap-2 rounded-pill border border-white/[0.08] bg-bg-elevated/95 p-1.5 shadow-2xl backdrop-blur-md">
+        <div className="glass flex items-center gap-2 rounded-pill border border-white/[0.08] bg-bg-elevated/80 p-1.5 shadow-2xl">
           <ActionPill icon={<Share2 size={15} />} label="Teilen" onClick={handleShare} />
           <ActionPill icon={<Copy size={15} />} label="Kopie" onClick={handleDuplicate} />
-          <button
+          <motion.button
+            whileTap={{ scale: 0.97 }}
             onClick={handlePrint}
             className="flex h-11 flex-1 items-center justify-center gap-2 rounded-pill bg-brand-gradient text-[13.5px] font-semibold text-white shadow-brand-glow"
           >
             <Printer size={16} /> PDF / Drucken
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Print-only A4 layout */}
       <div className="print-root hidden print:block">
