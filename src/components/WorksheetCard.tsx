@@ -27,66 +27,63 @@ const formatRelative = (iso: string) => {
 };
 
 const NIVEAU_STRIPE: Record<string, string> = {
-  A1: "bg-emerald-500",
-  A2: "bg-teal-500",
-  B1: "bg-sky-500",
-  B2: "bg-amber-500",
-  C1: "bg-fuchsia-500",
-  C2: "bg-rose-500",
+  A1: "bg-emerald-400",
+  A2: "bg-teal-400",
+  B1: "bg-sky-400",
+  B2: "bg-amber-400",
+  C1: "bg-fuchsia-400",
+  C2: "bg-rose-400",
 };
 
-/** Mini paper preview shown inside cards — looks like a real document. */
+/** Mini paper preview — calm, editorial. */
 const PaperPreview = ({ ws }: { ws: WorksheetCardData }) => {
-  const stripe = NIVEAU_STRIPE[ws.niveau] ?? "bg-emerald-500";
+  const stripe = NIVEAU_STRIPE[ws.niveau] ?? "bg-emerald-400";
   const hasMC = ws.task_types.some((t) => /multiple|choice/i.test(t));
   const hasMatch = ws.task_types.some((t) => /zuordn/i.test(t));
   return (
-    <div className="relative aspect-[1/1.414] w-full overflow-hidden rounded-md bg-white shadow-[0_4px_14px_-6px_rgba(0,0,0,0.55),inset_0_0_0_1px_rgba(0,0,0,0.04)]">
-      <div className={cn("absolute inset-x-0 top-0 h-[3px]", stripe)} />
-      <div className="px-3 pt-3.5">
+    <div className="relative aspect-[1/1.414] w-full overflow-hidden rounded-md bg-[#FAFAF7] shadow-[0_2px_8px_-4px_rgba(0,0,0,0.4),inset_0_0_0_1px_rgba(0,0,0,0.04)]">
+      <div className={cn("absolute inset-y-3 left-2 w-[2px] rounded-full opacity-80", stripe)} />
+      <div className="px-3.5 pt-3.5 pl-5">
         <p
-          className="line-clamp-2 text-[8.5px] font-semibold leading-tight text-zinc-900"
-          style={{ fontFamily: '"Source Serif 4", serif' }}
+          className="line-clamp-2 text-[8.5px] leading-tight text-zinc-800"
+          style={{ fontFamily: '"Source Serif 4", serif', fontWeight: 600 }}
         >
           {ws.title}
         </p>
-        <div className="mt-0.5 flex items-center gap-1">
-          <span className="rounded-sm bg-zinc-100 px-1 py-px text-[6px] font-bold uppercase tracking-wide text-zinc-500">
-            {ws.niveau}
+        <div className="mt-1 flex items-center gap-1">
+          <span className="text-[6px] font-medium uppercase tracking-[0.1em] text-zinc-400">
+            {ws.niveau} · Aufgabe 1
           </span>
-          <span className="text-[6.5px] text-zinc-400">·</span>
-          <span className="text-[6.5px] text-zinc-400">Aufgabe 1</span>
         </div>
-        <div className="mt-2 space-y-1">
-          <div className="h-[2.5px] w-3/4 rounded-full bg-zinc-200" />
-          <div className="h-[2.5px] w-2/3 rounded-full bg-zinc-200" />
-          <div className="h-[2.5px] w-4/5 rounded-full bg-zinc-200" />
+        <div className="mt-2 space-y-[3px]">
+          <div className="h-[2px] w-3/4 rounded-full bg-zinc-200" />
+          <div className="h-[2px] w-2/3 rounded-full bg-zinc-200" />
+          <div className="h-[2px] w-4/5 rounded-full bg-zinc-200" />
         </div>
 
         {hasMC ? (
-          <div className="mt-2.5 space-y-1">
+          <div className="mt-2.5 space-y-[3px]">
             {[0, 1, 2].map((i) => (
               <div key={i} className="flex items-center gap-1">
-                <div className="h-1.5 w-1.5 rounded-full border border-zinc-300" />
-                <div className="h-[2.5px] flex-1 rounded-full bg-zinc-200" />
+                <div className="h-1.5 w-1.5 rounded-full ring-1 ring-zinc-300" />
+                <div className="h-[2px] flex-1 rounded-full bg-zinc-200" />
               </div>
             ))}
           </div>
         ) : hasMatch ? (
-          <div className="mt-2.5 grid grid-cols-2 gap-x-2 gap-y-1">
+          <div className="mt-2.5 grid grid-cols-2 gap-x-2 gap-y-[3px]">
             {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="h-[2.5px] rounded-full bg-zinc-200" />
+              <div key={i} className="h-[2px] rounded-full bg-zinc-200" />
             ))}
           </div>
         ) : (
-          <div className="mt-2.5 space-y-1">
-            <div className="h-[2.5px] w-1/2 rounded-full bg-zinc-300" />
+          <div className="mt-2.5 space-y-[3px]">
             <div className="flex items-center gap-1">
-              <div className="h-[2.5px] w-1/4 rounded-full bg-zinc-200" />
-              <div className="h-[6px] w-5 rounded border-b border-dotted border-zinc-400" />
-              <div className="h-[2.5px] flex-1 rounded-full bg-zinc-200" />
+              <div className="h-[2px] w-1/4 rounded-full bg-zinc-200" />
+              <div className="h-[6px] w-5 border-b border-dotted border-zinc-400" />
+              <div className="h-[2px] flex-1 rounded-full bg-zinc-200" />
             </div>
-            <div className="h-[2.5px] w-3/5 rounded-full bg-zinc-200" />
+            <div className="h-[2px] w-3/5 rounded-full bg-zinc-200" />
           </div>
         )}
       </div>
@@ -106,19 +103,19 @@ const WorksheetCard = ({ ws, variant = "grid", className }: Props) => {
       <div className="relative">
         <PaperPreview ws={ws} />
         {ws.is_favorite && (
-          <div className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400/95 text-zinc-900 shadow">
-            <Star size={10} fill="currentColor" />
+          <div className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-300/95 text-zinc-900">
+            <Star size={9} fill="currentColor" />
           </div>
         )}
       </div>
-      <div className={cn("mt-2.5", variant === "row" ? "" : "")}>
+      <div className="mt-2.5">
         <div className="flex items-center justify-between">
           <NiveauBadge niveau={ws.niveau} />
           <span className="text-[10.5px] text-text-tertiary">
             {formatRelative(ws.created_at)}
           </span>
         </div>
-        <p className="mt-1.5 line-clamp-2 text-[12.5px] font-semibold leading-snug text-text-primary">
+        <p className="mt-1.5 line-clamp-2 text-[13px] font-medium leading-snug text-text-primary tracking-[-0.005em]">
           {ws.title}
         </p>
         {variant === "grid" && ws.task_types.length > 0 && (
@@ -132,12 +129,12 @@ const WorksheetCard = ({ ws, variant = "grid", className }: Props) => {
 
   return (
     <motion.div
-      whileHover={{ y: -3 }}
-      whileTap={{ scale: 0.985 }}
+      whileHover={{ y: -1 }}
+      whileTap={{ scale: 0.99 }}
       transition={{ duration: 0.22, ease: [0.22, 0.61, 0.36, 1] }}
       className={cn(
-        "float-card group block overflow-hidden rounded-card border border-white/[0.06] bg-surface p-2.5",
-        variant === "row" ? "w-40 shrink-0" : "p-3",
+        "float-card group block overflow-hidden rounded-card bg-surface-1 ring-hairline p-3",
+        variant === "row" ? "w-40 shrink-0" : "",
         className,
       )}
     >

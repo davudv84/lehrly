@@ -27,15 +27,17 @@ const TabItem = ({ tab }: { tab: Tab }) => {
     >
       {({ isActive }) => (
         <motion.div
-          whileTap={{ scale: 0.92 }}
-          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+          whileTap={{ scale: 0.93 }}
+          transition={{ type: "spring", stiffness: 420, damping: 28 }}
           className={cn(
-            "flex flex-col items-center justify-center gap-1 py-2 px-1 transition-colors duration-200",
-            isActive ? "text-brand" : "text-text-tertiary",
+            "flex flex-col items-center justify-center gap-0.5 py-2 transition-colors duration-200",
+            isActive ? "text-text-primary" : "text-text-tertiary",
           )}
         >
-          <Icon size={22} strokeWidth={isActive ? 2.25 : 2} />
-          <span className="text-[10px] font-medium tracking-wide">{tab.label}</span>
+          <Icon size={20} strokeWidth={isActive ? 2.1 : 1.7} />
+          <span className="text-[10px] font-medium tracking-tight">
+            {tab.label}
+          </span>
         </motion.div>
       )}
     </NavLink>
@@ -50,42 +52,35 @@ const BottomTabBar = () => {
   return (
     <nav
       aria-label="Hauptnavigation"
-      className="fixed inset-x-0 bottom-0 z-40 glass-bar border-t border-white/[0.08]"
+      className="fixed inset-x-0 bottom-0 z-40 glass-bar border-t"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       <div className="relative mx-auto flex h-16 max-w-md items-stretch">
-        {/* Left two tabs */}
         <TabItem tab={TABS[0]} />
         <TabItem tab={TABS[1]} />
 
         {/* Spacer for center plus */}
         <div className="w-16 shrink-0" aria-hidden />
 
-        {/* Right two tabs */}
         <TabItem tab={TABS[2]} />
         <TabItem tab={TABS[3]} />
 
-        {/* Center Plus button — sits 6px above the bar */}
+        {/* Center Plus button — calmer (no glow, soft ring) */}
         <div
-          className="pointer-events-none absolute left-1/2 -translate-x-1/2"
-          style={{ top: "-6px", transform: "translate(-50%, -6px)" }}
+          className="pointer-events-none absolute left-1/2"
+          style={{ transform: "translate(-50%, -22px)" }}
         >
           <TapButton
             aria-label="Neues Arbeitsblatt erstellen"
             onClick={() => navigate("/generate")}
             className={cn(
-              "pointer-events-auto h-14 w-14 rounded-full bg-brand-gradient",
-              "shadow-brand-glow animate-pulse-glow ring-1 ring-white/10",
+              "pointer-events-auto h-12 w-12 rounded-pill bg-brand text-primary-foreground transition-transform duration-300",
+              "shadow-[0_8px_24px_-10px_hsl(var(--brand)/0.5)] ring-1 ring-brand-hover/40",
+              "hover:bg-brand-hover",
+              isGenerateOpen && "rotate-45",
             )}
           >
-            <Plus
-              size={26}
-              strokeWidth={2.5}
-              className={cn(
-                "text-white transition-transform duration-200",
-                isGenerateOpen && "rotate-45",
-              )}
-            />
+            <Plus size={22} strokeWidth={2.2} />
           </TapButton>
         </div>
       </div>
