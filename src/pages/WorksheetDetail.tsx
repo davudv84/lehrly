@@ -1,31 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
+  Check,
   Copy,
-  Maximize2,
-  MoreHorizontal,
+  Eye,
+  EyeOff,
+  GraduationCap,
   Printer,
   Share2,
   Star,
+  User as UserIcon,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import NiveauBadge from "@/components/NiveauBadge";
 import TapButton from "@/components/TapButton";
-import Chip from "@/components/Chip";
+import WorksheetSheet, {
+  type WorksheetData,
+} from "@/components/worksheet/WorksheetSheet";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-type Exercise = {
-  type: string;
-  instruction: string;
-  content: string;
-  solution: string;
-};
-
-type Worksheet = {
+type DBWorksheet = {
   id: string;
   title: string;
   niveau: string;
@@ -35,28 +32,23 @@ type Worksheet = {
   has_solution: boolean;
   is_favorite: boolean;
   created_at: string;
-  content: { title?: string; exercises?: Exercise[] } | null;
-};
-
-const formatRelative = (iso: string) => {
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diffMs / 60000);
-  if (mins < 60) return `vor ${Math.max(1, mins)} Minuten`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `vor ${hrs} Stunden`;
-  const days = Math.floor(hrs / 24);
-  if (days === 1) return "gestern";
-  return `vor ${days} Tagen`;
+  content: {
+    title?: string;
+    exercises?: WorksheetData["exercises"];
+    competencies?: string[];
+    duration_min?: number;
+  } | null;
 };
 
 const WorksheetDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const [ws, setWs] = useState<Worksheet | null>(null);
+  const [ws, setWs] = useState<DBWorksheet | null>(null);
   const [loading, setLoading] = useState(true);
   const [showSolutions, setShowSolutions] = useState(false);
-  const [fullscreen, setFullscreen] = useState(false);
+  const [view, setView] = useState<"teacher" | "student">("student");
+  const [printSolutions, setPrintSolutions] = useState(false);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -69,7 +61,7 @@ const WorksheetDetail = () => {
         .eq("id", id)
         .maybeSingle();
       if (!cancelled) {
-        setWs((data as Worksheet | null) ?? null);
+        setWs((data as DBWorksheet | null) ?? null);
         setLoading(false);
       }
     })();
@@ -77,6 +69,31 @@ const WorksheetDetail = () => {
       cancelled = true;
     };
   }, [id, user]);
+
+  const meta = useMemo(
+    () => ({
+      schoolLabel: profile?.school?.trim() || "Lehrly",
+      authorInitials:
+        profile?.kuerzel?.slice(0, 2).toUpperCase() ||
+        profile?.name?.slice(0, 1).toUpperCase() ||
+        "L",
+      worksheetId: ws?.id ?? "",
+      createdAt: ws?.created_at ?? new Date().toISOString(),
+    }),
+    [profile, ws],
+  );
+
+  const sheet: WorksheetData | null = ws
+    ? {
+        title: ws.content?.title || ws.title,
+        niveau: ws.niveau,
+        topic: ws.topic,
+        task_count: ws.task_count,
+        competencies: ws.content?.competencies ?? [],
+        duration_min: ws.content?.duration_min ?? null,
+        exercises: ws.content?.exercises ?? [],
+      }
+    : null;
 
   const handlePrint = () => {
     window.print();
@@ -117,10 +134,7 @@ const WorksheetDetail = () => {
       })
       .select("id")
       .single();
-    if (error || !data) {
-      toast.error("Duplizieren fehlgeschlagen");
-      return;
-    }
+    if (error || !data) return toast.error("Duplizieren fehlgeschlagen");
     toast.success("Kopie erstellt");
     navigate(`/worksheets/${data.id}`);
   };
@@ -146,7 +160,7 @@ const WorksheetDetail = () => {
       </div>
     );
   }
-  if (!ws) {
+  if (!ws || !sheet) {
     return (
       <div className="flex flex-col items-center px-6 py-20 text-center">
         <p className="text-h3 text-text-primary">Arbeitsblatt nicht gefunden</p>
@@ -160,13 +174,11 @@ const WorksheetDetail = () => {
     );
   }
 
-  const exercises = ws.content?.exercises ?? [];
-  const schoolLabel = profile?.school?.trim() || "Lehrly";
-  const initialsLabel = profile?.kuerzel?.slice(0, 1).toUpperCase() || "L";
-
   return (
     <>
-      <div className="px-5 print:hidden">
+      {/* On-screen UI */}
+      <div className="px-5 pb-32 no-print">
+        {/* Top bar */}
         <header
           className="flex items-center justify-between gap-3 pb-4"
           style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 14px)" }}
@@ -178,160 +190,167 @@ const WorksheetDetail = () => {
           >
             <ArrowLeft size={18} />
           </TapButton>
-          <h1 className="flex-1 truncate text-center text-[16px] font-semibold text-text-primary">
+          <h1 className="flex-1 truncate text-center text-[15px] font-semibold text-text-primary">
             {ws.title}
           </h1>
-          <div className="flex items-center gap-2">
-            <TapButton
-              onClick={handleShare}
-              aria-label="Teilen"
-              className="h-9 w-9 rounded-pill bg-surface text-text-secondary"
-            >
-              <Share2 size={16} />
-            </TapButton>
-            <TapButton
-              onClick={toggleFavorite}
-              aria-label="Favorit"
-              className={cn(
-                "h-9 w-9 rounded-pill bg-surface",
-                ws.is_favorite ? "text-amber-400" : "text-text-secondary",
-              )}
-            >
-              <Star size={16} fill={ws.is_favorite ? "currentColor" : "none"} />
-            </TapButton>
-            <TapButton
-              onClick={() => toast("Mehr-Optionen folgen bald.")}
-              aria-label="Mehr"
-              className="h-9 w-9 rounded-pill bg-surface text-text-secondary"
-            >
-              <MoreHorizontal size={16} />
-            </TapButton>
-          </div>
+          <TapButton
+            onClick={toggleFavorite}
+            aria-label="Favorit"
+            className={cn(
+              "h-9 w-9 rounded-pill bg-surface",
+              ws.is_favorite ? "text-amber-400" : "text-text-secondary",
+            )}
+          >
+            <Star size={16} fill={ws.is_favorite ? "currentColor" : "none"} />
+          </TapButton>
         </header>
 
-        {/* Sheet preview card (white paper) */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-card border border-white/[0.06] bg-white text-zinc-900 shadow-2xl"
-        >
-          <div className="flex items-center justify-between gap-2 border-b border-zinc-100 px-5 py-3">
-            <div className="flex items-center gap-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-brand text-[11px] font-bold text-white">
-                {initialsLabel}
-              </div>
-              <span className="text-[12px] font-medium text-zinc-700">
-                {schoolLabel}
-              </span>
-            </div>
-            <span className="rounded-pill bg-brand/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand">
-              Niveau {ws.niveau}
-            </span>
-          </div>
-          <div className="px-5 pb-5 pt-4">
-            <h2 className="text-[15px] font-bold leading-tight text-zinc-900">
-              {ws.content?.title || ws.title}
-            </h2>
-            <ol className="mt-3 space-y-3">
-              {exercises.slice(0, fullscreen ? exercises.length : 4).map((ex, i) => (
-                <li key={i} className="text-[12px] text-zinc-700">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-zinc-500">
-                    {i + 1}. {ex.type}
-                  </p>
-                  <p className="mt-1 text-[12px] font-medium text-zinc-800">
-                    {ex.instruction}
-                  </p>
-                  <p className="mt-1 text-[12px] leading-snug text-zinc-700">
-                    {ex.content}
-                  </p>
-                  {showSolutions && (
-                    <p className="mt-1 rounded bg-brand/10 px-2 py-1 text-[11px] text-brand">
-                      Lösung: {ex.solution}
-                    </p>
-                  )}
-                </li>
-              ))}
-              {!fullscreen && exercises.length > 4 && (
-                <li className="text-[11px] italic text-zinc-400">
-                  … +{exercises.length - 4} weitere Aufgaben
-                </li>
-              )}
-            </ol>
-          </div>
-          <button
-            onClick={() => setFullscreen((v) => !v)}
-            className="absolute bottom-3 right-3 flex items-center gap-1 rounded-pill bg-brand/10 px-3 py-1 text-[11px] font-semibold text-brand"
-          >
-            <Maximize2 size={11} /> {fullscreen ? "Kompakt" : "Vollbild"}
-          </button>
-          <div className="absolute bottom-3 left-3 text-[10px] text-zinc-400">
-            1/{Math.max(1, Math.ceil(exercises.length / 4))}
-          </div>
-        </motion.div>
-
-        {/* Tags */}
-        <div className="mt-4 flex flex-wrap gap-2">
-          <NiveauBadge niveau={ws.niveau} />
-          {ws.topic && <SmallTag>{ws.topic}</SmallTag>}
-          {ws.task_types.map((t) => (
-            <SmallTag key={t}>{t}</SmallTag>
-          ))}
+        {/* View toggle */}
+        <div className="mb-3 flex gap-2">
+          <ViewTab
+            active={view === "student"}
+            onClick={() => setView("student")}
+            icon={<UserIcon size={14} />}
+            label="Schüler-Ansicht"
+          />
+          <ViewTab
+            active={view === "teacher"}
+            onClick={() => {
+              setView("teacher");
+              setShowSolutions(true);
+            }}
+            icon={<GraduationCap size={14} />}
+            label="Lehrer-Ansicht"
+          />
         </div>
 
-        {/* Meta */}
-        <p className="mt-3 text-[12px] text-text-tertiary">
-          Erstellt {formatRelative(ws.created_at)} · {ws.task_count} Aufgaben
-          {ws.has_solution ? " · Mit Lösungsblatt" : ""}
-        </p>
+        {/* Sheet preview */}
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <WorksheetSheet
+            ws={sheet}
+            meta={meta}
+            studentView={view === "student"}
+            showSolutions={view === "teacher" && showSolutions}
+          />
+        </motion.div>
 
-        {/* Solution toggle */}
-        {ws.has_solution && exercises.length > 0 && (
-          <div className="mt-3">
-            <Chip
-              size="sm"
-              active={showSolutions}
-              onClick={() => setShowSolutions((v) => !v)}
+        {/* Quick options card */}
+        <div className="mt-4 rounded-card border border-white/[0.06] bg-surface p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[13px] font-semibold text-text-primary">
+                Lösungen anzeigen
+              </p>
+              <p className="text-[11.5px] text-text-tertiary">
+                {view === "teacher"
+                  ? "Aktiv in der Lehrer-Ansicht."
+                  : "Wechsle zur Lehrer-Ansicht, um Lösungen zu sehen."}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                if (view === "student") setView("teacher");
+                setShowSolutions((v) => !v);
+              }}
+              className={cn(
+                "flex h-8 items-center gap-1.5 rounded-pill px-3 text-[12px] font-semibold transition-colors",
+                view === "teacher" && showSolutions
+                  ? "bg-brand text-white"
+                  : "bg-white/5 text-text-secondary",
+              )}
             >
-              {showSolutions ? "Lösungen verbergen" : "Lösungen anzeigen"}
-            </Chip>
+              {showSolutions && view === "teacher" ? (
+                <>
+                  <Eye size={13} /> An
+                </>
+              ) : (
+                <>
+                  <EyeOff size={13} /> Aus
+                </>
+              )}
+            </button>
           </div>
-        )}
 
-        {/* Action buttons */}
-        <div className="mt-5 grid grid-cols-3 gap-3 pb-8">
-          <ActionButton icon={<Printer size={20} />} label="Drucken" onClick={handlePrint} />
-          <ActionButton icon={<Share2 size={20} />} label="Teilen" onClick={handleShare} />
-          <ActionButton icon={<Copy size={20} />} label="Duplizieren" onClick={handleDuplicate} />
+          <div className="mt-3 flex items-center justify-between border-t border-white/[0.05] pt-3">
+            <div>
+              <p className="text-[13px] font-semibold text-text-primary">
+                Lösungen separat drucken
+              </p>
+              <p className="text-[11.5px] text-text-tertiary">
+                Lösungsblatt auf eigene Seite.
+              </p>
+            </div>
+            <button
+              onClick={() => setPrintSolutions((v) => !v)}
+              className={cn(
+                "flex h-8 items-center gap-1.5 rounded-pill px-3 text-[12px] font-semibold transition-colors",
+                printSolutions
+                  ? "bg-brand text-white"
+                  : "bg-white/5 text-text-secondary",
+              )}
+            >
+              {printSolutions ? <Check size={13} /> : null}
+              {printSolutions ? "Mit Lösungen" : "Nur Aufgaben"}
+            </button>
+          </div>
+        </div>
+
+        {/* Meta tags */}
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          {ws.topic && <Tag>{ws.topic}</Tag>}
+          {ws.task_types.map((t) => (
+            <Tag key={t}>{t}</Tag>
+          ))}
         </div>
       </div>
 
-      {/* Print-only layout */}
-      <div className="hidden print:block bg-white text-black p-8">
-        <div className="mb-6 flex items-center justify-between border-b pb-3">
-          <div>
-            <p className="text-xs font-semibold">{schoolLabel}</p>
-            <h1 className="text-xl font-bold">{ws.content?.title || ws.title}</h1>
-          </div>
-          <span className="rounded border px-2 py-1 text-xs">Niveau {ws.niveau}</span>
+      {/* Sticky action bar */}
+      <div
+        className="fixed inset-x-0 bottom-16 z-40 mx-auto max-w-md px-5 no-print"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px))" }}
+      >
+        <div className="flex items-center gap-2 rounded-pill border border-white/[0.08] bg-bg-elevated/95 p-1.5 shadow-2xl backdrop-blur-md">
+          <ActionPill icon={<Share2 size={15} />} label="Teilen" onClick={handleShare} />
+          <ActionPill icon={<Copy size={15} />} label="Kopie" onClick={handleDuplicate} />
+          <button
+            onClick={handlePrint}
+            className="flex h-11 flex-1 items-center justify-center gap-2 rounded-pill bg-brand-gradient text-[13.5px] font-semibold text-white shadow-brand-glow"
+          >
+            <Printer size={16} /> PDF / Drucken
+          </button>
         </div>
-        <ol className="space-y-4">
-          {exercises.map((ex, i) => (
-            <li key={i}>
-              <p className="text-xs font-bold uppercase">
-                {i + 1}. {ex.type}
+      </div>
+
+      {/* Print-only A4 layout */}
+      <div className="print-root hidden print:block">
+        <WorksheetSheet
+          ws={sheet}
+          meta={meta}
+          studentView
+          className="!shadow-none !border-0 !rounded-none !aspect-auto"
+        />
+        {printSolutions && ws.has_solution && (
+          <div className="page-break-before paper px-7 pt-6">
+            <header className="border-b border-zinc-200 pb-3">
+              <p className="ui text-[11px] uppercase tracking-[0.12em] text-zinc-400">
+                Lösungsblatt
               </p>
-              <p className="font-medium">{ex.instruction}</p>
-              <p>{ex.content}</p>
-            </li>
-          ))}
-        </ol>
-        {ws.has_solution && (
-          <div className="mt-10 border-t pt-4">
-            <h2 className="mb-3 text-lg font-bold">Lösungen</h2>
-            <ol className="space-y-2 text-sm">
-              {exercises.map((ex, i) => (
-                <li key={i}>
-                  <span className="font-semibold">{i + 1}.</span> {ex.solution}
+              <h1 className="mt-1 text-[20px] font-bold text-zinc-900">
+                {ws.title} — Lösungen
+              </h1>
+            </header>
+            <ol className="mt-4 space-y-3">
+              {sheet.exercises.map((ex, i) => (
+                <li key={i} className="avoid-break">
+                  <p className="ui text-[11px] font-bold uppercase tracking-wide text-zinc-500">
+                    Aufgabe {i + 1} · {ex.type}
+                  </p>
+                  <p className="mt-0.5 text-[13.5px] text-zinc-900">
+                    <span className="font-semibold">Lösung:</span> {ex.solution}
+                  </p>
                 </li>
               ))}
             </ol>
@@ -342,7 +361,32 @@ const WorksheetDetail = () => {
   );
 };
 
-const ActionButton = ({
+const ViewTab = ({
+  active,
+  onClick,
+  icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+}) => (
+  <button
+    onClick={onClick}
+    className={cn(
+      "flex h-9 flex-1 items-center justify-center gap-1.5 rounded-pill border text-[12px] font-semibold transition-colors",
+      active
+        ? "border-brand/40 bg-brand-muted text-brand"
+        : "border-white/10 bg-surface text-text-secondary",
+    )}
+  >
+    {icon}
+    {label}
+  </button>
+);
+
+const ActionPill = ({
   icon,
   label,
   onClick,
@@ -351,16 +395,16 @@ const ActionButton = ({
   label: string;
   onClick: () => void;
 }) => (
-  <TapButton
+  <button
     onClick={onClick}
-    className="flex flex-col items-center justify-center gap-2 rounded-card border border-white/[0.06] bg-surface px-3 py-4"
+    className="flex h-11 items-center gap-1.5 rounded-pill px-3.5 text-[12.5px] font-medium text-text-primary hover:bg-white/5"
   >
-    <div className="text-brand">{icon}</div>
-    <span className="text-[12px] font-medium text-text-primary">{label}</span>
-  </TapButton>
+    {icon}
+    {label}
+  </button>
 );
 
-const SmallTag = ({ children }: { children: React.ReactNode }) => (
+const Tag = ({ children }: { children: React.ReactNode }) => (
   <span className="inline-flex h-6 items-center rounded-pill border border-white/10 bg-white/[0.04] px-2.5 text-[11px] font-medium text-text-secondary">
     {children}
   </span>
