@@ -106,6 +106,26 @@ Deno.serve(async (req) => {
                       description:
                         "Kurzer prägnanter Titel z. B. 'A2 Wortschatz Einkaufen'.",
                     },
+                    competencies: {
+                      type: "array",
+                      description:
+                        "1–3 trainierte Kompetenzen aus: Lesen, Schreiben, Hören, Sprechen, Wortschatz, Grammatik.",
+                      items: {
+                        type: "string",
+                        enum: [
+                          "Lesen",
+                          "Schreiben",
+                          "Hören",
+                          "Sprechen",
+                          "Wortschatz",
+                          "Grammatik",
+                        ],
+                      },
+                    },
+                    duration_min: {
+                      type: "number",
+                      description: "Geschätzte Bearbeitungszeit in Minuten (10–60).",
+                    },
                     exercises: {
                       type: "array",
                       minItems: count,
@@ -114,8 +134,15 @@ Deno.serve(async (req) => {
                         type: "object",
                         properties: {
                           type: { type: "string", enum: taskTypes },
-                          instruction: { type: "string" },
-                          content: { type: "string" },
+                          instruction: {
+                            type: "string",
+                            description: "Klare, kurze Aufgabenanweisung auf Deutsch.",
+                          },
+                          content: {
+                            type: "string",
+                            description:
+                              "Aufgabentext. Bei Lückentext: Lücken als '_____' (5 Unterstriche). Bei Multiple Choice: Stamm + 'a) …\\nb) …\\nc) …' in neuen Zeilen. Bei Zuordnung/Wortschatz: ein Eintrag pro Zeile.",
+                          },
                           solution: { type: "string" },
                         },
                         required: ["type", "instruction", "content", "solution"],
@@ -123,7 +150,7 @@ Deno.serve(async (req) => {
                       },
                     },
                   },
-                  required: ["title", "exercises"],
+                  required: ["title", "exercises", "competencies", "duration_min"],
                   additionalProperties: false,
                 },
               },
