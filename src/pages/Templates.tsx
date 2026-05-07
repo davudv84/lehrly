@@ -24,9 +24,9 @@ type Template = {
 const formatLastUsed = (iso: string | null) => {
   if (!iso) return null;
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
-  if (days < 1) return "Zuletzt: heute";
-  if (days === 1) return "Zuletzt: gestern";
-  return `Zuletzt: vor ${days} Tagen`;
+  if (days < 1) return "heute";
+  if (days === 1) return "gestern";
+  return `vor ${days} Tagen`;
 };
 
 const Templates = () => {
@@ -53,21 +53,25 @@ const Templates = () => {
   return (
     <div className="relative px-5">
       <header
-        className="pb-4"
-        style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}
+        className="pb-6"
+        style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 22px)" }}
       >
-        <h1 className="text-h1 text-text-primary">Vorlagen</h1>
-        <p className="mt-2 text-[14px] leading-snug text-text-secondary">
+        <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-text-tertiary">
+          Wiederverwendbar
+        </p>
+        <h1 className="mt-2 font-display text-[26px] font-semibold leading-tight tracking-[-0.022em] text-text-primary">
+          Vorlagen
+        </h1>
+        <p className="mt-2 max-w-[320px] text-[14px] leading-relaxed text-text-secondary">
           Speichere deine Lieblings-Konfigurationen und starte jede Stunde in Sekunden.
         </p>
       </header>
 
-      <div className="flex flex-col gap-3 pb-24">
-        {items.map((t, i) => (
+      <div className="flex flex-col gap-2.5 pb-24">
+        {items.map((t) => (
           <TemplateCard
             key={t.id}
             template={t}
-            featured={i === 0}
             onUse={() =>
               navigate("/generate", {
                 state: {
@@ -84,21 +88,20 @@ const Templates = () => {
           />
         ))}
         {items.length === 0 && (
-          <div className="mt-10 rounded-card border border-dashed border-white/10 px-5 py-10 text-center">
-            <p className="text-[14px] text-text-secondary">
+          <div className="mt-10 rounded-card border border-dashed border-hairline/10 px-5 py-12 text-center">
+            <p className="text-[13.5px] text-text-secondary">
               Noch keine Vorlagen — speichere deine nächste Generation als Vorlage.
             </p>
           </div>
         )}
       </div>
 
-      {/* Floating + */}
       <TapButton
         onClick={() => navigate("/generate")}
         aria-label="Neue Vorlage"
-        className="absolute bottom-2 right-5 flex h-12 w-12 items-center justify-center rounded-pill bg-brand-gradient text-white shadow-brand-glow"
+        className="absolute bottom-2 right-5 flex h-12 w-12 items-center justify-center rounded-pill bg-brand text-primary-foreground shadow-[0_8px_24px_-10px_hsl(var(--brand)/0.5)] hover:bg-brand-hover transition-colors"
       >
-        <Plus size={20} strokeWidth={2.5} />
+        <Plus size={20} strokeWidth={2.2} />
       </TapButton>
     </div>
   );
@@ -106,38 +109,33 @@ const Templates = () => {
 
 const TemplateCard = ({
   template,
-  featured,
   onUse,
 }: {
   template: Template;
-  featured?: boolean;
   onUse: () => void;
 }) => {
   const lastUsed = formatLastUsed(template.last_used_at);
   return (
     <motion.article
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2 }}
+      whileHover={{ y: -1 }}
       transition={{ duration: 0.28, ease: [0.22, 0.61, 0.36, 1] }}
-      className={cn(
-        "float-card rounded-card border bg-surface p-4",
-        featured
-          ? "border-brand/30 shadow-[0_0_30px_-10px_hsl(var(--brand)/0.45)]"
-          : "border-white/[0.06]",
-      )}
+      className="float-card rounded-card bg-surface-1 ring-hairline p-4"
     >
       <div className="flex items-start justify-between gap-3">
-        <p className="text-[15px] font-semibold leading-tight text-text-primary">
-          {template.title}
+        <div className="min-w-0">
+          <p className="font-display text-[15px] font-medium leading-tight tracking-[-0.01em] text-text-primary">
+            {template.title}
+          </p>
           {template.is_new && (
-            <span className="ml-2 inline-flex h-5 items-center rounded-pill border border-brand/30 bg-brand/15 px-2 text-[10px] font-bold uppercase tracking-wide text-brand">
+            <span className="mt-1.5 inline-flex h-5 items-center rounded-pill bg-brand-soft px-2 text-[10px] font-semibold uppercase tracking-wide text-brand-hover">
               Neu
             </span>
           )}
-        </p>
-        <button className="flex h-7 w-7 items-center justify-center rounded-md text-text-tertiary hover:text-text-secondary">
-          <MoreHorizontal size={16} />
+        </div>
+        <button className="flex h-7 w-7 items-center justify-center rounded-md text-text-tertiary hover:bg-surface-2 hover:text-text-secondary transition-colors">
+          <MoreHorizontal size={15} />
         </button>
       </div>
 
@@ -150,22 +148,22 @@ const TemplateCard = ({
         <Tag>{template.task_count} Aufg.</Tag>
       </div>
 
-      <div className="mt-4 flex items-center justify-between border-t border-white/[0.06] pt-3">
-        <div className="flex items-center gap-1.5 text-[12px] text-text-tertiary">
-          <Star size={12} />
+      <div className="mt-4 flex items-center justify-between border-t border-hairline/5 pt-3.5">
+        <div className="flex items-center gap-1.5 text-[11.5px] text-text-tertiary">
+          <Star size={11} />
           <span>{template.usage_count}× verwendet</span>
           {lastUsed && (
             <>
-              <span className="text-white/20">·</span>
+              <span className="opacity-40">·</span>
               <span>{lastUsed}</span>
             </>
           )}
         </div>
         <TapButton
           onClick={onUse}
-          className="flex items-center gap-1 text-[13px] font-semibold text-brand hover:text-brand-hover"
+          className="flex items-center gap-1 text-[12.5px] font-medium text-brand-hover hover:text-brand transition-colors"
         >
-          Verwenden <ArrowRight size={14} />
+          Verwenden <ArrowRight size={13} />
         </TapButton>
       </div>
     </motion.article>
@@ -173,7 +171,9 @@ const TemplateCard = ({
 };
 
 const Tag = ({ children }: { children: React.ReactNode }) => (
-  <span className="inline-flex h-5 items-center rounded-pill border border-white/10 bg-white/[0.04] px-2 text-[11px] font-medium text-text-secondary">
+  <span className={cn(
+    "inline-flex h-5 items-center rounded-pill bg-surface-2 px-2 text-[10.5px] font-medium text-text-secondary ring-hairline",
+  )}>
     {children}
   </span>
 );
