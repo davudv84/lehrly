@@ -92,6 +92,12 @@
     -webkit-backdrop-filter: blur(20px) saturate(180%);
   }
 
+  .glass {
+    background-color: hsl(var(--surface) / 0.55);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+  }
+
   .brand-dot {
     background: radial-gradient(circle at 30% 30%, hsl(var(--brand-hover)), hsl(var(--brand)));
     box-shadow: 0 0 12px hsl(var(--brand) / 0.7);
@@ -100,4 +106,42 @@
   .section-label {
     @apply text-section-label uppercase text-text-tertiary;
   }
+
+  .float-card {
+    transition:
+      transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1),
+      box-shadow 0.28s cubic-bezier(0.22, 0.61, 0.36, 1),
+      border-color 0.28s ease;
+  }
+  .float-card:hover {
+    transform: translateY(-2px);
+    border-color: hsl(0 0% 100% / 0.16);
+    box-shadow:
+      0 12px 30px -18px hsl(var(--brand) / 0.45),
+      0 6px 18px -10px rgb(0 0 0 / 0.5);
+  }
+
+  .ring-glow-brand {
+    box-shadow:
+      0 0 0 1px hsl(var(--brand) / 0.25),
+      0 0 24px -6px hsl(var(--brand) / 0.45);
+  }
+}
+
+@layer utilities {
+  @keyframes shimmer {
+    100% { transform: translateX(100%); }
+  }
+  .animate-shimmer::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    animation: shimmer 1.6s infinite;
+    background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.06), transparent);
+  }
+}
+
+@media print {
+  .glass, .glass-bar { background: white !important; backdrop-filter: none !important; }
 }

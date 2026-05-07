@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FileEdit, Grid3x3, List, Plus, Search } from "lucide-react";
+import { FileEdit, Grid3x3, List, Search, Sparkles } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useSeedDemoOnce } from "@/hooks/useSeedDemoOnce";
 import { supabase } from "@/integrations/supabase/client";
 import Chip from "@/components/Chip";
 import WorksheetCard, { type WorksheetCardData } from "@/components/WorksheetCard";
 import TapButton from "@/components/TapButton";
-import PrimaryButton from "@/components/auth/PrimaryButton";
+import EmptyState from "@/components/EmptyState";
+import { WorksheetCardSkeleton } from "@/components/skeletons/WorksheetCardSkeleton";
+import { stagger, fadeUp } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 const FILTERS = ["Alle", "A1", "A2", "B1", "B2", "C1", "Aufgaben"] as const;
@@ -117,49 +119,48 @@ const Library = () => {
         </button>
       </div>
 
+      {loading && (
+        <div className="grid grid-cols-2 gap-3 pb-6">
+          {[0, 1, 2, 3].map((i) => (
+            <WorksheetCardSkeleton key={i} />
+          ))}
+        </div>
+      )}
+
       {/* Empty state */}
       {isEmpty && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-12 flex flex-col items-center px-6 text-center"
-        >
-          <div className="flex h-16 w-16 items-center justify-center rounded-large border border-white/[0.06] bg-surface">
-            <FileEdit size={28} className="text-text-tertiary" />
-          </div>
-          <p className="mt-6 text-[18px] font-semibold leading-tight text-text-primary">
-            Hier landet alles,
-            <br />
-            was du erstellst.
-          </p>
-          <p className="mt-2 text-[14px] text-text-secondary">
-            Lass uns dein erstes Arbeitsblatt bauen.
-          </p>
-          <div className="mt-6 w-44">
-            <PrimaryButton onClick={() => navigate("/generate")}>
-              <Plus size={16} className="mr-1" />
-              Erstellen
-            </PrimaryButton>
-          </div>
-        </motion.div>
+        <EmptyState
+          icon={<FileEdit size={26} className="text-brand" />}
+          title="Hier landet alles, was du erstellst."
+          description="Lass uns dein erstes Arbeitsblatt bauen — es dauert keine 30 Sekunden."
+          action={
+            <TapButton
+              onClick={() => navigate("/generate")}
+              className="flex h-11 items-center gap-1.5 rounded-pill bg-brand-gradient px-5 text-[14px] font-semibold text-white shadow-brand-glow"
+            >
+              <Sparkles size={14} /> Erstellen
+            </TapButton>
+          }
+        />
       )}
 
       {/* Grid / list */}
-      {!isEmpty && (
-        <div
+      {!isEmpty && !loading && (
+        <motion.div
+          variants={stagger(0.04)}
+          initial="hidden"
+          animate="show"
           className={cn(
             "pb-6",
             view === "grid" ? "grid grid-cols-2 gap-3" : "flex flex-col gap-2",
           )}
         >
-          {filtered.map((w) =>
-            view === "grid" ? (
-              <WorksheetCard key={w.id} ws={w} />
-            ) : (
-              <ListRow key={w.id} ws={w} />
-            ),
-          )}
-        </div>
+          {filtered.map((w) => (
+            <motion.div key={w.id} variants={fadeUp}>
+              {view === "grid" ? <WorksheetCard ws={w} /> : <ListRow ws={w} />}
+            </motion.div>
+          ))}
+        </motion.div>
       )}
     </div>
   );

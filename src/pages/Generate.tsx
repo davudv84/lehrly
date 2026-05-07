@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Loader2, Sparkles, X } from "lucide-react";
+import { Check, Sparkles, X } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import TapButton from "@/components/TapButton";
 import Chip from "@/components/Chip";
+import GenerationOverlay from "@/components/GenerationOverlay";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 const NIVEAUS = ["A1", "A2", "B1", "B2", "C1"] as const;
 const TOPICS = ["Einkaufen", "Arztbesuch", "Arbeit", "Familie", "Verkehr"];
@@ -43,16 +43,8 @@ const Generate = () => {
   const [count, setCount] = useState<number>(prefill?.count ?? 6);
 
   const [phase, setPhase] = useState<Phase>("form");
-  const [loadingDot, setLoadingDot] = useState(0);
   const [createdId, setCreatedId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  // Loading dot progress animation
-  useEffect(() => {
-    if (phase !== "loading") return;
-    const t = setInterval(() => setLoadingDot((d) => (d + 1) % 3), 500);
-    return () => clearInterval(t);
-  }, [phase]);
 
   const previewBadge = useMemo(
     () => `${niveau} · ${count} Aufgaben`,
@@ -225,44 +217,7 @@ const Generate = () => {
             </motion.div>
           )}
 
-          {phase === "loading" && (
-            <motion.div
-              key="loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col items-center px-5 pb-10 pt-6"
-            >
-              <h2 className="text-h2 text-text-primary">Neues Arbeitsblatt</h2>
-              <div className="mt-2 inline-flex items-center gap-1.5 rounded-pill border border-brand/30 bg-brand/15 px-3 py-1 text-[12px] font-semibold text-brand">
-                <Sparkles size={12} /> Vorschau: {previewBadge}
-              </div>
-
-              <div className="mt-12 mb-8 flex flex-col items-center gap-4">
-                <p className="text-[14px] text-text-secondary">
-                  Aufgaben werden formuliert…
-                </p>
-                <div className="flex gap-1.5">
-                  {[0, 1, 2].map((i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "h-1.5 w-1.5 rounded-full transition-colors",
-                        loadingDot === i ? "bg-brand" : "bg-white/15",
-                      )}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <button
-                disabled
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-input bg-brand-gradient text-button text-white opacity-90"
-              >
-                <Loader2 size={16} className="animate-spin" /> Erstellt…
-              </button>
-            </motion.div>
-          )}
+          {phase === "loading" && null}
 
           {phase === "success" && (
             <motion.div
@@ -340,6 +295,7 @@ const Generate = () => {
           )}
         </AnimatePresence>
       </motion.div>
+      <GenerationOverlay active={phase === "loading"} />
     </div>
   );
 };
