@@ -20,6 +20,7 @@ import Welcome from "./pages/Welcome";
 import WorksheetDetail from "./pages/WorksheetDetail";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import AuthCallback from "./pages/auth/Callback";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
