@@ -20,6 +20,7 @@ import Welcome from "./pages/Welcome";
 import WorksheetDetail from "./pages/WorksheetDetail";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import AuthCallback from "./pages/auth/Callback";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -79,6 +80,7 @@ const AnimatedRoutes = () => {
 
         <Route path="/intro" element={<Intro />} />
         <Route path="/generate" element={<Generate />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
