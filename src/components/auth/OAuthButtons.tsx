@@ -1,6 +1,6 @@
-import { lovable } from "@/integrations/lovable";
 import PrimaryButton from "./PrimaryButton";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const GoogleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -11,27 +11,23 @@ const GoogleIcon = () => (
   </svg>
 );
 
-const AppleIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden fill="currentColor">
-    <path d="M16.365 12.957c-.025-2.567 2.094-3.797 2.19-3.857-1.193-1.745-3.05-1.984-3.708-2.011-1.581-.16-3.085.93-3.886.93-.81 0-2.044-.91-3.36-.885-1.726.026-3.32.999-4.21 2.539-1.795 3.108-.46 7.71 1.29 10.232.852 1.234 1.87 2.62 3.21 2.572 1.288-.05 1.776-.832 3.331-.832 1.555 0 1.992.832 3.358.806 1.388-.024 2.27-1.262 3.122-2.5.984-1.434 1.39-2.821 1.414-2.892-.031-.014-2.722-1.043-2.751-4.102zM13.83 5.39c.71-.86 1.19-2.052 1.06-3.243-1.024.043-2.27.683-3.005 1.541-.66.766-1.236 1.99-1.082 3.156 1.144.089 2.314-.582 3.027-1.454z"/>
-  </svg>
-);
-
 type Props = {
   onStart?: () => void;
 };
 
 const OAuthButtons = ({ onStart }: Props) => {
-  const handleOAuth = async (provider: "google" | "apple") => {
+  const handleGoogleLogin = async () => {
     onStart?.();
-    const result = await lovable.auth.signInWithOAuth(provider, {
-      redirect_uri: `${window.location.origin}/`,
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
-    if (result?.error) {
+    if (error) {
       toast({
         title: "Anmeldung fehlgeschlagen",
-        description:
-          result.error.message ?? "Bitte versuche es erneut.",
+        description: error.message ?? "Bitte versuche es erneut.",
         variant: "destructive",
       });
     }
@@ -39,13 +35,9 @@ const OAuthButtons = ({ onStart }: Props) => {
 
   return (
     <div className="flex flex-col gap-3">
-      <PrimaryButton variant="outline" onClick={() => handleOAuth("google")}>
+      <PrimaryButton variant="outline" onClick={handleGoogleLogin}>
         <GoogleIcon />
         <span>Mit Google fortfahren</span>
-      </PrimaryButton>
-      <PrimaryButton variant="outline" onClick={() => handleOAuth("apple")}>
-        <AppleIcon />
-        <span>Mit Apple fortfahren</span>
       </PrimaryButton>
     </div>
   );
