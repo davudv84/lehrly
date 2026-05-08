@@ -80,6 +80,7 @@ const AnimatedRoutes = () => {
 
         <Route path="/intro" element={<Intro />} />
         <Route path="/generate" element={<Generate />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
