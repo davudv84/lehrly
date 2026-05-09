@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import TapButton from "@/components/TapButton";
 import Chip from "@/components/Chip";
 import GenerationOverlay from "@/components/GenerationOverlay";
+import CompletionOverview from "@/components/worksheet/CompletionOverview";
+import type { WorksheetData } from "@/components/worksheet/WorksheetSheet";
 import { toast } from "sonner";
 
 const NIVEAUS = ["A1", "A2", "B1", "B2", "C1"] as const;
