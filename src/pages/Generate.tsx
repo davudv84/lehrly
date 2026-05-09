@@ -120,7 +120,29 @@ const Generate = () => {
           })
           .eq("id", prefill.templateId);
       }
-      setCreatedId((data as any).id);
+      const newId = (data as any).id;
+      setCreatedId(newId);
+      // Fetch the freshly generated worksheet to show the overview
+      const { data: full } = await supabase
+        .from("worksheets")
+        .select("*")
+        .eq("id", newId)
+        .maybeSingle();
+      if (full) {
+        const c = (full as any).content ?? {};
+        setCreatedSheet({
+          title: c.title || (full as any).title,
+          niveau: (full as any).niveau,
+          topic: (full as any).topic,
+          task_count: (full as any).task_count,
+          competencies: c.competencies ?? [],
+          duration_min: c.duration_min ?? null,
+          learning_goal: c.learning_goal ?? null,
+          teacher_notes: c.teacher_notes ?? [],
+          exercises: c.exercises ?? [],
+        });
+        setCreatedAt((full as any).created_at);
+      }
       setPhase("success");
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : "Unbekannter Fehler");
