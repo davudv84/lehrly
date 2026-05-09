@@ -71,6 +71,8 @@ const Generate = () => {
 
   const [phase, setPhase] = useState<Phase>("form");
   const [createdId, setCreatedId] = useState<string | null>(null);
+  const [createdSheet, setCreatedSheet] = useState<WorksheetData | null>(null);
+  const [createdAt, setCreatedAt] = useState<string>(new Date().toISOString());
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const previewBadge = useMemo(
