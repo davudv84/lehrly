@@ -147,9 +147,6 @@ const Register = () => {
           </div>
         </form>
 
-        <Divider />
-        <OAuthButtons />
-
         <div className="mt-auto pt-10 text-center text-body-sm text-text-secondary">
           Schon ein Konto?{" "}
           <Link to="/auth/login" className="font-semibold text-brand hover:text-brand-hover">
