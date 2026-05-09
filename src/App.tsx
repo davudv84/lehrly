@@ -3,7 +3,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AnimatePresence } from "framer-motion";
 import {
   BrowserRouter,
-  Navigate,
   Route,
   Routes,
   useLocation,
