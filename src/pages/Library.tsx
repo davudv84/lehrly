@@ -110,7 +110,7 @@ const Library = () => {
       </div>
 
       {/* Filters */}
-      <div className="-mx-5 mt-4 flex gap-2 overflow-x-auto px-5 pb-1">
+      <div className="-mx-5 mt-5 flex gap-2 overflow-x-auto px-5 pt-1 pb-2">
         {FILTERS.map((f) => (
           <Chip key={f} active={filter === f} onClick={() => setFilter(f)} size="sm">
             {f}
