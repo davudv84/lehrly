@@ -89,47 +89,58 @@ const Landing = ({ onStart }: { onStart: () => void }) => (
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
     transition={{ duration: 0.32 }}
-    className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 pb-8 pt-10"
+    className="relative mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center px-6 text-center"
   >
-    <div className="flex justify-center">
-      <span className="inline-flex items-center gap-1.5 rounded-pill bg-brand-soft px-3 py-1 text-[11.5px] font-medium text-brand-hover ring-1 ring-brand/30">
-        <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-        Für DaF/DaZ-Lehrkräfte
-      </span>
-    </div>
+    <span className="inline-flex items-center gap-1.5 rounded-pill bg-brand-soft px-3 py-1 text-[11.5px] font-medium text-brand-hover ring-1 ring-brand/30">
+      <span className="h-1.5 w-1.5 rounded-full bg-brand" />
+      Für DaF/DaZ-Lehrkräfte
+    </span>
 
-    <div className="mt-5 flex justify-center">
+    <div style={{ marginTop: "12px" }}>
       <LehrlyMark size={22} />
     </div>
 
-    <div className="mt-auto flex flex-col items-center text-center">
-      <h1 className="font-display text-[34px] font-bold leading-[1.05] tracking-[-0.025em]">
-        Arbeitsblätter,
-        <br />
-        in Sekunden.
-      </h1>
-      <p className="mt-4 max-w-[300px] text-[14px] leading-relaxed text-text-secondary">
-        Lehrly erstellt druckfertige DaF/DaZ-Arbeitsblätter — mit KI.
-      </p>
+    <h1
+      className="font-display font-bold leading-[1.05] tracking-[-0.025em]"
+      style={{ marginTop: "32px", fontSize: "42px" }}
+    >
+      Arbeitsblätter,
+      <br />
+      in Sekunden.
+    </h1>
 
-      <button
-        onClick={onStart}
-        className="mt-8 flex h-12 w-full items-center justify-center gap-2 rounded-pill bg-brand text-[14px] font-medium text-primary-foreground transition-colors hover:bg-brand-hover active:scale-[0.99]"
-      >
-        Kostenlos starten <ArrowRight size={15} />
-      </button>
-      <p className="mt-3 text-[11.5px] text-text-tertiary">
-        Kein Konto nötig · 3 Blätter kostenlos
-      </p>
-    </div>
+    <p
+      className="max-w-[300px] text-[14px] leading-relaxed text-text-secondary"
+      style={{ marginTop: "16px" }}
+    >
+      Lehrly erstellt druckfertige DaF/DaZ-Arbeitsblätter — mit KI.
+    </p>
 
-    <div className="mt-8 flex items-center justify-center gap-2">
+    <button
+      onClick={onStart}
+      className="flex h-12 w-full items-center justify-center gap-2 rounded-pill bg-brand text-[14px] font-medium text-primary-foreground transition-colors hover:bg-brand-hover active:scale-[0.99]"
+      style={{ marginTop: "32px" }}
+    >
+      Kostenlos starten <ArrowRight size={15} />
+    </button>
+
+    <p className="text-[11.5px] text-text-tertiary" style={{ marginTop: "12px" }}>
+      Kein Konto nötig · 3 Blätter kostenlos
+    </p>
+
+    <div
+      className="flex items-center justify-center gap-2"
+      style={{ marginTop: "24px" }}
+    >
       <FeaturePill icon={<GraduationCap size={12} />}>A1–C1</FeaturePill>
       <FeaturePill icon={<Sparkles size={12} />}>30 Sek.</FeaturePill>
       <FeaturePill icon={<FileText size={12} />}>PDF</FeaturePill>
     </div>
 
-    <footer className="mt-6 flex items-center justify-center gap-3 text-[10.5px] uppercase tracking-[0.12em] text-text-tertiary/70">
+    <footer
+      className="absolute inset-x-0 flex items-center justify-center gap-3 text-[10.5px] uppercase tracking-[0.12em] text-text-tertiary/70"
+      style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)" }}
+    >
       <span>Impressum</span>
       <span>·</span>
       <span>Datenschutz</span>
