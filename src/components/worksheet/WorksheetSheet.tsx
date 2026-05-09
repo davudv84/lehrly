@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils";
-import NiveauBadge from "@/components/NiveauBadge";
 
 export type Exercise = {
   type: string;
@@ -8,6 +7,7 @@ export type Exercise = {
   content: string;
   solution: string;
   options?: string[];
+  points?: number;
 };
 
 export type WorksheetData = {
@@ -33,17 +33,8 @@ type Props = {
   ws: WorksheetData;
   meta: Meta;
   showSolutions?: boolean;
-  studentView?: boolean; // hides solutions section regardless
+  studentView?: boolean;
   className?: string;
-};
-
-const COMPETENCE_STRIPE: Record<string, string> = {
-  Lesen: "stripe-lesen",
-  Schreiben: "stripe-schreiben",
-  Hören: "stripe-hoeren",
-  Sprechen: "stripe-sprechen",
-  Wortschatz: "stripe-wortschatz",
-  Grammatik: "stripe-grammatik",
 };
 
 const formatDate = (iso: string) =>
@@ -53,27 +44,48 @@ const formatDate = (iso: string) =>
     year: "numeric",
   });
 
-/** Render the inline content of a Lückentext: replace runs of underscores
- *  (≥3) with a styled blank. Preserves linebreaks. */
+/** Replace runs of underscores with a real dashed underline blank. */
 const renderBlankedText = (txt: string) => {
   const parts = txt.split(/(_{3,})/g);
   return parts.map((p, i) =>
     /^_{3,}$/.test(p) ? (
-      <span key={i} className="blank" />
+      <span
+        key={i}
+        style={{
+          display: "inline-block",
+          minWidth: "120px",
+          borderBottom: "1px solid #1A1A1A",
+          margin: "0 4px",
+          verticalAlign: "baseline",
+        }}
+      />
     ) : (
       <span key={i}>{p}</span>
     ),
   );
 };
 
+const subtitleFor = (ws: WorksheetData) => {
+  const comps = ws.competencies ?? [];
+  const focus =
+    comps.length > 0
+      ? comps.length === 1
+        ? `${comps[0]}skompetenz`
+        : `${comps.slice(0, -1).join(", ")} und ${comps[comps.length - 1]}`
+      : "Kommunikationskompetenz";
+  return `Aufgaben zur ${focus} (${ws.niveau})`;
+};
+
 const ExerciseBlock = ({
   ex,
   index,
   showSolutions,
+  studentView,
 }: {
   ex: Exercise;
   index: number;
   showSolutions: boolean;
+  studentView: boolean;
 }) => {
   const t = ex.type.toLowerCase();
   const isMC = t.includes("multiple") || t.includes("auswahl");
@@ -84,7 +96,6 @@ const ExerciseBlock = ({
 
   const lines = ex.content.split(/\n+/).filter((l) => l.trim().length > 0);
 
-  // Detect inline MC options like "a) ..., b) ..., c) ..."
   const mcOptions =
     ex.options ??
     (isMC ? lines.filter((l) => /^[a-dA-D][\).]\s+/.test(l.trim())) : []);
@@ -92,37 +103,97 @@ const ExerciseBlock = ({
     ? lines.filter((l) => !/^[a-dA-D][\).]\s+/.test(l.trim())).join(" ")
     : "";
 
+  const points = ex.points ?? Math.max(2, Math.min(10, lines.length || 5));
+
   return (
-    <li className="ws-exercise mt-5">
-      <div className="flex items-baseline gap-2">
-        <span className="ui text-[11px] font-bold uppercase tracking-[0.08em] text-zinc-500">
-          Aufgabe {index + 1}
-        </span>
-        <span className="h-px flex-1 bg-zinc-200" />
-        <span className="ui text-[10.5px] font-medium uppercase tracking-wide text-zinc-400">
-          {ex.type}
+    <li
+      style={{
+        listStyle: "none",
+        marginTop: index === 0 ? 0 : "28px",
+        paddingTop: index === 0 ? 0 : "20px",
+        borderTop: index === 0 ? "none" : "1px solid #E5E5E5",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          justifyContent: "space-between",
+          gap: "12px",
+        }}
+      >
+        <p
+          style={{
+            margin: 0,
+            fontSize: "14.5px",
+            lineHeight: 1.55,
+            color: "#1A1A1A",
+          }}
+        >
+          <span style={{ fontWeight: 700 }}>Aufgabe {index + 1}:</span>{" "}
+          <span style={{ fontWeight: 400 }}>{ex.instruction}</span>
+        </p>
+        <span
+          style={{
+            flexShrink: 0,
+            fontSize: "12px",
+            fontVariantCaps: "all-small-caps",
+            letterSpacing: "0.06em",
+            color: "#666",
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          / {points} Punkte
         </span>
       </div>
-      <p className="ui mt-2 text-[13px] font-semibold text-zinc-800">
-        {ex.instruction}
-      </p>
+
       {ex.context && (
-        <p className="ui mt-1 text-[12px] italic text-zinc-500">{ex.context}</p>
+        <p
+          style={{
+            marginTop: "6px",
+            fontSize: "13.5px",
+            fontStyle: "italic",
+            color: "#444",
+            lineHeight: 1.6,
+          }}
+        >
+          {ex.context}
+        </p>
       )}
 
       {isMC && (
-        <div className="mt-2.5">
-          {mcStem && <p className="text-[13.5px] text-zinc-800">{mcStem}</p>}
-          <ol className="mt-2 space-y-1.5">
+        <div style={{ marginTop: "12px" }}>
+          {mcStem && (
+            <p style={{ fontSize: "14px", color: "#1A1A1A", margin: "0 0 8px 0" }}>
+              {mcStem}
+            </p>
+          )}
+          <ol style={{ margin: 0, padding: 0, listStyle: "none" }}>
             {mcOptions.map((opt, i) => {
               const clean = opt.replace(/^[a-dA-D][\).]\s+/, "");
-              const letter = String.fromCharCode(97 + i);
               return (
-                <li key={i} className="flex items-start gap-2.5">
-                  <span className="ui mt-[2px] inline-flex h-5 w-5 items-center justify-center rounded border border-zinc-300 text-[10.5px] font-semibold text-zinc-600">
-                    {letter}
-                  </span>
-                  <span className="text-[13.5px] text-zinc-800">{clean}</span>
+                <li
+                  key={i}
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "10px",
+                    padding: "4px 0",
+                    fontSize: "14px",
+                    color: "#1A1A1A",
+                  }}
+                >
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: "12px",
+                      height: "12px",
+                      border: "1px solid #1A1A1A",
+                      marginTop: "5px",
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span style={{ lineHeight: 1.6 }}>{clean}</span>
                 </li>
               );
             })}
@@ -131,7 +202,14 @@ const ExerciseBlock = ({
       )}
 
       {isLueck && !isMC && (
-        <p className="mt-2.5 text-[14px] leading-[1.9] text-zinc-900">
+        <p
+          style={{
+            marginTop: "12px",
+            fontSize: "14.5px",
+            lineHeight: 2,
+            color: "#1A1A1A",
+          }}
+        >
           {renderBlankedText(ex.content)}
         </p>
       )}
@@ -139,54 +217,119 @@ const ExerciseBlock = ({
       {isSchreib && (
         <>
           {ex.content && (
-            <p className="mt-2.5 text-[13.5px] italic text-zinc-700">
+            <p
+              style={{
+                marginTop: "10px",
+                fontSize: "13.5px",
+                fontStyle: "italic",
+                color: "#444",
+                lineHeight: 1.6,
+              }}
+            >
               {ex.content}
             </p>
           )}
-          <div className="mt-3">
+          <div style={{ marginTop: "14px" }}>
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="writing-line" />
+              <div
+                key={i}
+                style={{ borderBottom: "1px solid #CCCCCC", height: "30px" }}
+              />
             ))}
           </div>
         </>
       )}
 
       {isZuord && !isMC && (
-        <div className="mt-2.5 grid grid-cols-2 gap-x-6 gap-y-1.5">
-          {lines.map((l, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-2 border-b border-dashed border-zinc-300 py-1 text-[13.5px] text-zinc-800"
-            >
-              <span className="ui text-[10.5px] font-semibold text-zinc-400">
-                {i + 1}.
-              </span>
-              <span>{l}</span>
-            </div>
-          ))}
-        </div>
+        <table
+          style={{
+            marginTop: "12px",
+            width: "100%",
+            borderCollapse: "collapse",
+            border: "1px solid #CCCCCC",
+            fontSize: "14px",
+          }}
+        >
+          <tbody>
+            {lines.map((l, i) => (
+              <tr key={i}>
+                <td
+                  style={{
+                    border: "1px solid #CCCCCC",
+                    padding: "8px 10px",
+                    width: "32px",
+                    color: "#666",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {i + 1}.
+                </td>
+                <td style={{ border: "1px solid #CCCCCC", padding: "8px 12px", color: "#1A1A1A" }}>
+                  {l}
+                </td>
+                <td
+                  style={{
+                    border: "1px solid #CCCCCC",
+                    padding: "8px 12px",
+                    width: "40%",
+                  }}
+                />
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
 
       {isWortschatz && !isMC && !isZuord && (
-        <ul className="mt-2.5 grid grid-cols-2 gap-x-6 gap-y-1 text-[13.5px] text-zinc-800">
+        <ol
+          style={{
+            marginTop: "12px",
+            paddingLeft: "22px",
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            columnGap: "24px",
+            rowGap: "6px",
+            fontSize: "14px",
+            color: "#1A1A1A",
+          }}
+        >
           {lines.map((l, i) => (
-            <li key={i} className="flex gap-2">
-              <span className="ui text-zinc-400">·</span>
-              <span>{l}</span>
+            <li key={i} style={{ lineHeight: 1.6 }}>
+              {l}
             </li>
           ))}
-        </ul>
+        </ol>
       )}
 
       {!isMC && !isLueck && !isSchreib && !isZuord && !isWortschatz && (
-        <p className="mt-2.5 whitespace-pre-line text-[13.5px] text-zinc-800">
+        <p
+          style={{
+            marginTop: "12px",
+            fontSize: "14px",
+            color: "#1A1A1A",
+            whiteSpace: "pre-line",
+            lineHeight: 1.6,
+          }}
+        >
           {ex.content}
         </p>
       )}
 
-      {showSolutions && (
-        <p className="ui mt-2 inline-block rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11.5px] font-medium text-emerald-700">
-          Lösung: <span className="font-semibold">{ex.solution}</span>
+      {showSolutions && !studentView && (
+        <p
+          style={{
+            marginTop: "12px",
+            paddingTop: "8px",
+            borderTop: "1px dashed #CCCCCC",
+            fontSize: "12.5px",
+            color: "#444",
+            lineHeight: 1.55,
+          }}
+        >
+          <span style={{ fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", fontSize: "11px" }}>
+            Lösung
+          </span>
+          <span style={{ marginLeft: "8px" }}>{ex.solution}</span>
         </p>
       )}
     </li>
@@ -200,122 +343,139 @@ const WorksheetSheet = ({
   studentView = false,
   className,
 }: Props) => {
-  const competencies = ws.competencies ?? [];
   const showSolutionsBlock = !studentView && showSolutions;
 
   return (
     <article
-      className={cn(
-        "paper relative mx-auto w-full overflow-hidden rounded-card border border-zinc-200 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.35)]",
-        className,
-      )}
-      style={{ aspectRatio: "1 / 1.414" }}
+      className={cn("mx-auto w-full", className)}
+      style={{
+        maxWidth: "720px",
+        backgroundColor: "#FFFFFF",
+        color: "#1A1A1A",
+        padding: "44px 56px 56px 56px",
+        border: "1px solid #E5E5E5",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 14px rgba(0,0,0,0.04)",
+        fontFamily:
+          'Inter, "Source Serif 4", -apple-system, BlinkMacSystemFont, sans-serif',
+        colorScheme: "light",
+      }}
     >
-      {/* Competence stripes — top */}
-      {competencies.length > 0 && (
-        <div className="flex h-[5px] w-full">
-          {competencies.map((c) => (
-            <div
-              key={c}
-              className={cn("flex-1", COMPETENCE_STRIPE[c] ?? "bg-zinc-300")}
-              title={c}
-            />
-          ))}
-        </div>
-      )}
-
-      <div className="px-7 pt-6">
-        {/* Header */}
-        <header className="flex items-start justify-between gap-4 border-b border-zinc-200 pb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-zinc-900 text-[12px] font-bold text-white">
-              {meta.authorInitials}
-            </div>
-            <div className="leading-tight">
-              <p className="ui text-[12px] font-semibold text-zinc-900">
-                {meta.schoolLabel}
-              </p>
-              <p className="ui text-[10.5px] text-zinc-500">
-                Arbeitsblatt · {formatDate(meta.createdAt)}
-              </p>
-            </div>
-          </div>
-          <NiveauBadge niveau={ws.niveau} size="md" tone="light" />
-        </header>
-
-        {/* Title */}
-        <h1 className="mt-5 text-[22px] font-bold leading-tight tracking-tight text-zinc-900">
-          {ws.title}
-        </h1>
-        <div className="ui mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-zinc-500">
-          {ws.topic && <span>Thema: <span className="text-zinc-700 font-medium">{ws.topic}</span></span>}
-          <span>·</span>
-          <span>{ws.task_count} Aufgaben</span>
-          {ws.duration_min ? (
-            <>
-              <span>·</span>
-              <span>≈ {ws.duration_min} Min.</span>
-            </>
-          ) : null}
-          {competencies.length > 0 && (
-            <>
-              <span>·</span>
-              <span>{competencies.join(" · ")}</span>
-            </>
-          )}
-        </div>
-
-        {ws.learning_goal && (
-          <div className="mt-3 rounded-md border border-emerald-200 bg-emerald-50/60 px-3 py-2">
-            <p className="ui text-[10px] font-bold uppercase tracking-[0.1em] text-emerald-700">
-              Lernziel
-            </p>
-            <p className="mt-0.5 text-[12.5px] leading-snug text-zinc-800">
-              {ws.learning_goal}
-            </p>
-          </div>
-        )}
-
-        {/* Name / Datum / Klasse line — for student to fill */}
-        {studentView !== false && (
-          <div className="ui mt-4 grid grid-cols-3 gap-4 text-[11px] text-zinc-500">
-            <div>
-              <span>Name</span>
-              <div className="mt-1 h-[1px] bg-zinc-300" />
-            </div>
-            <div>
-              <span>Klasse</span>
-              <div className="mt-1 h-[1px] bg-zinc-300" />
-            </div>
-            <div>
-              <span>Datum</span>
-              <div className="mt-1 h-[1px] bg-zinc-300" />
-            </div>
-          </div>
-        )}
-
-        {/* Exercises */}
-        <ol className="pb-8">
-          {ws.exercises.map((ex, i) => (
-            <ExerciseBlock
-              key={i}
-              ex={ex}
-              index={i}
-              showSolutions={showSolutionsBlock}
-            />
-          ))}
-        </ol>
+      {/* Top header bar */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
+          gap: "12px",
+          paddingBottom: "10px",
+          borderBottom: "1px solid #1A1A1A",
+          fontSize: "11px",
+          fontVariantCaps: "all-small-caps",
+          letterSpacing: "0.12em",
+          color: "#666",
+        }}
+      >
+        <span>{meta.schoolLabel}</span>
+        <span>
+          Niveau {ws.niveau} · {formatDate(meta.createdAt)}
+        </span>
       </div>
 
-      {/* Footer — worksheet ID */}
-      <footer className="absolute inset-x-0 bottom-0 flex items-center justify-between border-t border-zinc-100 px-7 py-2.5">
-        <span className="ui text-[10px] uppercase tracking-[0.12em] text-zinc-400">
-          Lehrly · {meta.schoolLabel}
-        </span>
-        <span className="mono text-[10px] text-zinc-400">
+      {/* Title */}
+      <h1
+        style={{
+          margin: "22px 0 6px 0",
+          fontSize: "26px",
+          fontWeight: 700,
+          lineHeight: 1.2,
+          letterSpacing: "-0.01em",
+          color: "#1A1A1A",
+        }}
+      >
+        {ws.title}
+      </h1>
+      <p
+        style={{
+          margin: 0,
+          fontSize: "14px",
+          color: "#666",
+          fontStyle: "italic",
+          lineHeight: 1.55,
+        }}
+      >
+        {subtitleFor(ws)}
+      </p>
+
+      {/* Name / Klasse / Datum — student fills in */}
+      {studentView && (
+        <div
+          style={{
+            marginTop: "26px",
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr 1fr",
+            columnGap: "20px",
+            fontSize: "12px",
+            color: "#666",
+          }}
+        >
+          {[
+            { label: "Name", w: "100%" },
+            { label: "Klasse", w: "100%" },
+            { label: "Datum", w: "100%" },
+          ].map((f) => (
+            <div key={f.label}>
+              <span
+                style={{
+                  fontVariantCaps: "all-small-caps",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                {f.label}
+              </span>
+              <div
+                style={{
+                  marginTop: "4px",
+                  height: "1px",
+                  backgroundColor: "#1A1A1A",
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Exercises */}
+      <ol style={{ margin: "30px 0 0 0", padding: 0 }}>
+        {ws.exercises.map((ex, i) => (
+          <ExerciseBlock
+            key={i}
+            ex={ex}
+            index={i}
+            showSolutions={showSolutionsBlock}
+            studentView={studentView}
+          />
+        ))}
+      </ol>
+
+      {/* Footer */}
+      <div
+        style={{
+          marginTop: "40px",
+          paddingTop: "10px",
+          borderTop: "1px solid #1A1A1A",
+          display: "flex",
+          justifyContent: "space-between",
+          fontSize: "11px",
+          fontVariantCaps: "all-small-caps",
+          letterSpacing: "0.12em",
+          color: "#666",
+        }}
+      >
+        <span>Lehrly · {meta.schoolLabel}</span>
+        <span style={{ fontFamily: "ui-monospace, SFMono-Regular, monospace", letterSpacing: "0.04em" }}>
           ID {meta.worksheetId.slice(0, 8).toUpperCase()}
         </span>
-      </footer>
+      </div>
     </article>
   );
 };
