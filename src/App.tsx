@@ -34,6 +34,31 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const FirstLaunchGate = () => {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (loading) return;
+    if (user) return; // logged-in users skip the marketing flow
+    let onboarded = false;
+    try {
+      onboarded = localStorage.getItem(ONBOARDED_KEY) === "true";
+    } catch {
+      /* ignore */
+    }
+    if (onboarded) return;
+    // Only intercept the first landing on root or login; never block other paths
+    const p = location.pathname;
+    if (p === "/" || p === "/auth/login") {
+      navigate("/start", { replace: true });
+    }
+  }, [user, loading, location.pathname, navigate]);
+
+  return null;
+};
+
 const AnimatedRoutes = () => {
   const location = useLocation();
   const state = location.state as { backgroundLocation?: Location } | null;
@@ -41,7 +66,11 @@ const AnimatedRoutes = () => {
 
   return (
     <>
+      <FirstLaunchGate />
       <Routes location={backgroundLocation ?? location}>
+        {/* First-launch onboarding (no auth) */}
+        <Route path="/start" element={<FirstLaunch />} />
+
         {/* Protected in-app routes share the bottom tab bar */}
         <Route
           element={
