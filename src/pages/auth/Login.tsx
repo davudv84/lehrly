@@ -5,7 +5,6 @@ import { z } from "zod";
 import LehrlyMark from "@/components/LehrlyMark";
 import AuthInput from "@/components/auth/AuthInput";
 import PrimaryButton from "@/components/auth/PrimaryButton";
-import OAuthButtons from "@/components/auth/OAuthButtons";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -15,13 +14,6 @@ const loginSchema = z.object({
   password: z.string().min(8, "Mindestens 8 Zeichen.").max(72),
 });
 
-const Divider = () => (
-  <div className="my-6 flex items-center gap-3">
-    <span className="h-px flex-1 bg-white/10" />
-    <span className="text-caption text-text-tertiary">oder</span>
-    <span className="h-px flex-1 bg-white/10" />
-  </div>
-);
 
 const Login = () => {
   const navigate = useNavigate();
@@ -129,9 +121,6 @@ const Login = () => {
             </PrimaryButton>
           </div>
         </form>
-
-        <Divider />
-        <OAuthButtons />
 
         <div className="mt-auto pt-10 text-center text-body-sm text-text-secondary">
           Noch kein Konto?{" "}
