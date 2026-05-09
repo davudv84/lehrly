@@ -15,13 +15,6 @@ const registerSchema = z.object({
   password: z.string().min(8, "Mindestens 8 Zeichen.").max(72),
 });
 
-const Divider = () => (
-  <div className="my-6 flex items-center gap-3">
-    <span className="h-px flex-1 bg-white/10" />
-    <span className="text-caption text-text-tertiary">oder</span>
-    <span className="h-px flex-1 bg-white/10" />
-  </div>
-);
 
 const Register = () => {
   const navigate = useNavigate();
