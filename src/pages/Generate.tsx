@@ -150,6 +150,20 @@ const Generate = () => {
     }
   };
 
+  // Completion overview takes over the screen on success
+  if (phase === "success" && createdSheet && createdId) {
+    return (
+      <CompletionOverview
+        ws={createdSheet}
+        meta={{ worksheetId: createdId, createdAt }}
+        taskTypes={taskTypes}
+        onPrint={() => navigate(`/worksheets/${createdId}`)}
+        onEdit={() => navigate(`/worksheets/${createdId}`)}
+        onClose={close}
+      />
+    );
+  }
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-bg-base/65 backdrop-blur-md"
