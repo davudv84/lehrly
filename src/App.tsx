@@ -1,13 +1,22 @@
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AnimatePresence } from "framer-motion";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-import { AuthProvider } from "@/context/AuthContext";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { RequireAuth, RedirectIfAuthed } from "@/components/RouteGuards";
 import AppShell from "@/components/AppShell";
+import FirstLaunch, { ONBOARDED_KEY } from "@/pages/onboarding/FirstLaunch";
 
 import Index from "./pages/Index";
 import Library from "./pages/Library";
