@@ -1,9 +1,6 @@
-import { useState, type FormEvent } from "react";
-import { Mail } from "lucide-react";
+import { useState } from "react";
 import PrimaryButton from "./PrimaryButton";
-import AuthInput from "./AuthInput";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 
 const AppleIcon = () => (
@@ -17,18 +14,16 @@ type Props = {
 };
 
 const OAuthButtons = ({ onStart }: Props) => {
-  const [magicEmail, setMagicEmail] = useState("");
-  const [magicLoading, setMagicLoading] = useState(false);
-  const [appleLoading, setAppleLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleAppleLogin = async () => {
     onStart?.();
-    setAppleLoading(true);
+    setLoading(true);
     const result = await lovable.auth.signInWithOAuth("apple", {
       redirect_uri: window.location.origin,
     });
     if (result.error) {
-      setAppleLoading(false);
+      setLoading(false);
       toast({
         title: "Anmeldung fehlgeschlagen",
         description: result.error.message ?? "Bitte versuche es erneut.",
@@ -40,63 +35,12 @@ const OAuthButtons = ({ onStart }: Props) => {
     window.location.assign("/");
   };
 
-  const handleMagicLink = async (e: FormEvent) => {
-    e.preventDefault();
-    const email = magicEmail.trim();
-    if (!email || !email.includes("@")) {
-      toast({
-        title: "Ungültige E-Mail",
-        description: "Bitte gib eine gültige E-Mail-Adresse ein.",
-        variant: "destructive",
-      });
-      return;
-    }
-    setMagicLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    setMagicLoading(false);
-    if (error) {
-      toast({
-        title: "Magic Link fehlgeschlagen",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-    toast({
-      title: "Magic Link gesendet",
-      description: "Schau in dein Postfach und klicke auf den Link zum Anmelden.",
-    });
-    setMagicEmail("");
-  };
-
   return (
     <div className="flex flex-col gap-3">
-      <PrimaryButton variant="outline" onClick={handleAppleLogin} loading={appleLoading}>
+      <PrimaryButton variant="outline" onClick={handleAppleLogin} loading={loading}>
         <AppleIcon />
         <span>Mit Apple fortfahren</span>
       </PrimaryButton>
-
-      <form onSubmit={handleMagicLink} className="flex flex-col gap-3">
-        <AuthInput
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          placeholder="Magic Link an deine@email.de"
-          icon={<Mail size={18} />}
-          value={magicEmail}
-          onChange={(e) => setMagicEmail(e.target.value)}
-          disabled={magicLoading}
-        />
-        <PrimaryButton type="submit" variant="outline" loading={magicLoading}>
-          <Mail size={18} />
-          <span>Magic Link senden</span>
-        </PrimaryButton>
-      </form>
     </div>
   );
 };
