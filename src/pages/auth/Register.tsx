@@ -5,7 +5,6 @@ import { z } from "zod";
 import LehrlyMark from "@/components/LehrlyMark";
 import AuthInput from "@/components/auth/AuthInput";
 import PrimaryButton from "@/components/auth/PrimaryButton";
-import OAuthButtons from "@/components/auth/OAuthButtons";
 import PasswordStrength, { getPasswordStrength } from "@/components/auth/PasswordStrength";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
