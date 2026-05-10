@@ -296,7 +296,16 @@ const WorksheetDetail = () => {
 
   return (
     <>
-      <div ref={scrollRef} className="no-print" style={{ paddingBottom: tab === "sheet" ? 96 : 32 }}>
+      <div
+        ref={scrollRef}
+        className="no-print"
+        style={{
+          paddingBottom:
+            tab === "sheet"
+              ? "calc(env(safe-area-inset-bottom, 0px) + 200px)"
+              : "calc(env(safe-area-inset-bottom, 0px) + 96px)",
+        }}
+      >
         {/* Top bar — 48px, scroll-aware blur */}
         <header
           className={cn(
@@ -899,7 +908,7 @@ const ReadingMode = ({
               cursor: "pointer",
             }}
           >
-            Weitere Aufgaben anzeigen ({remaining})
+            Weitere {remaining} Aufgaben anzeigen
             <ChevronDown size={14} />
           </button>
         </div>
