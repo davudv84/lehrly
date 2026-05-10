@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ClipboardCheck, FileEdit, Grid2x2, List, Search, Sparkles } from "lucide-react";
+import { ArrowRight, Bookmark, ClipboardCheck, FileEdit, Grid2x2, List, MoreHorizontal, Search, Sparkles, Star } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useSeedDemoOnce } from "@/hooks/useSeedDemoOnce";
 import { supabase } from "@/integrations/supabase/client";
