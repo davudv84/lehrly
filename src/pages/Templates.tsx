@@ -159,7 +159,7 @@ const TemplateCard = ({
         </div>
         <TapButton
           onClick={onUse}
-          className="flex items-center gap-1 text-[12.5px] font-medium text-brand-hover hover:text-brand transition-colors"
+          className="flex items-center gap-1 text-[12.5px] font-medium text-text-primary hover:text-white transition-colors"
         >
           Verwenden <ArrowRight size={13} />
         </TapButton>
