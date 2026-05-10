@@ -379,6 +379,8 @@ const WorksheetDetail = () => {
             <Tag key={t}>{t}</Tag>
           ))}
         </div>
+        </>
+        )}
       </div>
 
       {/* Sticky floating action bar */}
