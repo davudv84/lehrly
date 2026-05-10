@@ -154,9 +154,19 @@ export async function generateWorksheetPdf({
   });
   y += 10;
 
-  // Exercises
+  // Exercises — keep each Aufgabe together on one page when possible
+  const PAGE_USABLE = PAGE_H - MARGIN - 10 - MARGIN; // top margin to footer area
   ws.exercises.forEach((ex, i) => {
+    const estH = measureExercise(doc, ex);
+    const remaining = PAGE_H - MARGIN - 10 - y;
+    // Only force a page break if the block fits on a fresh page; otherwise it must split anyway.
+    if (estH <= PAGE_USABLE && estH > remaining && y > MARGIN + 1) {
+      drawFooter(doc, meta);
+      doc.addPage();
+      y = MARGIN;
+    }
     drawExercise(doc, ex, i, ensureSpace, writeWrapped, () => y, (v) => { y = v; });
+    y += 4; // extra spacing between Aufgaben
   });
 
   drawFooter(doc, meta);
@@ -294,6 +304,40 @@ function drawExercise(
   } else {
     writeWrapped(ex.content, { size: 11, gap: 3 });
   }
+}
+
+function measureWrapped(doc: jsPDF, text: string, size: number, indent = 0, gap = 1.5): number {
+  const lines = doc.splitTextToSize(safe(text), CONTENT_W - indent);
+  return lines.length * size * 0.45 + gap;
+}
+
+function measureExercise(doc: jsPDF, ex: Exercise): number {
+  let h = 16 + 5.5;
+  h += measureWrapped(doc, ex.instruction, 11, 0, 1.5);
+  if (ex.context) h += measureWrapped(doc, ex.context, 10, 0, 2);
+  const t = ex.type.toLowerCase();
+  const isMC = t.includes("multiple") || t.includes("auswahl");
+  const isSchreib = t.includes("schreib");
+  const isLueck = t.includes("lück") || t.includes("luec");
+  if (isMC) {
+    const lines = ex.content.split(/\n+/).filter((l) => l.trim());
+    const opts = ex.options ?? lines.filter((l) => /^[a-dA-D][\).]\s+/.test(l.trim()));
+    const stem = lines.filter((l) => !/^[a-dA-D][\).]\s+/.test(l.trim())).join(" ");
+    if (stem) h += measureWrapped(doc, stem, 11, 0, 2);
+    opts.forEach((o) => {
+      const clean = o.replace(/^[a-dA-D][\).]\s+/, "");
+      h += measureWrapped(doc, `a)  ${clean}`, 11, 4, 1);
+    });
+    h += 2;
+  } else if (isSchreib) {
+    if (ex.content) h += measureWrapped(doc, ex.content, 11, 0, 2);
+    h += 6 * 8 + 2;
+  } else if (isLueck) {
+    h += measureWrapped(doc, ex.content.replace(/_{3,}/g, "__________"), 12, 0, 3);
+  } else {
+    h += measureWrapped(doc, ex.content, 11, 0, 3);
+  }
+  return h;
 }
 
 function drawFooter(doc: jsPDF, meta: Meta) {
