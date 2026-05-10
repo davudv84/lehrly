@@ -461,14 +461,7 @@ const WorksheetDetail = () => {
             onClick={() => setPrintSolutions((v) => !v)}
           />
           <div className="my-1 h-px bg-hairline/10" />
-          <MenuRow icon={<Share2 size={16} />} label="Teilen" onClick={handleShare} />
           <MenuRow icon={<Copy size={16} />} label="Kopie duplizieren" onClick={handleDuplicate} />
-          <MenuRow icon={<Printer size={16} />} label="Drucken" onClick={handlePrint} />
-          <MenuRow
-            icon={<FileText size={16} />}
-            label="Als PDF exportieren"
-            onClick={handlePrint}
-          />
           <MenuRow
             icon={<Trash2 size={16} />}
             label="Löschen"
