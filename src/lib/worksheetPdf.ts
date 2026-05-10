@@ -251,7 +251,7 @@ function drawExercise(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
   doc.setTextColor(120, 120, 120);
-  doc.text(ex.type.toUpperCase(), PAGE_W - MARGIN, y, { align: "right" });
+  doc.text(safe(ex.type).toUpperCase(), PAGE_W - MARGIN, y, { align: "right" });
   y += 1.5;
   doc.setDrawColor(207, 207, 207);
   doc.line(MARGIN, y, PAGE_W - MARGIN, y);
