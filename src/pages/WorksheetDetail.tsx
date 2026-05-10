@@ -69,6 +69,10 @@ const WorksheetDetail = () => {
   const [kb, setKb] = useState<KBEntry | null>(null);
   const [homework, setHomework] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!id || !user) return;
