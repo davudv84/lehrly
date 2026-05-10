@@ -123,6 +123,12 @@ const Generate = () => {
       }
       const newId = (data as any).id;
       setCreatedId(newId);
+      // Fire-and-forget Klassenbuch generation
+      if (generateKlassenbuch && newId) {
+        supabase.functions.invoke("generate-klassenbuch", { body: { worksheetId: newId } }).catch(() => {
+          /* non-blocking */
+        });
+      }
       // Fetch the freshly generated worksheet to show the overview
       const { data: full } = await supabase
         .from("worksheets")
