@@ -60,10 +60,9 @@ const Generate = () => {
   const [printSolutions, setPrintSolutions] = useState(true);
 
   const [phase, setPhase] = useState<Phase>("form");
-  const [createdId, setCreatedId] = useState<string | null>(null);
-  const [createdSheet, setCreatedSheet] = useState<WorksheetData | null>(null);
-  const [createdAt, setCreatedAt] = useState<string>(new Date().toISOString());
+  const [, setCreatedId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
 
   const previewBadge = useMemo(
     () => `${niveau} · ${count} Aufgaben`,
