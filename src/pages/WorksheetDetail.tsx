@@ -257,9 +257,7 @@ const WorksheetDetail = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-[60vh] items-center justify-center text-text-tertiary">Lädt…</div>
-    );
+    return <WorksheetSkeleton />;
   }
   if (!ws || !sheet) {
     return (
@@ -272,149 +270,121 @@ const WorksheetDetail = () => {
     );
   }
 
+  const cardEntry = reduceMotion
+    ? { initial: false as const, animate: { opacity: 1, y: 0 } }
+    : {
+        initial: { opacity: 0, y: 8 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.32, ease: [0.22, 0.61, 0.36, 1] as const },
+      };
+
+  const modeTransition = reduceMotion
+    ? { duration: 0 }
+    : { duration: 0.18, ease: [0.22, 0.61, 0.36, 1] as const };
+
   return (
     <>
-      <div className="px-5 pb-8 no-print">
-        {/* Top bar */}
+      <div ref={scrollRef} className="no-print" style={{ paddingBottom: 32 }}>
+        {/* Top bar — 48px, scroll-aware blur */}
         <header
-          className="flex items-center justify-between gap-2 pb-4"
-          style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}
+          className={cn(
+            "sticky top-0 z-30 flex items-center gap-3 px-4 transition-colors duration-200",
+            scrolled ? "border-b border-hairline/10" : "border-b border-transparent",
+          )}
+          style={{
+            paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
+            paddingBottom: 8,
+            height: "calc(env(safe-area-inset-top, 0px) + 48px)",
+            backgroundColor: scrolled ? "rgba(20,21,24,0.7)" : "transparent",
+            backdropFilter: scrolled ? "blur(20px) saturate(160%)" : "none",
+            WebkitBackdropFilter: scrolled ? "blur(20px) saturate(160%)" : "none",
+          }}
         >
           <TapButton
             onClick={() => navigate(-1)}
             aria-label="Zurück"
-            className="h-9 w-9 rounded-pill bg-surface-2 text-text-secondary ring-hairline hover:bg-surface-3 transition-colors"
+            className="h-8 w-8 shrink-0 rounded-pill text-text-secondary hover:bg-surface-2 transition-colors"
           >
-            <ArrowLeft size={17} />
+            <ArrowLeft size={16} />
           </TapButton>
-          <h1 className="flex-1 truncate text-center text-[14px] font-medium text-text-secondary">
+
+          <h1
+            className="min-w-0 truncate text-text-primary"
+            style={{ fontSize: 15, fontWeight: 500 }}
+          >
             {ws.title}
           </h1>
-          <TapButton
-            onClick={() => setLayout(layout === "read" ? "print" : "read")}
-            aria-label="Lesemodus / Druckansicht"
-            className={cn(
-              "h-9 w-9 rounded-pill ring-hairline transition-colors",
-              layout === "read"
-                ? "bg-surface-3 text-text-primary"
-                : "bg-surface-2 text-text-secondary hover:bg-surface-3",
-            )}
-          >
-            {layout === "read" ? <FileText size={15} /> : <Scroll size={15} />}
-          </TapButton>
-          <TapButton
-            onClick={toggleFavorite}
-            aria-label="Favorit"
-            className={cn(
-              "h-9 w-9 rounded-pill transition-colors ring-hairline",
-              ws.is_favorite
-                ? "bg-amber-400/10 text-amber-300"
-                : "bg-surface-2 text-text-secondary hover:bg-surface-3",
-            )}
-          >
-            <Star size={15} fill={ws.is_favorite ? "currentColor" : "none"} />
-          </TapButton>
-          <TapButton
-            onClick={() => setMenuOpen(true)}
-            aria-label="Mehr"
-            className="h-9 w-9 rounded-pill bg-surface-2 text-text-secondary ring-hairline hover:bg-surface-3 transition-colors"
-          >
-            <MoreHorizontal size={17} />
-          </TapButton>
+
+          {/* Inline compact segmented — only when KB exists */}
+          {kb && (
+            <div className="relative ml-2 hidden sm:block">
+              <CompactSegmented
+                value={tab}
+                onChange={(v) => { setTab(v); dismissTooltip(); }}
+                options={[
+                  { value: "sheet", label: "Arbeitsblatt" },
+                  { value: "kb", label: "Klassenbucheintrag" },
+                ]}
+              />
+              {showTooltip && (
+                <Tooltip onClick={dismissTooltip}>
+                  Tippe hier für den Klassenbucheintrag.
+                </Tooltip>
+              )}
+            </div>
+          )}
+
+          <div className="ml-auto flex items-center gap-1">
+            <TapButton
+              onClick={toggleFavorite}
+              aria-label="Favorit"
+              className={cn(
+                "h-8 w-8 rounded-pill transition-colors",
+                ws.is_favorite ? "text-amber-300" : "text-text-tertiary hover:bg-surface-2",
+              )}
+            >
+              <Star size={15} fill={ws.is_favorite ? "currentColor" : "none"} />
+            </TapButton>
+            <TapButton
+              onClick={() => setMenuOpen(true)}
+              aria-label="Mehr"
+              className="h-8 w-8 rounded-pill text-text-secondary hover:bg-surface-2 transition-colors"
+            >
+              <MoreHorizontal size={16} />
+            </TapButton>
+          </div>
         </header>
 
+        {/* Mobile inline segmented (when no room in topbar) */}
         {kb && (
-          <div className="mb-3 flex gap-1 rounded-pill bg-surface-2 ring-hairline p-1">
-            <button
-              onClick={() => setTab("sheet")}
-              className={cn(
-                "flex h-8 flex-1 items-center justify-center gap-1.5 rounded-pill text-[12px] font-medium transition-colors",
-                tab === "sheet" ? "bg-surface-3 text-text-primary shadow-xs" : "text-text-tertiary",
-              )}
-            >
-              <FileText size={12} /> Arbeitsblatt
-            </button>
-            <button
-              onClick={() => setTab("kb")}
-              className={cn(
-                "flex h-8 flex-1 items-center justify-center gap-1.5 rounded-pill text-[12px] font-medium transition-colors",
-                tab === "kb" ? "bg-surface-3 text-text-primary shadow-xs" : "text-text-tertiary",
-              )}
-            >
-              <BookOpen size={12} /> Klassenbuch
-            </button>
+          <div className="relative px-4 pt-3 sm:hidden">
+            <CompactSegmented
+              value={tab}
+              onChange={(v) => { setTab(v); dismissTooltip(); }}
+              options={[
+                { value: "sheet", label: "Arbeitsblatt" },
+                { value: "kb", label: "Klassenbucheintrag" },
+              ]}
+            />
+            {showTooltip && (
+              <Tooltip onClick={dismissTooltip} mobile>
+                Tippe hier für den Klassenbucheintrag.
+              </Tooltip>
+            )}
           </div>
         )}
 
-        {tab === "kb" && kb ? (
-          <KlassenbuchView
-            kb={kb}
-            homework={homework}
-            setHomework={setHomework}
-            onSave={saveHomework}
-            onCopy={copyKlassenbuch}
-          />
-        ) : (
-          <>
-            {view === "teacher" && (
-              <div className="mb-3 inline-flex items-center gap-1.5 rounded-pill bg-amber-400/10 px-2.5 py-1 text-[11px] font-medium text-amber-300 ring-1 ring-amber-400/20">
-                <GraduationCap size={11} /> Lehreransicht
-              </div>
-            )}
-
-            <Segmented<"student" | "teacher">
-              value={view}
-              onChange={setView}
-              options={[
-                { value: "student", label: "Schüler", icon: <UserIcon size={13} /> },
-                { value: "teacher", label: "Lehrkraft", icon: <GraduationCap size={13} /> },
-              ]}
-            />
-
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`${view}-${layout}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="mt-4"
-              >
-                {layout === "print" ? (
-                  <WorksheetSheet
-                    ws={sheet}
-                    meta={meta}
-                    studentView={view === "student"}
-                    showSolutions={view === "teacher"}
-                  />
-                ) : (
-                  <ReadingMode ws={sheet} teacherMode={view === "teacher"} />
-                )}
-              </motion.div>
-            </AnimatePresence>
-
-            {/* Lehrerhinweise — only teacher */}
-            {view === "teacher" && (sheet.teacher_notes?.length ?? 0) > 0 && (
-              <div className="mt-4 rounded-card bg-amber-400/[0.04] ring-1 ring-amber-400/15 p-4">
-                <p className="section-label mb-2 text-amber-300/80">Lehrerhinweise</p>
-                <ul className="space-y-1.5">
-                  {sheet.teacher_notes!.map((n, i) => (
-                    <li
-                      key={i}
-                      className="flex gap-2 text-[12.5px] leading-relaxed text-text-secondary"
-                    >
-                      <span className="text-amber-300/70">•</span>
-                      <span>{n}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Embedded klassenbuch in teacher mode */}
-            {view === "teacher" && kb && (
-              <div className="mt-4">
-                <p className="section-label mb-2">Klassenbucheintrag</p>
+        {/* Content area */}
+        <motion.div {...cardEntry} className="px-2 pt-6 sm:px-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={tab}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={modeTransition}
+            >
+              {tab === "kb" && kb ? (
                 <KlassenbuchView
                   kb={kb}
                   homework={homework}
@@ -422,58 +392,93 @@ const WorksheetDetail = () => {
                   onSave={saveHomework}
                   onCopy={copyKlassenbuch}
                 />
-              </div>
-            )}
-
-            {/* Print options */}
-            <div className="mt-5 rounded-card bg-surface-1 ring-hairline p-4">
-              <div className="flex items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="text-[13.5px] font-medium text-text-primary">
-                    Lösungsblatt mitdrucken
-                  </p>
-                  <p className="mt-0.5 text-[11.5px] text-text-tertiary">
-                    Erscheint auf separater Seite.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setPrintSolutions((v) => !v)}
-                  role="switch"
-                  aria-checked={printSolutions}
-                  className={cn(
-                    "relative h-7 w-12 shrink-0 rounded-pill transition-colors",
-                    printSolutions ? "bg-brand" : "bg-surface-3",
+              ) : (
+                <>
+                  {layout === "print" ? (
+                    <WorksheetSheet
+                      ws={sheet}
+                      meta={meta}
+                      studentView={view === "student"}
+                      showSolutions={view === "teacher"}
+                    />
+                  ) : (
+                    <ReadingMode ws={sheet} teacherMode={view === "teacher"} />
                   )}
-                >
-                  <motion.span
-                    layout
-                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                    className={cn(
-                      "absolute top-0.5 h-6 w-6 rounded-full bg-white shadow-xs",
-                      printSolutions ? "right-0.5" : "left-0.5",
-                    )}
-                  />
-                </button>
+                </>
+              )}
+            </motion.div>
+          </AnimatePresence>
+
+          {tab === "sheet" && (
+            <div className="mx-auto mt-6 w-full" style={{ maxWidth: 760 }}>
+              {/* View toggle (Schüler/Lehrkraft) — secondary, less prominent */}
+              <div className="flex items-center justify-between gap-3 px-2">
+                <CompactSegmented
+                  value={view}
+                  onChange={setView}
+                  options={[
+                    { value: "student", label: "Schüler", icon: <UserIcon size={12} /> },
+                    { value: "teacher", label: "Lehrkraft", icon: <GraduationCap size={12} /> },
+                  ]}
+                />
+              </div>
+
+              {view === "teacher" && (sheet.teacher_notes?.length ?? 0) > 0 && (
+                <div className="mt-6 rounded-[8px] bg-amber-400/[0.04] ring-1 ring-amber-400/15 p-4">
+                  <p className="section-label mb-2 text-amber-300/80">Lehrerhinweise</p>
+                  <ul className="space-y-2">
+                    {sheet.teacher_notes!.map((n, i) => (
+                      <li
+                        key={i}
+                        className="flex gap-2 text-text-secondary"
+                        style={{ fontSize: 13, lineHeight: 1.7 }}
+                      >
+                        <span className="text-amber-300/70">•</span>
+                        <span>{n}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div className="mt-6 flex flex-wrap gap-2 px-2">
+                {ws.topic && <Tag>{ws.topic}</Tag>}
+                {ws.task_types.map((t) => (
+                  <Tag key={t}>{t}</Tag>
+                ))}
               </div>
             </div>
-
-            <div className="mt-5 flex flex-wrap gap-1.5">
-              {ws.topic && <Tag>{ws.topic}</Tag>}
-              {ws.task_types.map((t) => (
-                <Tag key={t}>{t}</Tag>
-              ))}
-            </div>
-          </>
-        )}
+          )}
+        </motion.div>
       </div>
 
       {/* Action menu sheet */}
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
         <SheetContent
           side="bottom"
-          className="mx-auto w-full max-w-md rounded-t-large border-hairline/10 bg-bg-elevated p-2"
+          className="mx-auto w-full max-w-md rounded-t-large border-hairline/10 p-2"
+          style={{
+            backgroundColor: "rgba(20,21,24,0.92)",
+            backdropFilter: "blur(28px) saturate(160%)",
+          }}
         >
           <div className="mx-auto mb-2 mt-1 h-1 w-9 rounded-full bg-hairline/15" />
+          <MenuRow
+            icon={layout === "read" ? <FileText size={16} /> : <FileText size={16} />}
+            label={layout === "read" ? "Druckansicht" : "Lesemodus"}
+            onClick={() => { setLayout(layout === "read" ? "print" : "read"); setMenuOpen(false); }}
+          />
+          <MenuRow
+            icon={<UserIcon size={16} />}
+            label={view === "student" ? "Lehreransicht" : "Schüleransicht"}
+            onClick={() => { setView(view === "student" ? "teacher" : "student"); setMenuOpen(false); }}
+          />
+          <MenuRow
+            icon={<Printer size={16} />}
+            label={`Lösung mitdrucken: ${printSolutions ? "An" : "Aus"}`}
+            onClick={() => setPrintSolutions((v) => !v)}
+          />
+          <div className="my-1 h-px bg-hairline/10" />
           <MenuRow icon={<Share2 size={16} />} label="Teilen" onClick={handleShare} />
           <MenuRow icon={<Copy size={16} />} label="Kopie duplizieren" onClick={handleDuplicate} />
           <MenuRow icon={<Printer size={16} />} label="Drucken" onClick={handlePrint} />
@@ -500,6 +505,108 @@ const WorksheetDetail = () => {
     </>
   );
 };
+
+/* ---------- Compact segmented (32px, inline) ---------- */
+function CompactSegmented<T extends string>({
+  value,
+  onChange,
+  options,
+}: {
+  value: T;
+  onChange: (v: T) => void;
+  options: { value: T; label: string; icon?: React.ReactNode }[];
+}) {
+  return (
+    <div
+      role="tablist"
+      className="inline-flex items-center rounded-pill bg-surface-2 ring-hairline p-0.5"
+      style={{ height: 32 }}
+    >
+      {options.map((opt) => {
+        const active = opt.value === value;
+        return (
+          <motion.button
+            key={String(opt.value)}
+            type="button"
+            role="tab"
+            aria-selected={active}
+            onClick={() => onChange(opt.value)}
+            whileTap={{ scale: 0.97 }}
+            transition={{ duration: 0.08 }}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-pill px-3 transition-colors",
+              active ? "bg-surface-3 text-text-primary shadow-xs" : "text-text-tertiary hover:text-text-secondary",
+            )}
+            style={{ height: 28, fontSize: 13, fontWeight: 500 }}
+          >
+            {opt.icon}
+            <span>{opt.label}</span>
+          </motion.button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ---------- Tooltip ---------- */
+const Tooltip = ({
+  children,
+  onClick,
+  mobile,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  mobile?: boolean;
+}) => (
+  <motion.button
+    onClick={onClick}
+    initial={{ opacity: 0, y: -4 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0 }}
+    transition={{ duration: 0.18 }}
+    className={cn(
+      "absolute z-20 rounded-[8px] px-3 py-2 text-left text-text-primary shadow-elevated",
+      mobile ? "left-4 right-4 top-full mt-2" : "left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap",
+    )}
+    style={{
+      backgroundColor: "rgba(20,21,24,0.95)",
+      backdropFilter: "blur(20px)",
+      fontSize: 12,
+      fontWeight: 500,
+    }}
+  >
+    {children}
+  </motion.button>
+);
+
+/* ---------- Skeleton ---------- */
+const WorksheetSkeleton = () => (
+  <div className="px-4 pt-12">
+    <div className="mx-auto w-full" style={{ maxWidth: 760 }}>
+      <div
+        className="rounded-[8px] p-8"
+        style={{
+          backgroundColor: "#FFFFFF",
+          boxShadow: "0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.25)",
+        }}
+      >
+        <div className="h-3 w-32 animate-pulse rounded bg-black/10" />
+        <div className="mt-4 h-6 w-3/4 animate-pulse rounded bg-black/10" />
+        <div className="mt-8 space-y-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="space-y-2">
+              <div className="h-3 w-20 animate-pulse rounded bg-black/10" />
+              <div className="h-3 w-full animate-pulse rounded bg-black/10" />
+              <div className="h-3 w-5/6 animate-pulse rounded bg-black/10" />
+              <div className="h-10" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 
 const MenuRow = ({
   icon,
