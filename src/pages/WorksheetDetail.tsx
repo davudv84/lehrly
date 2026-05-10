@@ -3,13 +3,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   ArrowLeft,
+  ChevronDown,
   ClipboardCopy,
   Copy,
   FileText,
   GraduationCap,
   MoreHorizontal,
   Printer,
-  Share2,
   Star,
   Trash2,
   User as UserIcon,
@@ -189,25 +189,7 @@ const WorksheetDetail = () => {
     setTimeout(() => toast.success("Arbeitsblatt druckbereit"), 400);
   };
 
-  const handleShare = async () => {
-    if (!ws) return;
-    setMenuOpen(false);
-    const url = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: ws.title, text: ws.title, url });
-      } catch {
-        /* user cancelled */
-      }
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success("Link kopiert");
-    } catch {
-      toast.error("Konnte Link nicht kopieren");
-    }
-  };
+  // share removed
 
   const handleDuplicate = async () => {
     if (!ws || !user) return;
@@ -284,7 +266,7 @@ const WorksheetDetail = () => {
 
   return (
     <>
-      <div ref={scrollRef} className="no-print" style={{ paddingBottom: 32 }}>
+      <div ref={scrollRef} className="no-print" style={{ paddingBottom: tab === "sheet" ? 96 : 32 }}>
         {/* Top bar — 48px, scroll-aware blur */}
         <header
           className={cn(
@@ -479,14 +461,7 @@ const WorksheetDetail = () => {
             onClick={() => setPrintSolutions((v) => !v)}
           />
           <div className="my-1 h-px bg-hairline/10" />
-          <MenuRow icon={<Share2 size={16} />} label="Teilen" onClick={handleShare} />
           <MenuRow icon={<Copy size={16} />} label="Kopie duplizieren" onClick={handleDuplicate} />
-          <MenuRow icon={<Printer size={16} />} label="Drucken" onClick={handlePrint} />
-          <MenuRow
-            icon={<FileText size={16} />}
-            label="Als PDF exportieren"
-            onClick={handlePrint}
-          />
           <MenuRow
             icon={<Trash2 size={16} />}
             label="Löschen"
@@ -495,6 +470,35 @@ const WorksheetDetail = () => {
           />
         </SheetContent>
       </Sheet>
+
+      {/* Fixed action bar above bottom nav — Drucken / PDF */}
+      {tab === "sheet" && (
+        <div
+          className="no-print fixed inset-x-0 z-30"
+          style={{
+            bottom: "calc(56px + env(safe-area-inset-bottom, 0px))",
+            backgroundColor: "rgba(14,15,17,0.92)",
+            backdropFilter: "blur(20px) saturate(160%)",
+            WebkitBackdropFilter: "blur(20px) saturate(160%)",
+            borderTop: "1px solid hsl(var(--hairline) / 0.1)",
+          }}
+        >
+          <div className="mx-auto flex w-full max-w-md items-center gap-2 px-4 py-2.5">
+            <button
+              onClick={handlePrint}
+              className="flex h-10 flex-1 items-center justify-center gap-2 rounded-pill bg-surface-2 ring-hairline text-[13px] font-medium text-text-primary hover:bg-surface-3 transition-colors"
+            >
+              <Printer size={14} /> Drucken
+            </button>
+            <button
+              onClick={handlePrint}
+              className="flex h-10 flex-1 items-center justify-center gap-2 rounded-pill bg-surface-2 ring-hairline text-[13px] font-medium text-text-primary hover:bg-surface-3 transition-colors"
+            >
+              <FileText size={14} /> Als PDF
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Print-only A4 layout (independent from mobile UI) */}
       <PrintWorksheetView
@@ -647,6 +651,9 @@ const ReadingMode = ({
   teacherMode: boolean;
 }) => {
   const reduce = useReducedMotion();
+  const [expanded, setExpanded] = useState(false);
+  const visibleExercises = expanded ? ws.exercises : ws.exercises.slice(0, 1);
+  const remaining = ws.exercises.length - visibleExercises.length;
   const stagger = (i: number) =>
     reduce
       ? { initial: false as const, animate: { opacity: 1, y: 0 } }
@@ -716,7 +723,7 @@ const ReadingMode = ({
       </motion.header>
 
       <div>
-        {ws.exercises.map((ex, i) => (
+        {visibleExercises.map((ex, i) => (
           <motion.section
             key={i}
             {...stagger(i)}
@@ -842,6 +849,30 @@ const ReadingMode = ({
           </motion.section>
         ))}
       </div>
+      {remaining > 0 && (
+        <div style={{ marginTop: 32, display: "flex", justifyContent: "center" }}>
+          <button
+            onClick={() => setExpanded(true)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              height: 40,
+              padding: "0 18px",
+              fontSize: 13,
+              fontWeight: 500,
+              color: "#1A1A1A",
+              backgroundColor: "#F5F5F5",
+              border: "1px solid #E5E5E5",
+              borderRadius: 999,
+              cursor: "pointer",
+            }}
+          >
+            Weitere Aufgaben anzeigen ({remaining})
+            <ChevronDown size={14} />
+          </button>
+        </div>
+      )}
     </article>
   );
 };

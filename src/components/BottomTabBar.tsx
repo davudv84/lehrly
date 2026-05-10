@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Bookmark, Home, Library, User } from "lucide-react";
+import { ClipboardCheck, Home, Library, User } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +12,7 @@ type Tab = {
 const TABS: Tab[] = [
   { to: "/", label: "Home", icon: Home },
   { to: "/library", label: "Bibliothek", icon: Library },
-  { to: "/templates", label: "Vorlagen", icon: Bookmark },
+  { to: "/scan", label: "Korrektur", icon: ClipboardCheck },
   { to: "/profile", label: "Profil", icon: User },
 ];
 
