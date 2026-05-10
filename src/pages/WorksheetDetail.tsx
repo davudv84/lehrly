@@ -64,19 +64,30 @@ const WorksheetDetail = () => {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"student" | "teacher">("student");
   const [printSolutions, setPrintSolutions] = useState(false);
+  const [tab, setTab] = useState<"sheet" | "kb">("sheet");
+  const [kb, setKb] = useState<KBEntry | null>(null);
+  const [homework, setHomework] = useState("");
 
   useEffect(() => {
     if (!id || !user) return;
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from("worksheets")
-        .select("*")
-        .eq("id", id)
-        .maybeSingle();
+      const [{ data }, { data: kbData }] = await Promise.all([
+        supabase.from("worksheets").select("*").eq("id", id).maybeSingle(),
+        supabase
+          .from("klassenbuch_entries")
+          .select("id,content,homework")
+          .eq("worksheet_id", id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
       if (!cancelled) {
         setWs((data as DBWorksheet | null) ?? null);
+        const k = kbData as unknown as KBEntry | null;
+        setKb(k);
+        setHomework(k?.homework ?? "");
         setLoading(false);
       }
     })();
@@ -84,6 +95,37 @@ const WorksheetDetail = () => {
       cancelled = true;
     };
   }, [id, user]);
+
+  const saveHomework = async () => {
+    if (!kb) return;
+    const { error } = await supabase
+      .from("klassenbuch_entries")
+      .update({ homework })
+      .eq("id", kb.id);
+    if (error) toast.error("Speichern fehlgeschlagen");
+    else toast.success("Hausaufgabe gespeichert");
+  };
+
+  const copyKlassenbuch = async () => {
+    if (!kb?.content) return;
+    const c = kb.content;
+    const text =
+      `Datum: ${new Date(c.datum ?? Date.now()).toLocaleDateString("de-DE")}\n` +
+      `Niveau: ${c.niveau ?? ""}\nThema: ${c.thema ?? ""}\n\n` +
+      `Lerninhalt: ${c.lerninhalt ?? ""}\n\n` +
+      `Behandelte Aufgaben:\n${(c.behandelte_aufgaben ?? [])
+        .map((a) => `${a.nummer}. ${a.titel} — ${a.beschreibung}`)
+        .join("\n")}\n\n` +
+      `Sprachliche Schwerpunkte: ${c.sprachliche_schwerpunkte ?? ""}\n` +
+      `Kompetenzbereiche: ${(c.kompetenzbereiche ?? []).join(", ")}\n` +
+      (homework ? `\nHausaufgabe: ${homework}` : "");
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success("In die Zwischenablage kopiert");
+    } catch {
+      toast.error("Kopieren fehlgeschlagen");
+    }
+  };
 
   const meta = useMemo(
     () => ({
