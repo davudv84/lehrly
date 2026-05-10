@@ -351,4 +351,118 @@ const ListRow = ({ ws }: { ws: WorksheetCardData }) => (
   </a>
 );
 
+const TabButton = ({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) => (
+  <button
+    onClick={onClick}
+    className={cn(
+      "flex h-9 flex-1 items-center justify-center gap-1.5 rounded-pill text-[12.5px] font-medium transition-colors",
+      active ? "bg-surface-3 text-text-primary shadow-xs" : "text-text-tertiary hover:text-text-secondary",
+    )}
+  >
+    {children}
+  </button>
+);
+
+const TemplatesTab = ({
+  templates,
+  navigate,
+}: {
+  templates: Template[];
+  navigate: (path: string, opts?: unknown) => void;
+}) => {
+  if (templates.length === 0) {
+    return (
+      <div className="mt-6 rounded-card border border-dashed border-hairline/10 px-5 py-12 text-center">
+        <p className="text-[13.5px] text-text-secondary">
+          Noch keine Vorlagen — speichere deine nächste Generation als Vorlage.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-3 pb-8">
+      {templates.map((t) => {
+        const lastUsed = t.last_used_at
+          ? (() => {
+              const d = Math.floor((Date.now() - new Date(t.last_used_at!).getTime()) / 86400000);
+              return d < 1 ? "heute" : d === 1 ? "gestern" : `vor ${d} Tagen`;
+            })()
+          : null;
+        return (
+          <motion.article
+            key={t.id}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.24 }}
+            className="float-card rounded-card bg-surface-1 ring-hairline p-4"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-display text-[15px] font-medium leading-tight tracking-[-0.01em] text-text-primary">
+                  {t.title}
+                </p>
+                {t.is_new && (
+                  <span className="mt-1.5 inline-flex h-5 items-center rounded-pill bg-surface-2 ring-hairline px-2 text-[10px] font-semibold uppercase tracking-wide text-text-secondary">
+                    Neu
+                  </span>
+                )}
+              </div>
+              <button className="flex h-7 w-7 items-center justify-center rounded-md text-text-tertiary hover:bg-surface-2 hover:text-text-secondary transition-colors">
+                <MoreHorizontal size={15} />
+              </button>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              <NiveauBadge niveau={t.niveau} />
+              {t.topic && <TplTag>{t.topic}</TplTag>}
+              {t.task_types.slice(0, 2).map((tt) => (
+                <TplTag key={tt}>{tt}</TplTag>
+              ))}
+              <TplTag>{t.task_count} Aufg.</TplTag>
+            </div>
+            <div className="mt-4 flex items-center justify-between border-t border-hairline/5 pt-3.5">
+              <div className="flex items-center gap-1.5 text-[11.5px] text-text-tertiary">
+                <Star size={11} />
+                <span>{t.usage_count}× verwendet</span>
+                {lastUsed && (<><span className="opacity-40">·</span><span>{lastUsed}</span></>)}
+              </div>
+              <TapButton
+                onClick={() =>
+                  navigate("/generate", {
+                    state: {
+                      prefill: {
+                        niveau: t.niveau,
+                        topics: t.topic ? [t.topic] : [],
+                        taskTypes: t.task_types,
+                        count: t.task_count,
+                        templateId: t.id,
+                      },
+                    },
+                  })
+                }
+                className="flex items-center gap-1 text-[12.5px] font-medium text-text-primary hover:text-white transition-colors"
+              >
+                Verwenden <ArrowRight size={13} />
+              </TapButton>
+            </div>
+          </motion.article>
+        );
+      })}
+    </div>
+  );
+};
+
+const TplTag = ({ children }: { children: React.ReactNode }) => (
+  <span className="inline-flex h-5 items-center rounded-pill bg-surface-2 px-2 text-[10.5px] font-medium text-text-secondary ring-hairline">
+    {children}
+  </span>
+);
+
 export default Library;
