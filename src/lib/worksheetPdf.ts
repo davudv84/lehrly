@@ -308,7 +308,7 @@ function drawExercise(
 
 function measureWrapped(doc: jsPDF, text: string, size: number, indent = 0, gap = 1.5): number {
   const lines = doc.splitTextToSize(safe(text), CONTENT_W - indent);
-  return lines.length * size * 0.45 + gap;
+  return lines.length * size * 0.52 + gap;
 }
 
 function measureExercise(doc: jsPDF, ex: Exercise): number {
