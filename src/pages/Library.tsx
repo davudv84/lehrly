@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FileEdit, Grid2x2, List, Search, Sparkles } from "lucide-react";
+import { ClipboardCheck, FileEdit, Grid2x2, List, Search, Sparkles } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useSeedDemoOnce } from "@/hooks/useSeedDemoOnce";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,16 @@ import EmptyState from "@/components/EmptyState";
 import { WorksheetCardSkeleton } from "@/components/skeletons/WorksheetCardSkeleton";
 import { stagger, fadeUp } from "@/lib/motion";
 import { cn } from "@/lib/utils";
+
+type Correction = {
+  id: string;
+  student_name: string | null;
+  score: number;
+  max_score: number;
+  grade: number | null;
+  created_at: string;
+  exercise_breakdown: { title?: string } | null;
+};
 
 const FILTERS = ["Alle", "A1", "A2", "B1", "B2", "C1"] as const;
 type Filter = (typeof FILTERS)[number];
