@@ -140,7 +140,7 @@ const Library = () => {
         >
           <ClipboardCheck size={13} /> Korrekturen
           {corrections.length > 0 && (
-            <span className="ml-1 rounded-pill bg-brand/15 px-1.5 text-[10px] text-brand-hover">{corrections.length}</span>
+            <span className="ml-1 rounded-pill bg-surface-3 px-1.5 text-[10px] text-text-secondary">{corrections.length}</span>
           )}
         </button>
       </div>
