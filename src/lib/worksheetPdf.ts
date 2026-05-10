@@ -44,9 +44,7 @@ const safe = (s: string | null | undefined): string => {
     .replace(/[\u2013\u2014]/g, "-") // – —
     .replace(/\u2026/g, "...") // …
     .replace(/[\u00A0\u202F\u2009\u200A\u2007]/g, " ") // non-breaking / thin spaces
-    .replace(/\u2022/g, "·") // • → · (WinAnsi-safe middle dot)
-    .replace(/\s+/g, (m) => (m.includes("\n") ? m : " ")) // collapse runs of spaces, keep newlines
-    .trim();
+    .replace(/\u2022/g, "·"); // • → · (WinAnsi-safe middle dot)
 };
 
 export async function generateWorksheetPdf({
