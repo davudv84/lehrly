@@ -68,6 +68,7 @@ const Generate = () => {
     prefill?.taskTypes ?? ["Lückentext"],
   );
   const [count, setCount] = useState<number>(prefill?.count ?? 6);
+  const [generateKlassenbuch, setGenerateKlassenbuch] = useState(true);
 
   const [phase, setPhase] = useState<Phase>("form");
   const [createdId, setCreatedId] = useState<string | null>(null);
@@ -122,6 +123,12 @@ const Generate = () => {
       }
       const newId = (data as any).id;
       setCreatedId(newId);
+      // Fire-and-forget Klassenbuch generation
+      if (generateKlassenbuch && newId) {
+        supabase.functions.invoke("generate-klassenbuch", { body: { worksheetId: newId } }).catch(() => {
+          /* non-blocking */
+        });
+      }
       // Fetch the freshly generated worksheet to show the overview
       const { data: full } = await supabase
         .from("worksheets")
@@ -274,6 +281,31 @@ const Generate = () => {
                     }%, hsl(0 0% 100% / 0.08) ${((count - 3) / 12) * 100}%)`,
                   }}
                 />
+              </Section>
+
+              <Section label="Klassenbucheintrag">
+                <button
+                  type="button"
+                  onClick={() => setGenerateKlassenbuch((v) => !v)}
+                  className="flex w-full items-center justify-between rounded-input bg-surface-2 ring-hairline px-4 py-3 text-left"
+                >
+                  <span className="text-[13px] text-text-primary">
+                    Klassenbucheintrag automatisch generieren
+                  </span>
+                  <span
+                    role="switch"
+                    aria-checked={generateKlassenbuch}
+                    className={`relative h-6 w-11 shrink-0 rounded-pill transition-colors ${
+                      generateKlassenbuch ? "bg-brand" : "bg-surface-3"
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${
+                        generateKlassenbuch ? "right-0.5" : "left-0.5"
+                      }`}
+                    />
+                  </span>
+                </button>
               </Section>
 
               <button

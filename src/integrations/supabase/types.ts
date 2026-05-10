@@ -77,6 +77,94 @@ export type Database = {
         }
         Relationships: []
       }
+      corrections: {
+        Row: {
+          created_at: string
+          exercise_breakdown: Json
+          grade: number | null
+          id: string
+          image_path: string | null
+          max_score: number
+          score: number
+          student_name: string | null
+          updated_at: string
+          user_id: string
+          worksheet_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          exercise_breakdown?: Json
+          grade?: number | null
+          id?: string
+          image_path?: string | null
+          max_score?: number
+          score?: number
+          student_name?: string | null
+          updated_at?: string
+          user_id: string
+          worksheet_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          exercise_breakdown?: Json
+          grade?: number | null
+          id?: string
+          image_path?: string | null
+          max_score?: number
+          score?: number
+          student_name?: string | null
+          updated_at?: string
+          user_id?: string
+          worksheet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "corrections_worksheet_id_fkey"
+            columns: ["worksheet_id"]
+            isOneToOne: false
+            referencedRelation: "worksheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      klassenbuch_entries: {
+        Row: {
+          content: Json
+          created_at: string
+          homework: string | null
+          id: string
+          updated_at: string
+          user_id: string
+          worksheet_id: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          homework?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+          worksheet_id: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          homework?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+          worksheet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "klassenbuch_entries_worksheet_id_fkey"
+            columns: ["worksheet_id"]
+            isOneToOne: false
+            referencedRelation: "worksheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string

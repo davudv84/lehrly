@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FileEdit, Grid2x2, List, Search, Sparkles } from "lucide-react";
+import { ClipboardCheck, FileEdit, Grid2x2, List, Search, Sparkles } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useSeedDemoOnce } from "@/hooks/useSeedDemoOnce";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,16 @@ import { WorksheetCardSkeleton } from "@/components/skeletons/WorksheetCardSkele
 import { stagger, fadeUp } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
+type Correction = {
+  id: string;
+  student_name: string | null;
+  score: number;
+  max_score: number;
+  grade: number | null;
+  created_at: string;
+  exercise_breakdown: { title?: string } | null;
+};
+
 const FILTERS = ["Alle", "A1", "A2", "B1", "B2", "C1"] as const;
 type Filter = (typeof FILTERS)[number];
 
@@ -22,6 +32,8 @@ const Library = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [items, setItems] = useState<WorksheetCardData[]>([]);
+  const [corrections, setCorrections] = useState<Correction[]>([]);
+  const [tab, setTab] = useState<"worksheets" | "corrections">("worksheets");
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("Alle");
   const [view, setView] = useState<"grid" | "list">("grid");
@@ -32,12 +44,19 @@ const Library = () => {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from("worksheets")
-        .select("id,title,niveau,task_types,created_at")
-        .order("created_at", { ascending: false });
+      const [{ data }, { data: corr }] = await Promise.all([
+        supabase
+          .from("worksheets")
+          .select("id,title,niveau,task_types,created_at")
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("corrections")
+          .select("id,student_name,score,max_score,grade,created_at,exercise_breakdown")
+          .order("created_at", { ascending: false }),
+      ]);
       if (cancelled) return;
       setItems((data as WorksheetCardData[] | null) ?? []);
+      setCorrections((corr as unknown as Correction[] | null) ?? []);
       setLoading(false);
     })();
     return () => {
@@ -95,6 +114,35 @@ const Library = () => {
         </div>
       </header>
 
+      {/* Tabs */}
+      <div className="mb-4 flex gap-1 rounded-pill bg-surface-2 ring-hairline p-1">
+        <button
+          onClick={() => setTab("worksheets")}
+          className={cn(
+            "flex h-9 flex-1 items-center justify-center gap-1.5 rounded-pill text-[12.5px] font-medium transition-colors",
+            tab === "worksheets" ? "bg-surface-3 text-text-primary shadow-xs" : "text-text-tertiary hover:text-text-secondary",
+          )}
+        >
+          Arbeitsblätter
+        </button>
+        <button
+          onClick={() => setTab("corrections")}
+          className={cn(
+            "flex h-9 flex-1 items-center justify-center gap-1.5 rounded-pill text-[12.5px] font-medium transition-colors",
+            tab === "corrections" ? "bg-surface-3 text-text-primary shadow-xs" : "text-text-tertiary hover:text-text-secondary",
+          )}
+        >
+          <ClipboardCheck size={13} /> Korrekturen
+          {corrections.length > 0 && (
+            <span className="ml-1 rounded-pill bg-brand/15 px-1.5 text-[10px] text-brand-hover">{corrections.length}</span>
+          )}
+        </button>
+      </div>
+
+      {tab === "corrections" ? (
+        <CorrectionsTab corrections={corrections} loading={loading} navigate={navigate} />
+      ) : (
+        <>
       {/* Search */}
       <div className="relative">
         <Search
@@ -170,6 +218,66 @@ const Library = () => {
           ))}
         </motion.div>
       )}
+        </>
+      )}
+    </div>
+  );
+};
+
+const CorrectionsTab = ({
+  corrections,
+  loading,
+  navigate,
+}: {
+  corrections: Correction[];
+  loading: boolean;
+  navigate: (path: string) => void;
+}) => {
+  if (loading) return <div className="py-10 text-center text-text-tertiary text-[13px]">Lädt…</div>;
+  if (corrections.length === 0) {
+    return (
+      <EmptyState
+        icon={<ClipboardCheck size={22} className="text-brand-hover" />}
+        title="Noch keine Korrekturen"
+        description="Scanne ein ausgefülltes Arbeitsblatt — die KI korrigiert es in Sekunden."
+        action={
+          <TapButton
+            onClick={() => navigate("/scan")}
+            className="flex h-11 items-center gap-1.5 rounded-pill bg-brand px-5 text-[13.5px] font-medium text-primary-foreground hover:bg-brand-hover transition-colors"
+          >
+            Arbeitsblatt scannen
+          </TapButton>
+        }
+      />
+    );
+  }
+  return (
+    <div className="flex flex-col gap-2 pb-8">
+      {corrections.map((c) => {
+        const pct = c.max_score > 0 ? Math.round((Number(c.score) / Number(c.max_score)) * 100) : 0;
+        return (
+          <Link
+            key={c.id}
+            to={`/corrections/${c.id}`}
+            className="float-card flex items-center gap-3.5 rounded-card bg-surface-1 ring-hairline p-3.5"
+          >
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-pill bg-brand-soft text-brand-hover text-[13px] font-semibold">
+              {c.grade ?? "—"}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[13.5px] font-medium text-text-primary">
+                {c.student_name?.trim() || "Unbenannt"}
+              </p>
+              <p className="mt-0.5 text-[11.5px] text-text-tertiary">
+                {c.exercise_breakdown?.title ?? "Korrektur"} · {c.score}/{c.max_score} ({pct}%)
+              </p>
+            </div>
+            <span className="text-[11px] text-text-tertiary">
+              {new Date(c.created_at).toLocaleDateString("de-DE", { day: "2-digit", month: "short" })}
+            </span>
+          </Link>
+        );
+      })}
     </div>
   );
 };

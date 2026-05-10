@@ -3,8 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
-  Check,
+  BookOpen,
+  ClipboardCopy,
   Copy,
+  FileText,
   GraduationCap,
   Printer,
   Share2,
@@ -21,6 +23,18 @@ import WorksheetSheet, {
 import PrintWorksheetView from "@/components/worksheet/PrintWorksheetView";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+type KlassenbuchContent = {
+  lerninhalt?: string;
+  behandelte_aufgaben?: { nummer: number; titel: string; beschreibung: string }[];
+  sprachliche_schwerpunkte?: string;
+  kompetenzbereiche?: string[];
+  datum?: string;
+  niveau?: string;
+  thema?: string | null;
+};
+type KBEntry = { id: string; content: KlassenbuchContent; homework: string | null };
+
 
 type DBWorksheet = {
   id: string;
@@ -50,19 +64,30 @@ const WorksheetDetail = () => {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"student" | "teacher">("student");
   const [printSolutions, setPrintSolutions] = useState(false);
+  const [tab, setTab] = useState<"sheet" | "kb">("sheet");
+  const [kb, setKb] = useState<KBEntry | null>(null);
+  const [homework, setHomework] = useState("");
 
   useEffect(() => {
     if (!id || !user) return;
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from("worksheets")
-        .select("*")
-        .eq("id", id)
-        .maybeSingle();
+      const [{ data }, { data: kbData }] = await Promise.all([
+        supabase.from("worksheets").select("*").eq("id", id).maybeSingle(),
+        supabase
+          .from("klassenbuch_entries")
+          .select("id,content,homework")
+          .eq("worksheet_id", id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
       if (!cancelled) {
         setWs((data as DBWorksheet | null) ?? null);
+        const k = kbData as unknown as KBEntry | null;
+        setKb(k);
+        setHomework(k?.homework ?? "");
         setLoading(false);
       }
     })();
@@ -70,6 +95,37 @@ const WorksheetDetail = () => {
       cancelled = true;
     };
   }, [id, user]);
+
+  const saveHomework = async () => {
+    if (!kb) return;
+    const { error } = await supabase
+      .from("klassenbuch_entries")
+      .update({ homework })
+      .eq("id", kb.id);
+    if (error) toast.error("Speichern fehlgeschlagen");
+    else toast.success("Hausaufgabe gespeichert");
+  };
+
+  const copyKlassenbuch = async () => {
+    if (!kb?.content) return;
+    const c = kb.content;
+    const text =
+      `Datum: ${new Date(c.datum ?? Date.now()).toLocaleDateString("de-DE")}\n` +
+      `Niveau: ${c.niveau ?? ""}\nThema: ${c.thema ?? ""}\n\n` +
+      `Lerninhalt: ${c.lerninhalt ?? ""}\n\n` +
+      `Behandelte Aufgaben:\n${(c.behandelte_aufgaben ?? [])
+        .map((a) => `${a.nummer}. ${a.titel} — ${a.beschreibung}`)
+        .join("\n")}\n\n` +
+      `Sprachliche Schwerpunkte: ${c.sprachliche_schwerpunkte ?? ""}\n` +
+      `Kompetenzbereiche: ${(c.kompetenzbereiche ?? []).join(", ")}\n` +
+      (homework ? `\nHausaufgabe: ${homework}` : "");
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success("In die Zwischenablage kopiert");
+    } catch {
+      toast.error("Kopieren fehlgeschlagen");
+    }
+  };
 
   const meta = useMemo(
     () => ({
@@ -212,6 +268,33 @@ const WorksheetDetail = () => {
           </TapButton>
         </header>
 
+        {kb && (
+          <div className="mb-3 flex gap-1 rounded-pill bg-surface-2 ring-hairline p-1">
+            <button
+              onClick={() => setTab("sheet")}
+              className={cn(
+                "flex h-8 flex-1 items-center justify-center gap-1.5 rounded-pill text-[12px] font-medium transition-colors",
+                tab === "sheet" ? "bg-surface-3 text-text-primary shadow-xs" : "text-text-tertiary",
+              )}
+            >
+              <FileText size={12} /> Arbeitsblatt
+            </button>
+            <button
+              onClick={() => setTab("kb")}
+              className={cn(
+                "flex h-8 flex-1 items-center justify-center gap-1.5 rounded-pill text-[12px] font-medium transition-colors",
+                tab === "kb" ? "bg-surface-3 text-text-primary shadow-xs" : "text-text-tertiary",
+              )}
+            >
+              <BookOpen size={12} /> Klassenbuch
+            </button>
+          </div>
+        )}
+
+        {tab === "kb" && kb ? (
+          <KlassenbuchView kb={kb} homework={homework} setHomework={setHomework} onSave={saveHomework} onCopy={copyKlassenbuch} />
+        ) : (
+        <>
         {/* View toggle (segmented) */}
         <Segmented<"student" | "teacher">
           value={view}
@@ -296,6 +379,8 @@ const WorksheetDetail = () => {
             <Tag key={t}>{t}</Tag>
           ))}
         </div>
+        </>
+        )}
       </div>
 
       {/* Sticky floating action bar */}
@@ -351,6 +436,74 @@ const Tag = ({ children }: { children: React.ReactNode }) => (
   <span className="inline-flex h-6 items-center rounded-pill bg-surface-2 ring-hairline px-2.5 text-[11px] font-medium text-text-secondary">
     {children}
   </span>
+);
+
+const KlassenbuchView = ({
+  kb,
+  homework,
+  setHomework,
+  onSave,
+  onCopy,
+}: {
+  kb: KBEntry;
+  homework: string;
+  setHomework: (v: string) => void;
+  onSave: () => void;
+  onCopy: () => void;
+}) => {
+  const c = kb.content;
+  return (
+    <div className="rounded-card" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E5E5", padding: "28px 28px", color: "#1A1A1A" }}>
+      <p style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#666", fontWeight: 600, margin: 0 }}>
+        Klassenbucheintrag
+      </p>
+      <h2 style={{ fontSize: 20, fontWeight: 700, margin: "6px 0 0 0" }}>
+        {new Date(c.datum ?? Date.now()).toLocaleDateString("de-DE")} · {c.niveau} · {c.thema ?? ""}
+      </h2>
+      <Section title="Lerninhalt"><p style={{ margin: 0, fontSize: 14, lineHeight: 1.6 }}>{c.lerninhalt}</p></Section>
+      <Section title="Behandelte Aufgaben">
+        <ol style={{ margin: 0, paddingLeft: 18 }}>
+          {(c.behandelte_aufgaben ?? []).map((a) => (
+            <li key={a.nummer} style={{ fontSize: 13.5, lineHeight: 1.6, marginBottom: 4 }}>
+              <strong>{a.titel}</strong> — <span style={{ color: "#444" }}>{a.beschreibung}</span>
+            </li>
+          ))}
+        </ol>
+      </Section>
+      <Section title="Sprachliche Schwerpunkte"><p style={{ margin: 0, fontSize: 14, lineHeight: 1.6 }}>{c.sprachliche_schwerpunkte}</p></Section>
+      <Section title="Kompetenzbereiche">
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {(c.kompetenzbereiche ?? []).map((k) => (
+            <span key={k} style={{ display: "inline-flex", height: 24, padding: "0 10px", fontSize: 12, color: "#444", backgroundColor: "#F5F5F5", border: "1px solid #E5E5E5" }}>{k}</span>
+          ))}
+        </div>
+      </Section>
+      <Section title="Hausaufgabe">
+        <textarea
+          value={homework}
+          onChange={(e) => setHomework(e.target.value)}
+          onBlur={onSave}
+          placeholder="Hausaufgabe eintragen…"
+          style={{ width: "100%", minHeight: 60, padding: 10, fontSize: 13.5, border: "1px solid #E5E5E5", backgroundColor: "#FAFAFA", color: "#1A1A1A", fontFamily: "inherit", resize: "vertical" }}
+        />
+      </Section>
+      <div className="no-print" style={{ marginTop: 16, display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <button onClick={onCopy} style={{ flex: 1, height: 42, backgroundColor: "#1A1A1A", color: "#FFFFFF", fontSize: 13.5, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, border: "1px solid #1A1A1A" }}>
+          <ClipboardCopy size={14} /> In Klassenbuch-Format kopieren
+        </button>
+        <button onClick={() => window.print()} style={{ flex: 1, height: 42, backgroundColor: "#FFFFFF", color: "#1A1A1A", fontSize: 13.5, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, border: "1px solid #1A1A1A" }}>
+          <Printer size={14} /> Als PDF exportieren
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <section style={{ marginTop: 18 }}>
+    <h3 style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#666", margin: "0 0 8px 0" }}>{title}</h3>
+    {children}
+  </section>
 );
 
 export default WorksheetDetail;
