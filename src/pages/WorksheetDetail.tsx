@@ -268,6 +268,33 @@ const WorksheetDetail = () => {
           </TapButton>
         </header>
 
+        {kb && (
+          <div className="mb-3 flex gap-1 rounded-pill bg-surface-2 ring-hairline p-1">
+            <button
+              onClick={() => setTab("sheet")}
+              className={cn(
+                "flex h-8 flex-1 items-center justify-center gap-1.5 rounded-pill text-[12px] font-medium transition-colors",
+                tab === "sheet" ? "bg-surface-3 text-text-primary shadow-xs" : "text-text-tertiary",
+              )}
+            >
+              <FileText size={12} /> Arbeitsblatt
+            </button>
+            <button
+              onClick={() => setTab("kb")}
+              className={cn(
+                "flex h-8 flex-1 items-center justify-center gap-1.5 rounded-pill text-[12px] font-medium transition-colors",
+                tab === "kb" ? "bg-surface-3 text-text-primary shadow-xs" : "text-text-tertiary",
+              )}
+            >
+              <BookOpen size={12} /> Klassenbuch
+            </button>
+          </div>
+        )}
+
+        {tab === "kb" && kb ? (
+          <KlassenbuchView kb={kb} homework={homework} setHomework={setHomework} onSave={saveHomework} onCopy={copyKlassenbuch} />
+        ) : (
+        <>
         {/* View toggle (segmented) */}
         <Segmented<"student" | "teacher">
           value={view}
