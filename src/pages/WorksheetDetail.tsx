@@ -3,13 +3,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   ArrowLeft,
+  ChevronDown,
   ClipboardCopy,
   Copy,
   FileText,
   GraduationCap,
   MoreHorizontal,
   Printer,
-  Share2,
   Star,
   Trash2,
   User as UserIcon,
