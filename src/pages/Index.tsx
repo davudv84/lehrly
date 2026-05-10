@@ -2,14 +2,15 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
+  ArrowRight,
   Calendar,
   ClipboardCheck,
   Copy,
   FileCheck2,
+  FileText,
   Folder,
   Library as LibraryIcon,
   Plus,
-  Sparkles,
   Star,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -24,6 +25,27 @@ import { stagger, fadeUp } from "@/lib/motion";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+type Collection = {
+  id: string;
+  title: string;
+  icon: string;
+  color: string;
+  count: number;
+};
+
+const ICON_MAP: Record<string, typeof Folder> = {
+  library: LibraryIcon,
+  star: Star,
+  calendar: Calendar,
+  folder: Folder,
+};
+
+const COLOR_MAP: Record<string, string> = {
+  brand: "bg-brand-soft text-brand-hover",
+  amber: "bg-amber-400/10 text-amber-300",
+  muted: "bg-surface-3 text-text-secondary",
+};
+
 const todayLabel = () => {
   const d = new Date();
   return d.toLocaleDateString("de-DE", {
@@ -33,16 +55,11 @@ const todayLabel = () => {
   });
 };
 
-const Greeting = ({ name }: { name: string | null }) => {
+const greetingFor = (name: string | null) => {
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Guten Morgen" : hour <= 18 ? "Hallo" : "Guten Abend";
+  const g = hour < 12 ? "Guten Morgen" : hour <= 18 ? "Hallo" : "Guten Abend";
   const display = name?.trim() ? name.split(" ").slice(-1)[0] : null;
-  return (
-    <h1 className="font-display text-[32px] font-bold leading-[1.1] tracking-[-0.025em] text-text-primary">
-      {greeting}
-      {display ? `, ${display}` : ""}
-    </h1>
-  );
+  return display ? `${g}, ${display}` : g;
 };
 
 const Avatar = ({ kuerzel }: { kuerzel: string | null }) => (
@@ -53,8 +70,8 @@ const Avatar = ({ kuerzel }: { kuerzel: string | null }) => (
 
 const scrollRowStyle: React.CSSProperties = {
   scrollSnapType: "x mandatory",
-  paddingLeft: 16,
-  paddingRight: 24,
+  paddingLeft: 20,
+  paddingRight: 28,
   scrollbarWidth: "none",
 };
 
@@ -63,6 +80,7 @@ const Index = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [recents, setRecents] = useState<WorksheetCardData[]>([]);
+  const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ today: 0, week: 0, favs: 0 });
 
@@ -71,15 +89,20 @@ const Index = () => {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data: ws } = await supabase
-        .from("worksheets")
-        .select("id,title,niveau,task_types,created_at,is_favorite")
-        .order("created_at", { ascending: false })
-        .limit(20);
+      const [{ data: ws }, { data: cols }] = await Promise.all([
+        supabase
+          .from("worksheets")
+          .select("id,title,niveau,task_types,created_at,is_favorite")
+          .order("created_at", { ascending: false })
+          .limit(20),
+        supabase
+          .from("collections")
+          .select("id,title,icon,color,collection_worksheets(count)")
+          .order("created_at", { ascending: true }),
+      ]);
       if (cancelled) return;
       const list = (ws as (WorksheetCardData & { is_favorite: boolean })[] | null) ?? [];
       setRecents(list.slice(0, 8));
-
       const now = Date.now();
       const dayMs = 86400000;
       setStats({
@@ -87,6 +110,15 @@ const Index = () => {
         week: list.filter((w) => now - new Date(w.created_at).getTime() < dayMs * 7).length,
         favs: list.filter((w) => w.is_favorite).length,
       });
+      setCollections(
+        (cols ?? []).map((c: any) => ({
+          id: c.id,
+          title: c.title,
+          icon: c.icon,
+          color: c.color,
+          count: c.collection_worksheets?.[0]?.count ?? 0,
+        })),
+      );
       setLoading(false);
     })();
     return () => {
@@ -123,142 +155,110 @@ const Index = () => {
     { label: "Heute", value: stats.today },
     { label: "Diese Woche", value: stats.week },
     { label: "Favoriten", value: stats.favs },
-  ].filter((s) => s.value > 0);
+  ];
 
   return (
     <div>
       {/* Top bar: date + avatar */}
       <header
-        className="flex items-center justify-between px-5 pb-5"
+        className="flex items-center justify-between px-5 pb-3"
         style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 22px)" }}
       >
-        <p className="section-label">{todayLabel()}</p>
+        <div className="min-w-0">
+          <p className="section-label">{todayLabel()}</p>
+          <p className="mt-1 text-[13px] text-text-secondary">
+            {greetingFor(profile?.name ?? null)}
+          </p>
+        </div>
         <Link to="/profile" aria-label="Profil">
           <Avatar kuerzel={profile?.kuerzel ?? null} />
         </Link>
       </header>
 
-      {/* Headline */}
-      <div className="px-5 pb-6">
-        <Greeting name={profile?.name ?? null} />
-        <p className="mt-1.5 text-[16px] font-normal leading-relaxed text-white/60">
-          Was bereitest du heute vor?
-        </p>
-      </div>
+      {/* Hero card — product promise + two compact actions inside */}
+      <section className="px-5 pt-4">
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.22, 0.61, 0.36, 1] }}
+          className="surface-card overflow-hidden bg-surface-1 ring-hairline"
+        >
+          <div className="px-5 pb-4 pt-5">
+            <h1 className="font-display text-[22px] font-semibold leading-[1.2] tracking-[-0.02em] text-text-primary">
+              Deine nächste Stunde.
+              <br />
+              <span className="text-text-secondary">In Minuten vorbereitet.</span>
+            </h1>
+            <p className="mt-2 text-[13px] leading-relaxed text-text-tertiary">
+              Erstelle Arbeitsblätter, Klassenbucheinträge und Korrekturen für DaF/DaZ-Kurse.
+            </p>
+          </div>
 
-      {/* Two hero cards */}
-      <section className="px-5">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: [0.22, 0.61, 0.36, 1] }}
-          >
-            <TapButton
+          <div className="border-t border-hairline/8 grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-hairline/8">
+            <PrimaryAction
               onClick={() => navigate("/generate")}
-              className={cn(
-                "relative flex h-full min-h-[148px] w-full flex-col justify-between rounded-[12px] p-6 text-left",
-                "bg-gradient-to-br from-[hsl(var(--brand-soft))] to-[hsl(var(--surface-2))]",
-                "ring-1 ring-brand/30 hover:ring-brand/50 transition-all",
-              )}
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-primary-foreground shadow-xs">
-                <Sparkles size={18} />
-              </div>
-              <div className="mt-4">
-                <p className="font-display text-[17px] font-semibold tracking-[-0.015em] text-text-primary">
-                  Neues Arbeitsblatt
-                </p>
-                <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
-                  In 30 Sekunden druckfertig
-                </p>
-              </div>
-            </TapButton>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: 0.05, ease: [0.22, 0.61, 0.36, 1] }}
-          >
-            <TapButton
+              icon={<FileText size={16} />}
+              title="Arbeitsblatt erstellen"
+              subtitle="Niveau, Thema, Aufgaben wählen"
+              accent
+            />
+            <PrimaryAction
               onClick={() => navigate("/scan")}
-              className="relative flex h-full min-h-[148px] w-full flex-col justify-between rounded-[12px] p-6 text-left transition-all hover:bg-[#1F2024]"
-              style={{
-                backgroundColor: "#1A1B1E",
-                border: "1px solid rgba(16,185,129,0.4)",
-              }}
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-3 text-brand ring-1 ring-brand/30">
-                <ClipboardCheck size={18} />
-              </div>
-              <div className="mt-4">
-                <p className="font-display text-[17px] font-semibold tracking-[-0.015em] text-text-primary">
-                  Korrektur starten
-                </p>
-                <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
-                  Foto scannen, Note erhalten
-                </p>
-              </div>
-            </TapButton>
-          </motion.div>
-        </div>
+              icon={<ClipboardCheck size={16} />}
+              title="Korrektur starten"
+              subtitle="Foto scannen, Bewertung erhalten"
+            />
+          </div>
+        </motion.div>
       </section>
 
-      {/* Schnellaktionen */}
-      <section className="mt-7">
-        <div className="px-5">
-          <SectionHeader label="Schnellaktionen" className="mb-3" />
-        </div>
-        <div
-          className="flex gap-3 overflow-x-auto pb-1 no-scrollbar"
-          style={scrollRowStyle}
-        >
-          <QuickAction icon={<Copy size={14} />} label="Letztes duplizieren" onClick={duplicateLast} />
+      {/* Quick actions — wrap to second line so nothing clips */}
+      <section className="mt-7 px-5">
+        <SectionHeader label="Schnellaktionen" className="mb-3" />
+        <div className="flex flex-wrap gap-2">
+          <QuickAction icon={<Copy size={13} />} label="Letztes duplizieren" onClick={duplicateLast} />
           <QuickAction
-            icon={<Calendar size={14} />}
+            icon={<FileCheck2 size={13} />}
+            label="Vorlage verwenden"
+            onClick={() => navigate("/library?tab=templates")}
+          />
+          <QuickAction
+            icon={<Calendar size={13} />}
             label="Morgen vorbereiten"
             onClick={() => navigate("/generate")}
           />
-          <QuickAction
-            icon={<FileCheck2 size={14} />}
-            label="Aus Vorlage erstellen"
-            onClick={() => navigate("/library?tab=templates")}
-          />
         </div>
       </section>
 
-      {/* Stats strip — minimal, only if any > 0 */}
-      {statItems.length > 0 && (
-        <section className="mt-7 px-5">
-          <div className="border-y border-hairline/10 py-3">
-            <div className="flex items-stretch justify-between">
-              {statItems.map((s, i) => (
-                <div
-                  key={s.label}
-                  className={cn(
-                    "flex flex-1 flex-col items-center justify-center px-2",
-                    i > 0 && "border-l border-hairline/10",
-                  )}
+      {/* Compact stats */}
+      <section className="mt-6 px-5">
+        <div className="border-y border-hairline/10 py-3">
+          <div className="flex items-stretch justify-between">
+            {statItems.map((s, i) => (
+              <div
+                key={s.label}
+                className={cn(
+                  "flex flex-1 flex-col items-center justify-center px-2",
+                  i > 0 && "border-l border-hairline/10",
+                )}
+              >
+                <span
+                  className="text-[11px] font-medium uppercase text-text-tertiary"
+                  style={{ letterSpacing: "0.06em" }}
                 >
-                  <span
-                    className="text-[11px] font-medium uppercase text-text-tertiary"
-                    style={{ letterSpacing: "0.06em" }}
-                  >
-                    {s.label}
-                  </span>
-                  <span className="mt-1 font-display text-[22px] font-semibold leading-none tracking-[-0.02em] text-text-primary tabular-nums">
-                    {s.value}
-                  </span>
-                </div>
-              ))}
-            </div>
+                  {s.label}
+                </span>
+                <span className="mt-1 font-display text-[22px] font-semibold leading-none tracking-[-0.02em] text-text-primary tabular-nums">
+                  {s.value}
+                </span>
+              </div>
+            ))}
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* Recents */}
-      <section className="mt-8 pb-8">
+      <section className="mt-7">
         <div className="px-5">
           <SectionHeader
             label="Zuletzt erstellt"
@@ -310,9 +310,92 @@ const Index = () => {
           </motion.div>
         )}
       </section>
+
+      {/* Sammlungen */}
+      <section className="mt-7 px-5 pb-8">
+        <SectionHeader
+          label="Sammlungen"
+          action={{ label: "Neu", onClick: () => toast.info("Bald verfügbar") }}
+        />
+        <motion.div
+          variants={stagger(0.04)}
+          initial="hidden"
+          animate="show"
+          className="mt-3.5 grid grid-cols-2 gap-3"
+        >
+          {collections.map((c) => {
+            const Icon = ICON_MAP[c.icon] ?? Folder;
+            return (
+              <motion.div key={c.id} variants={fadeUp}>
+                <TapButton className="float-card flex w-full items-center gap-3 rounded-card bg-surface-1 ring-hairline p-3 text-left">
+                  <div
+                    className={cn(
+                      "flex h-9 w-9 items-center justify-center rounded-lg",
+                      COLOR_MAP[c.color] ?? COLOR_MAP.brand,
+                    )}
+                  >
+                    <Icon size={16} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[13.5px] font-medium text-text-primary">
+                      {c.title}
+                    </p>
+                    <p className="text-[11.5px] text-text-tertiary">{c.count} Blätter</p>
+                  </div>
+                </TapButton>
+              </motion.div>
+            );
+          })}
+          {collections.length === 0 && !loading && (
+            <div className="col-span-2 flex items-center justify-center rounded-card border border-dashed border-hairline/10 px-6 py-8 text-[12.5px] text-text-tertiary">
+              Sammlungen erscheinen hier.
+            </div>
+          )}
+        </motion.div>
+      </section>
     </div>
   );
 };
+
+const PrimaryAction = ({
+  icon,
+  title,
+  subtitle,
+  onClick,
+  accent,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  onClick: () => void;
+  accent?: boolean;
+}) => (
+  <TapButton
+    onClick={onClick}
+    className="group flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-surface-2"
+  >
+    <div
+      className={cn(
+        "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors",
+        accent
+          ? "bg-brand text-primary-foreground"
+          : "bg-surface-3 text-text-primary ring-1 ring-hairline/15",
+      )}
+    >
+      {icon}
+    </div>
+    <div className="min-w-0 flex-1">
+      <p className="text-[14px] font-semibold tracking-[-0.005em] text-text-primary">
+        {title}
+      </p>
+      <p className="mt-0.5 truncate text-[12px] text-text-tertiary">{subtitle}</p>
+    </div>
+    <ArrowRight
+      size={15}
+      className="shrink-0 text-text-tertiary transition-transform group-hover:translate-x-0.5"
+    />
+  </TapButton>
+);
 
 const QuickAction = ({
   icon,
@@ -325,8 +408,7 @@ const QuickAction = ({
 }) => (
   <TapButton
     onClick={onClick}
-    style={{ scrollSnapAlign: "start", flexShrink: 0 }}
-    className="flex h-10 items-center gap-2 rounded-pill bg-surface-2 ring-hairline px-4 text-[12.5px] font-medium text-text-secondary hover:text-text-primary hover:bg-surface-3 transition-colors"
+    className="flex h-9 items-center gap-1.5 rounded-pill bg-surface-2 ring-hairline px-3.5 text-[12.5px] font-medium text-text-secondary hover:text-text-primary hover:bg-surface-3 transition-colors"
   >
     <span className="text-text-tertiary">{icon}</span>
     {label}
