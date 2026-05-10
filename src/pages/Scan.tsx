@@ -273,6 +273,11 @@ const Scan = () => {
         }}
       >
         <div className="mx-auto w-full max-w-md px-5 py-3">
+          {!ready && !loading && (
+            <p className="mb-2 text-center text-[12px] text-text-tertiary">
+              Lade zuerst ein ausgefülltes Arbeitsblatt hoch.
+            </p>
+          )}
           <button
             onClick={submit}
             disabled={!ready || loading}
