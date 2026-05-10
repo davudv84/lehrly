@@ -122,15 +122,15 @@ export async function generateWorksheetPdf({
   if (ws.competencies?.length) metaParts.push(ws.competencies.join(" · "));
   writeWrapped(metaParts.join(" · "), { size: 9.5, color: [110, 110, 110], gap: 3 });
 
-  // Learning goal
+  // Learning goal (B&W)
   if (ws.learning_goal) {
     ensureSpace(14);
-    doc.setFillColor(243, 250, 245);
-    doc.setDrawColor(200, 224, 207);
+    doc.setFillColor(250, 250, 250);
+    doc.setDrawColor(200, 200, 200);
     doc.rect(MARGIN, y, CONTENT_W, 12, "FD");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
-    doc.setTextColor(31, 122, 63);
+    doc.setTextColor(60, 60, 60);
     doc.text("LERNZIEL", MARGIN + 2.5, y + 4);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
