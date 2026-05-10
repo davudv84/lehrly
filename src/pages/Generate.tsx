@@ -7,8 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import TapButton from "@/components/TapButton";
 import Chip from "@/components/Chip";
 import GenerationOverlay from "@/components/GenerationOverlay";
-import CompletionOverview from "@/components/worksheet/CompletionOverview";
-import type { WorksheetData } from "@/components/worksheet/WorksheetSheet";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -62,10 +60,9 @@ const Generate = () => {
   const [printSolutions, setPrintSolutions] = useState(true);
 
   const [phase, setPhase] = useState<Phase>("form");
-  const [createdId, setCreatedId] = useState<string | null>(null);
-  const [createdSheet, setCreatedSheet] = useState<WorksheetData | null>(null);
-  const [createdAt, setCreatedAt] = useState<string>(new Date().toISOString());
+  const [, setCreatedId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
 
   const previewBadge = useMemo(
     () => `${niveau} · ${count} Aufgaben`,
@@ -115,45 +112,13 @@ const Generate = () => {
       if (generateKlassenbuch && newId) {
         supabase.functions.invoke("generate-klassenbuch", { body: { worksheetId: newId } }).catch(() => {});
       }
-      const { data: full } = await supabase
-        .from("worksheets")
-        .select("*")
-        .eq("id", newId)
-        .maybeSingle();
-      if (full) {
-        const c = (full as any).content ?? {};
-        setCreatedSheet({
-          title: c.title || (full as any).title,
-          niveau: (full as any).niveau,
-          topic: (full as any).topic,
-          task_count: (full as any).task_count,
-          competencies: c.competencies ?? [],
-          duration_min: c.duration_min ?? null,
-          learning_goal: c.learning_goal ?? null,
-          teacher_notes: c.teacher_notes ?? [],
-          exercises: c.exercises ?? [],
-        });
-        setCreatedAt((full as any).created_at);
-      }
-      setPhase("success");
+      toast.success("Arbeitsblatt erstellt");
+      navigate(`/worksheets/${newId}`);
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : "Unbekannter Fehler");
       setPhase("error");
     }
   };
-
-  if (phase === "success" && createdSheet && createdId) {
-    return (
-      <CompletionOverview
-        ws={createdSheet}
-        meta={{ worksheetId: createdId, createdAt }}
-        taskTypes={taskTypes}
-        onPrint={() => navigate(`/worksheets/${createdId}`)}
-        onEdit={() => navigate(`/worksheets/${createdId}`)}
-        onClose={close}
-      />
-    );
-  }
 
   return (
     <div
