@@ -283,7 +283,31 @@ const Generate = () => {
                 />
               </Section>
 
-              <button
+              <Section label="Klassenbucheintrag">
+                <button
+                  type="button"
+                  onClick={() => setGenerateKlassenbuch((v) => !v)}
+                  className="flex w-full items-center justify-between rounded-input bg-surface-2 ring-hairline px-4 py-3 text-left"
+                >
+                  <span className="text-[13px] text-text-primary">
+                    Klassenbucheintrag automatisch generieren
+                  </span>
+                  <span
+                    role="switch"
+                    aria-checked={generateKlassenbuch}
+                    className={`relative h-6 w-11 shrink-0 rounded-pill transition-colors ${
+                      generateKlassenbuch ? "bg-brand" : "bg-surface-3"
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${
+                        generateKlassenbuch ? "right-0.5" : "left-0.5"
+                      }`}
+                    />
+                  </span>
+                </button>
+              </Section>
+
                 onClick={submit}
                 className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-pill bg-brand text-[14px] font-medium text-primary-foreground transition-all hover:bg-brand-hover active:scale-[0.99]"
               >
