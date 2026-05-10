@@ -86,7 +86,7 @@ export async function generateWorksheetPdf({
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.text(meta.authorInitials, MARGIN + 4.5, y + 6, { align: "center" });
+  doc.text(safe(meta.authorInitials), MARGIN + 4.5, y + 6, { align: "center" });
 
   doc.setTextColor(17, 17, 17);
   doc.setFont("helvetica", "bold");
