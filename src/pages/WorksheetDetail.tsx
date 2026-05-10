@@ -646,94 +646,203 @@ const ReadingMode = ({
   ws: WorksheetData;
   teacherMode: boolean;
 }) => {
+  const reduce = useReducedMotion();
+  const stagger = (i: number) =>
+    reduce
+      ? { initial: false as const, animate: { opacity: 1, y: 0 } }
+      : {
+          initial: { opacity: 0, y: 6 },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.3, delay: 0.06 * (i + 1), ease: [0.22, 0.61, 0.36, 1] as const },
+        };
+
   return (
-    <div className="flex flex-col gap-3" style={{ scrollSnapType: "y mandatory" }}>
-      <div className="rounded-card bg-surface-1 ring-hairline p-4">
-        <p className="section-label">{ws.niveau} · {ws.exercises.length} Aufgaben</p>
+    <article
+      className="mx-auto w-full"
+      style={{
+        maxWidth: 760,
+        backgroundColor: "#FFFFFF",
+        color: "#1A1A1A",
+        borderRadius: 8,
+        boxShadow: "0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.25)",
+        padding: "32px 24px",
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+      }}
+    >
+      <motion.header
+        initial={reduce ? false : { opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.24 }}
+        style={{ paddingBottom: 24, borderBottom: "1px solid #E5E5E5" }}
+      >
+        <p
+          style={{
+            fontSize: 12,
+            fontWeight: 600,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            color: "#666",
+            margin: 0,
+          }}
+        >
+          {ws.niveau} · {ws.exercises.length} Aufgaben
+        </p>
         <h2
-          className="mt-2 font-display text-[22px] font-semibold tracking-[-0.018em] text-text-primary"
-          style={{ lineHeight: 1.25 }}
+          style={{
+            margin: "12px 0 0 0",
+            fontFamily: '"Source Serif 4", "Source Serif Pro", Georgia, serif',
+            fontSize: 26,
+            fontWeight: 600,
+            lineHeight: 1.2,
+            letterSpacing: "-0.012em",
+            color: "#1A1A1A",
+          }}
         >
           {ws.title}
         </h2>
         {ws.learning_goal && (
           <p
-            className="mt-2 text-text-secondary"
-            style={{ fontSize: 14, lineHeight: 1.7, fontStyle: "italic" }}
+            style={{
+              marginTop: 12,
+              fontSize: 14,
+              lineHeight: 1.7,
+              fontStyle: "italic",
+              color: "#444",
+            }}
           >
             {ws.learning_goal}
           </p>
         )}
-      </div>
+      </motion.header>
 
-      {ws.exercises.map((ex, i) => (
-        <article
-          key={i}
-          className="rounded-card bg-surface-1 ring-hairline p-4"
-          style={{ scrollSnapAlign: "start" }}
-        >
-          <span className="inline-flex h-6 items-center rounded-pill bg-surface-2 ring-hairline px-2.5 text-[11px] font-medium text-text-tertiary">
-            Aufgabe {i + 1} von {ws.exercises.length}
-          </span>
-          <p
-            className="mt-3 font-medium text-text-primary"
-            style={{ fontSize: 16, lineHeight: 1.7 }}
+      <div>
+        {ws.exercises.map((ex, i) => (
+          <motion.section
+            key={i}
+            {...stagger(i)}
+            style={{ marginTop: i === 0 ? 32 : 40 }}
           >
-            {ex.instruction}
-          </p>
-          {ex.context && (
             <p
-              className="mt-2 italic text-text-secondary"
-              style={{ fontSize: 15, lineHeight: 1.7 }}
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: "#666",
+                margin: 0,
+              }}
             >
-              {ex.context}
+              Aufgabe {i + 1} · von {ws.exercises.length}
             </p>
-          )}
-
-          {ex.options && ex.options.length > 0 ? (
-            <ul className="mt-4 flex flex-col gap-2">
-              {ex.options.map((opt, j) => (
-                <li
-                  key={j}
-                  className="flex h-12 items-center rounded-input bg-surface-2 ring-hairline px-4 text-[15px] text-text-primary"
-                >
-                  {opt.replace(/^[a-dA-D][\).]\s+/, "")}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p
-              className="mt-4 whitespace-pre-line text-text-primary"
-              style={{ fontSize: 15, lineHeight: 1.8 }}
+            <h3
+              style={{
+                margin: "8px 0 0 0",
+                fontFamily: '"Source Serif 4", "Source Serif Pro", Georgia, serif',
+                fontSize: 18,
+                fontWeight: 600,
+                lineHeight: 1.35,
+                color: "#1A1A1A",
+              }}
             >
-              {ex.content}
-            </p>
-          )}
+              {ex.instruction}
+            </h3>
+            {ex.context && (
+              <p
+                style={{
+                  marginTop: 8,
+                  fontSize: 15,
+                  lineHeight: 1.7,
+                  fontStyle: "italic",
+                  color: "#444",
+                }}
+              >
+                {ex.context}
+              </p>
+            )}
 
-          {teacherMode && (
-            <>
-              <div className="mt-4 border-t border-hairline/10 pt-3">
+            {ex.options && ex.options.length > 0 ? (
+              <ul style={{ marginTop: 16, padding: 0, listStyle: "none" }}>
+                {ex.options.map((opt, j) => (
+                  <li
+                    key={j}
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 12,
+                      padding: "8px 0",
+                      fontSize: 15,
+                      lineHeight: 1.7,
+                      color: "#1A1A1A",
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: 14,
+                        height: 14,
+                        border: "1.2px solid #1A1A1A",
+                        borderRadius: 2,
+                        marginTop: 4,
+                        flexShrink: 0,
+                      }}
+                    />
+                    <span>{opt.replace(/^[a-dA-D][\).]\s+/, "")}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p
+                style={{
+                  marginTop: 16,
+                  fontSize: 15,
+                  lineHeight: 1.7,
+                  color: "#1A1A1A",
+                  whiteSpace: "pre-line",
+                }}
+              >
+                {ex.content}
+              </p>
+            )}
+
+            {teacherMode && (
+              <div
+                style={{
+                  marginTop: 16,
+                  paddingTop: 12,
+                  borderTop: "1px dashed #CCCCCC",
+                }}
+              >
                 <p
-                  className="text-[12px] font-semibold uppercase tracking-[0.08em]"
-                  style={{ color: "hsl(var(--brand-hover))" }}
+                  style={{
+                    margin: 0,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    color: "#0F7A4E",
+                  }}
                 >
                   Lösung
                 </p>
                 <p
-                  className="mt-1 text-[14px]"
-                  style={{ color: "hsl(var(--brand-hover))", lineHeight: 1.7 }}
+                  style={{
+                    margin: "4px 0 0 0",
+                    fontSize: 14,
+                    lineHeight: 1.7,
+                    color: "#0F7A4E",
+                  }}
                 >
                   {ex.solution}
                 </p>
+                <p style={{ margin: "8px 0 0 0", fontSize: 12, color: "#666" }}>
+                  / {ex.points ?? 5} Punkte
+                </p>
               </div>
-              <p className="mt-2 text-[11.5px] text-text-tertiary">
-                / {ex.points ?? 5} Punkte
-              </p>
-            </>
-          )}
-        </article>
-      ))}
-    </div>
+            )}
+          </motion.section>
+        ))}
+      </div>
+    </article>
   );
 };
 
