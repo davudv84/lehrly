@@ -104,7 +104,7 @@ export async function generateWorksheetPdf({
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(17, 17, 17);
-  doc.text(ws.niveau, PAGE_W - MARGIN - 8, y + 6, { align: "center" });
+  doc.text(safe(ws.niveau), PAGE_W - MARGIN - 8, y + 6, { align: "center" });
 
   y += 12;
   doc.setDrawColor(208, 208, 208);
@@ -118,9 +118,9 @@ export async function generateWorksheetPdf({
   const metaParts: string[] = [];
   if (ws.topic) metaParts.push(`Thema: ${ws.topic}`);
   metaParts.push(`${ws.task_count} Aufgaben`);
-  if (ws.duration_min) metaParts.push(`≈ ${ws.duration_min} Min.`);
+  if (ws.duration_min) metaParts.push(`ca. ${ws.duration_min} Min.`);
   if (ws.competencies?.length) metaParts.push(ws.competencies.join(" · "));
-  writeWrapped(metaParts.join("  ·  "), { size: 9.5, color: [110, 110, 110], gap: 3 });
+  writeWrapped(metaParts.join(" · "), { size: 9.5, color: [110, 110, 110], gap: 3 });
 
   // Learning goal
   if (ws.learning_goal) {
