@@ -7,8 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import TapButton from "@/components/TapButton";
 import Chip from "@/components/Chip";
 import GenerationOverlay from "@/components/GenerationOverlay";
-import CompletionOverview from "@/components/worksheet/CompletionOverview";
-import type { WorksheetData } from "@/components/worksheet/WorksheetSheet";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
