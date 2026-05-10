@@ -24,27 +24,50 @@ type Correction = {
   exercise_breakdown: { title?: string } | null;
 };
 
+type Template = {
+  id: string;
+  title: string;
+  niveau: string;
+  topic: string | null;
+  task_types: string[];
+  task_count: number;
+  is_new: boolean;
+  usage_count: number;
+  last_used_at: string | null;
+};
+
 const FILTERS = ["Alle", "A1", "A2", "B1", "B2", "C1"] as const;
 type Filter = (typeof FILTERS)[number];
+type Tab = "worksheets" | "corrections" | "templates";
 
 const Library = () => {
   useSeedDemoOnce();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
+  const initialTab = (params.get("tab") as Tab) || "worksheets";
   const [items, setItems] = useState<WorksheetCardData[]>([]);
   const [corrections, setCorrections] = useState<Correction[]>([]);
-  const [tab, setTab] = useState<"worksheets" | "corrections">("worksheets");
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [tab, setTabState] = useState<Tab>(initialTab);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("Alle");
   const [view, setView] = useState<"grid" | "list">("grid");
   const [loading, setLoading] = useState(true);
+
+  const setTab = (t: Tab) => {
+    setTabState(t);
+    if (t === "worksheets") params.delete("tab");
+    else params.set("tab", t);
+    setParams(params, { replace: true });
+  };
 
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const [{ data }, { data: corr }] = await Promise.all([
+      const [{ data }, { data: corr }, { data: tpl }] = await Promise.all([
         supabase
           .from("worksheets")
           .select("id,title,niveau,task_types,created_at")
@@ -53,10 +76,15 @@ const Library = () => {
           .from("corrections")
           .select("id,student_name,score,max_score,grade,created_at,exercise_breakdown")
           .order("created_at", { ascending: false }),
+        supabase
+          .from("templates")
+          .select("*")
+          .order("usage_count", { ascending: false }),
       ]);
       if (cancelled) return;
       setItems((data as WorksheetCardData[] | null) ?? []);
       setCorrections((corr as unknown as Correction[] | null) ?? []);
+      setTemplates((tpl as Template[] | null) ?? []);
       setLoading(false);
     })();
     return () => {
