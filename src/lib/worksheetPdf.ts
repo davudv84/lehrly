@@ -303,7 +303,7 @@ function drawFooter(doc: jsPDF, meta: Meta) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(136, 136, 136);
-  doc.text(`Lehrly · ${meta.schoolLabel}`, MARGIN, yy + 2);
+  doc.text(safe(`Lehrly · ${meta.schoolLabel}`), MARGIN, yy + 2);
   doc.text(`ID ${meta.worksheetId.slice(0, 8).toUpperCase()}`, PAGE_W - MARGIN, yy + 2, { align: "right" });
 }
 
