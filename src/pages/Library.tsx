@@ -267,7 +267,7 @@ const CorrectionsTab = ({
             to={`/corrections/${c.id}`}
             className="float-card flex items-center gap-3.5 rounded-card bg-surface-1 ring-hairline p-3.5"
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-pill bg-brand-soft text-brand-hover text-[13px] font-semibold">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-pill bg-surface-2 text-text-primary text-[13px] font-semibold ring-hairline">
               {c.grade ?? "—"}
             </div>
             <div className="min-w-0 flex-1">
