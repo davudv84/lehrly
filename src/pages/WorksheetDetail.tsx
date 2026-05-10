@@ -885,7 +885,7 @@ const KlassenbuchView = ({
       >
         Klassenbucheintrag
       </p>
-      <h2 style={{ fontSize: 20, fontWeight: 700, margin: "6px 0 0 0" }}>
+      <h2 style={{ fontSize: 18, fontWeight: 600, margin: "8px 0 0 0", letterSpacing: "-0.01em" }}>
         {new Date(c.datum ?? Date.now()).toLocaleDateString("de-DE")} · {c.niveau} · {c.thema ?? ""}
       </h2>
       <KSection title="Lerninhalt">
