@@ -34,6 +34,21 @@ const CONTENT_W = PAGE_W - MARGIN * 2;
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
 
+/** Replace characters jsPDF's standard Helvetica (WinAnsi) renders poorly. */
+const safe = (s: string | null | undefined): string => {
+  if (!s) return "";
+  return s
+    .replace(/\u2248/g, "ca.") // ≈
+    .replace(/[\u2018\u2019\u201A\u2032]/g, "'") // ‘ ’ ‚ ′
+    .replace(/[\u201C\u201D\u201E\u2033]/g, '"') // “ ” „ ″
+    .replace(/[\u2013\u2014]/g, "-") // – —
+    .replace(/\u2026/g, "...") // …
+    .replace(/[\u00A0\u202F\u2009\u200A\u2007]/g, " ") // non-breaking / thin spaces
+    .replace(/\u2022/g, "·") // • → · (WinAnsi-safe middle dot)
+    .replace(/\s+/g, (m) => (m.includes("\n") ? m : " ")) // collapse runs of spaces, keep newlines
+    .trim();
+};
+
 export async function generateWorksheetPdf({
   ws,
   meta,
