@@ -11,7 +11,7 @@
 @layer base {
   :root {
     /* ---------- Surfaces (softer, layered dark) ---------- */
-    --bg-base: 222 18% 6%;            /* App background — softer than pure black */
+    --bg-base: 220 10% 6%;            /* App background #0E0F11 */
     --bg-elevated: 222 16% 8%;        /* Page surface */
     --surface: 222 14% 10%;           /* Card */
     --surface-elevated: 222 13% 13%;  /* Elevated card / sheet */
@@ -173,11 +173,11 @@
 
   /* ---------- Section labels ---------- */
   .section-label {
-    font-size: 10.5px;
+    font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: hsl(var(--text-tertiary));
+    color: rgba(255, 255, 255, 0.65);
   }
 
   /* ---------- Cards ---------- */
