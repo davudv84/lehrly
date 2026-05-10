@@ -471,6 +471,35 @@ const WorksheetDetail = () => {
         </SheetContent>
       </Sheet>
 
+      {/* Fixed action bar above bottom nav — Drucken / PDF */}
+      {tab === "sheet" && (
+        <div
+          className="no-print fixed inset-x-0 z-30"
+          style={{
+            bottom: "calc(56px + env(safe-area-inset-bottom, 0px))",
+            backgroundColor: "rgba(14,15,17,0.92)",
+            backdropFilter: "blur(20px) saturate(160%)",
+            WebkitBackdropFilter: "blur(20px) saturate(160%)",
+            borderTop: "1px solid hsl(var(--hairline) / 0.1)",
+          }}
+        >
+          <div className="mx-auto flex w-full max-w-md items-center gap-2 px-4 py-2.5">
+            <button
+              onClick={handlePrint}
+              className="flex h-10 flex-1 items-center justify-center gap-2 rounded-pill bg-surface-2 ring-hairline text-[13px] font-medium text-text-primary hover:bg-surface-3 transition-colors"
+            >
+              <Printer size={14} /> Drucken
+            </button>
+            <button
+              onClick={handlePrint}
+              className="flex h-10 flex-1 items-center justify-center gap-2 rounded-pill bg-surface-2 ring-hairline text-[13px] font-medium text-text-primary hover:bg-surface-3 transition-colors"
+            >
+              <FileText size={14} /> Als PDF
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Print-only A4 layout (independent from mobile UI) */}
       <PrintWorksheetView
         ws={sheet}
