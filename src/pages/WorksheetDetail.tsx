@@ -3,8 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
-  Check,
+  BookOpen,
+  ClipboardCopy,
   Copy,
+  FileText,
   GraduationCap,
   Printer,
   Share2,
@@ -21,6 +23,18 @@ import WorksheetSheet, {
 import PrintWorksheetView from "@/components/worksheet/PrintWorksheetView";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+type KlassenbuchContent = {
+  lerninhalt?: string;
+  behandelte_aufgaben?: { nummer: number; titel: string; beschreibung: string }[];
+  sprachliche_schwerpunkte?: string;
+  kompetenzbereiche?: string[];
+  datum?: string;
+  niveau?: string;
+  thema?: string | null;
+};
+type KBEntry = { id: string; content: KlassenbuchContent; homework: string | null };
+
 
 type DBWorksheet = {
   id: string;
