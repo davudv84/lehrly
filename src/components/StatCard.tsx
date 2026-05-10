@@ -11,7 +11,7 @@ type Props = {
 };
 
 const ACCENTS: Record<NonNullable<Props["accent"]>, string> = {
-  brand: "text-brand-hover",
+  brand: "text-text-secondary",
   amber: "text-amber-300",
   sky: "text-sky-300",
 };
