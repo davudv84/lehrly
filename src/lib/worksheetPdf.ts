@@ -154,9 +154,19 @@ export async function generateWorksheetPdf({
   });
   y += 10;
 
-  // Exercises
+  // Exercises — keep each Aufgabe together on one page when possible
+  const PAGE_USABLE = PAGE_H - MARGIN - 10 - MARGIN; // top margin to footer area
   ws.exercises.forEach((ex, i) => {
+    const estH = measureExercise(doc, ex);
+    const remaining = PAGE_H - MARGIN - 10 - y;
+    // Only force a page break if the block fits on a fresh page; otherwise it must split anyway.
+    if (estH <= PAGE_USABLE && estH > remaining && y > MARGIN + 1) {
+      drawFooter(doc, meta);
+      doc.addPage();
+      y = MARGIN;
+    }
     drawExercise(doc, ex, i, ensureSpace, writeWrapped, () => y, (v) => { y = v; });
+    y += 4; // extra spacing between Aufgaben
   });
 
   drawFooter(doc, meta);
