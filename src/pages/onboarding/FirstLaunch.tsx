@@ -177,11 +177,25 @@ const Body = ({ children }: { children: React.ReactNode }) => (
 
 const ScreenWelcome = () => (
   <div className="flex flex-1 flex-col items-center justify-center text-center">
-    <LehrlyMark size={26} />
-    <div style={{ height: 28 }} />
-    <Headline>Druckfertige Arbeitsblätter in 30 Sekunden.</Headline>
-    <div className="max-w-[300px]">
-      <Body>Für DaF/DaZ-Lehrkräfte. Von A1 bis C1.</Body>
+    <span
+      aria-hidden
+      className="inline-block rounded-full"
+      style={{ width: 12, height: 12, background: "#10B981" }}
+    />
+    <h1
+      className="font-bold tracking-[-0.02em] text-text-primary"
+      style={{ fontSize: 36, lineHeight: 1.1, marginTop: 28 }}
+    >
+      Lehrly
+    </h1>
+    <h2
+      className="font-bold tracking-[-0.02em] text-text-primary"
+      style={{ fontSize: 24, lineHeight: 1.2, marginTop: 22 }}
+    >
+      Willkommen bei Lehrly
+    </h2>
+    <div className="max-w-[280px]">
+      <Body>Dein KI-Assistent für DaF/DaZ-Arbeitsblätter.</Body>
     </div>
   </div>
 );
@@ -383,39 +397,41 @@ const ScreenStart = ({
   onRegister: () => void;
   onLogin: () => void;
 }) => (
-  <div className="flex flex-1 flex-col">
-    <div className="flex flex-1 flex-col items-center justify-center text-center">
-      <Headline>Bereit?</Headline>
-      <div className="max-w-[300px]">
-        <Body>3 Arbeitsblätter gratis. Ohne Anmeldung.</Body>
-      </div>
-    </div>
+  <div className="flex flex-1 flex-col justify-end" style={{ paddingBottom: 8 }}>
+    <h1
+      className="font-bold tracking-[-0.02em] text-text-primary"
+      style={{ fontSize: 32, lineHeight: 1.15 }}
+    >
+      Lass uns loslegen
+    </h1>
+    <p
+      className="mt-3"
+      style={{ fontSize: 15, lineHeight: 1.55, color: "rgba(255,255,255,0.65)" }}
+    >
+      Wir richten dich kurz ein — dauert keine Minute.
+    </p>
 
-    <div className="flex flex-col items-center" style={{ gap: 12 }}>
-      <button
-        onClick={onGuest}
-        className="w-full rounded-pill text-[15px] font-semibold text-white transition-opacity hover:opacity-90"
-        style={{ height: 52, background: "#10B981" }}
-      >
-        Als Gast starten
-      </button>
+    <div className="flex flex-col items-center" style={{ gap: 14, marginTop: 28 }}>
       <button
         onClick={onRegister}
-        className="w-full rounded-pill bg-transparent text-[15px] font-semibold text-text-primary transition-colors"
-        style={{ height: 52, border: "1px solid rgba(255,255,255,0.4)" }}
+        className="w-full rounded-pill text-[15px] font-semibold text-white transition-opacity hover:opacity-90"
+        style={{ height: 52, background: "#10B981" }}
       >
         Konto erstellen
       </button>
       <button
         onClick={onLogin}
-        className="text-[13.5px] font-medium transition-colors"
-        style={{ color: "rgba(255,255,255,0.65)", marginTop: 4 }}
+        className="text-[14px] font-semibold text-text-primary transition-colors"
       >
         Ich habe schon ein Konto
       </button>
-      <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.45)" }}>
-        Kostenlos · Keine Kreditkarte
-      </p>
+      <button
+        onClick={onGuest}
+        className="text-[13px] font-medium transition-colors"
+        style={{ color: "rgba(255,255,255,0.4)" }}
+      >
+        Erst mal als Gast ausprobieren
+      </button>
     </div>
   </div>
 );
