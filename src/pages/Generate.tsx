@@ -308,6 +308,7 @@ const Generate = () => {
                 </button>
               </Section>
 
+              <button
                 onClick={submit}
                 className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-pill bg-brand text-[14px] font-medium text-primary-foreground transition-all hover:bg-brand-hover active:scale-[0.99]"
               >
