@@ -294,19 +294,6 @@ const PrintWorksheetView = ({ ws, meta, includeSolutions = false }: Props) => {
       }}
     >
       <section className="a4-page">
-        {competencies.length > 0 && (
-          <div style={{ display: "flex", height: "1.5mm", width: "100%" }}>
-            {competencies.map((c) => (
-              <div
-                key={c}
-                style={{
-                  flex: 1,
-                  background: COMPETENCE_STRIPE[c] ?? "#999",
-                }}
-              />
-            ))}
-          </div>
-        )}
 
         {/* Header */}
         <header
