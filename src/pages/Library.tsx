@@ -32,6 +32,8 @@ const Library = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [items, setItems] = useState<WorksheetCardData[]>([]);
+  const [corrections, setCorrections] = useState<Correction[]>([]);
+  const [tab, setTab] = useState<"worksheets" | "corrections">("worksheets");
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("Alle");
   const [view, setView] = useState<"grid" | "list">("grid");
@@ -42,12 +44,19 @@ const Library = () => {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from("worksheets")
-        .select("id,title,niveau,task_types,created_at")
-        .order("created_at", { ascending: false });
+      const [{ data }, { data: corr }] = await Promise.all([
+        supabase
+          .from("worksheets")
+          .select("id,title,niveau,task_types,created_at")
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("corrections")
+          .select("id,student_name,score,max_score,grade,created_at,exercise_breakdown")
+          .order("created_at", { ascending: false }),
+      ]);
       if (cancelled) return;
       setItems((data as WorksheetCardData[] | null) ?? []);
+      setCorrections((corr as unknown as Correction[] | null) ?? []);
       setLoading(false);
     })();
     return () => {
