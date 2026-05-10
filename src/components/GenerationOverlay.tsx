@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,23 @@ const STEPS = [
   "Lösungen werden überprüft",
   "Druckversion wird vorbereitet",
 ];
+
+// Target completion percentage for each step (with slight randomization)
+const STEP_TARGETS = [0.18, 0.38, 0.58, 0.78, 1.0];
+
+// Sub-messages cycled while a step lingers (when backend is slow)
+const SUB_MESSAGES: Record<number, string[]> = {
+  0: ["Kontext wird erfasst…", "Niveau wird abgestimmt…"],
+  1: ["Lernziele werden geordnet…", "Schwierigkeit wird austariert…"],
+  2: ["Formulierungen werden verfeinert…", "Beispiele werden gewählt…"],
+  3: ["Lösungen werden überprüft…", "Konsistenz wird geprüft…"],
+  4: ["Layout wird vorbereitet…", "Druckversion wird gerendert…"],
+};
+
+// Estimated nominal duration; backend may be faster or slower
+const ESTIMATED_MS = 22000;
+const MIN_DURATION_MS = 3500;
+const FINISH_RAMP_MS = 700;
 
 type Props = {
   active: boolean;
@@ -62,22 +79,71 @@ const DocumentDraw = () => (
 );
 
 const GenerationOverlay = ({ active, finishing, onCancel }: Props) => {
-  const [step, setStep] = useState(0);
+  const [progress, setProgress] = useState(0); // 0..1
+  const [subIdx, setSubIdx] = useState(0);
+  const startRef = useRef<number>(0);
+  const finishStartRef = useRef<number | null>(null);
+  // Per-step random jitter so timing feels human, not robotic
+  const targetsRef = useRef<number[]>(STEP_TARGETS);
 
   useEffect(() => {
     if (!active) {
-      setStep(0);
+      setProgress(0);
+      finishStartRef.current = null;
       return;
     }
-    if (finishing) {
-      setStep(STEPS.length - 1);
-      return;
-    }
-    const id = setInterval(() => {
-      setStep((s) => Math.min(s + 1, STEPS.length - 2));
-    }, 1300);
-    return () => clearInterval(id);
+    startRef.current = performance.now();
+    finishStartRef.current = null;
+    // Apply small jitter to step targets (±2.5%), keep last at 1
+    targetsRef.current = STEP_TARGETS.map((t, i) =>
+      i === STEP_TARGETS.length - 1 ? 1 : Math.max(0.05, Math.min(0.95, t + (Math.random() - 0.5) * 0.05)),
+    );
+
+    let raf = 0;
+    const tick = () => {
+      const now = performance.now();
+      const elapsed = now - startRef.current;
+
+      let p: number;
+      if (finishing) {
+        if (finishStartRef.current == null) finishStartRef.current = now;
+        const baseAtFinish = Math.max(progress, 0);
+        const finishElapsed = now - finishStartRef.current;
+        // Ensure minimum total visible duration
+        const minRemaining = Math.max(0, MIN_DURATION_MS - elapsed);
+        const ramp = Math.max(FINISH_RAMP_MS, minRemaining);
+        p = Math.min(1, baseAtFinish + (1 - baseAtFinish) * (finishElapsed / ramp));
+      } else {
+        // Cap at 0.92 so we don't reach the last step without backend completion
+        p = Math.min(0.92, elapsed / ESTIMATED_MS);
+      }
+      setProgress(p);
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, finishing]);
+
+  // Determine current step from progress + targets
+  const currentStep = (() => {
+    const targets = targetsRef.current;
+    for (let i = 0; i < targets.length; i++) {
+      if (progress < targets[i]) return i;
+    }
+    return targets.length - 1;
+  })();
+
+  // Cycle sub-messages while waiting on the same step
+  useEffect(() => {
+    if (!active) return;
+    setSubIdx(0);
+    const id = setInterval(() => setSubIdx((s) => s + 1), 2400);
+    return () => clearInterval(id);
+  }, [active, currentStep]);
+
+  const subList = SUB_MESSAGES[currentStep] ?? [];
+  const subMessage = subList.length ? subList[subIdx % subList.length] : null;
 
   return (
     <AnimatePresence>
@@ -112,44 +178,60 @@ const GenerationOverlay = ({ active, finishing, onCancel }: Props) => {
 
             <ul className="relative mt-6 space-y-3">
               {STEPS.map((label, i) => {
-                const done = i < step || (finishing && i <= step);
-                const isActive = i === step && !finishing;
+                const done = i < currentStep || (progress >= 1 && i <= currentStep);
+                const isActive = i === currentStep && progress < 1;
                 return (
                   <motion.li
                     key={label}
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2, delay: i * 0.06 }}
+                    transition={{ duration: 0.2, delay: i * 0.05 }}
                     className={cn(
-                      "flex items-center gap-3 text-[13px] transition-colors duration-300",
+                      "flex flex-col gap-1 text-[13px] transition-colors duration-300",
                       done
                         ? "text-text-secondary"
                         : isActive
                           ? "text-text-primary"
-                          : "text-text-tertiary/60",
+                          : "text-text-tertiary/55",
                     )}
                   >
-                    <span
-                      className={cn(
-                        "flex h-4 w-4 shrink-0 items-center justify-center rounded-full transition-colors",
-                        done
-                          ? "bg-brand text-primary-foreground"
-                          : isActive
-                            ? "ring-1 ring-white/40"
-                            : "ring-1 ring-hairline/15",
-                      )}
-                    >
-                      {done ? (
-                        <Check size={9} strokeWidth={3.5} />
-                      ) : isActive ? (
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={cn(
+                          "relative flex h-4 w-4 shrink-0 items-center justify-center rounded-full transition-colors",
+                          done
+                            ? "bg-brand text-primary-foreground"
+                            : isActive
+                              ? "ring-1 ring-white/50"
+                              : "ring-1 ring-hairline/15",
+                        )}
+                      >
+                        {done ? (
+                          <Check size={9} strokeWidth={3.5} />
+                        ) : isActive ? (
+                          <motion.span
+                            className="absolute inset-0 rounded-full border border-white/70 border-t-transparent"
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1.1, repeat: Infinity, ease: "linear" }}
+                          />
+                        ) : null}
+                      </span>
+                      <span className="truncate">{label}</span>
+                    </div>
+                    {isActive && subMessage && (
+                      <AnimatePresence mode="wait">
                         <motion.span
-                          className="h-1.5 w-1.5 rounded-full bg-white"
-                          animate={{ opacity: [0.4, 1, 0.4] }}
-                          transition={{ duration: 1.2, repeat: Infinity }}
-                        />
-                      ) : null}
-                    </span>
-                    <span className="truncate">{label}</span>
+                          key={subMessage}
+                          initial={{ opacity: 0, y: 2 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -2 }}
+                          transition={{ duration: 0.25 }}
+                          className="ml-7 text-[11.5px] text-text-tertiary"
+                        >
+                          {subMessage}
+                        </motion.span>
+                      </AnimatePresence>
+                    )}
                   </motion.li>
                 );
               })}
