@@ -86,31 +86,37 @@ const Library = () => {
     <div className="px-5">
       <header
         className="flex items-end justify-between pb-5"
-        style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 22px)" }}
+        style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 24px)" }}
       >
         <div>
-          <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-text-tertiary">
-            {items.length} Arbeitsblätter
-          </p>
+          <p className="section-label">{items.length} Arbeitsblätter</p>
           <h1 className="mt-2 font-display text-[26px] font-semibold leading-tight tracking-[-0.022em] text-text-primary">
             Bibliothek
           </h1>
         </div>
-        <div className="flex items-center gap-1 rounded-pill bg-surface-2 ring-hairline p-1">
-          <ToggleIconButton
-            active={view === "grid"}
-            onClick={() => setView("grid")}
-            label="Raster-Ansicht"
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate("/generate")}
+            className="text-[13px] font-medium text-text-secondary hover:text-text-primary transition-colors"
           >
-            <Grid2x2 size={14} />
-          </ToggleIconButton>
-          <ToggleIconButton
-            active={view === "list"}
-            onClick={() => setView("list")}
-            label="Listen-Ansicht"
-          >
-            <List size={14} />
-          </ToggleIconButton>
+            + Neu
+          </button>
+          <div className="flex items-center gap-1 rounded-pill bg-surface-2 ring-hairline p-1">
+            <ToggleIconButton
+              active={view === "grid"}
+              onClick={() => setView("grid")}
+              label="Raster-Ansicht"
+            >
+              <Grid2x2 size={14} />
+            </ToggleIconButton>
+            <ToggleIconButton
+              active={view === "list"}
+              onClick={() => setView("list")}
+              label="Listen-Ansicht"
+            >
+              <List size={14} />
+            </ToggleIconButton>
+          </div>
         </div>
       </header>
 
