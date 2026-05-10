@@ -168,9 +168,7 @@ const Index = () => {
         style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 22px)" }}
       >
         <div className="min-w-0">
-          <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-text-tertiary">
-            {todayLabel()}
-          </p>
+          <p className="section-label">{todayLabel()}</p>
           <div className="mt-2">
             <Greeting name={profile?.name ?? null} />
           </div>
