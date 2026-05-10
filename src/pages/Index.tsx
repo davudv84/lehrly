@@ -232,7 +232,6 @@ const Index = () => {
       <section className="mt-7">
         <SectionHeader label="Schnellaktionen" className="mb-3" />
         <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
-          <QuickAction icon={<Camera size={14} />} label="Arbeitsblatt scannen" onClick={() => navigate("/scan")} />
           <QuickAction icon={<Copy size={14} />} label="Letztes duplizieren" onClick={duplicateLast} />
           <QuickAction
             icon={<Calendar size={14} />}
@@ -247,7 +246,7 @@ const Index = () => {
           <QuickAction
             icon={<FileCheck2 size={14} />}
             label="Vorlagen"
-            onClick={() => navigate("/templates")}
+            onClick={() => navigate("/library?tab=templates")}
           />
         </div>
       </section>
