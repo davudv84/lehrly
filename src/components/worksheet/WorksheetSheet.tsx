@@ -384,12 +384,13 @@ const WorksheetSheet = ({
       {/* Title */}
       <h1
         style={{
-          margin: "22px 0 6px 0",
-          fontSize: "26px",
-          fontWeight: 700,
+          margin: "24px 0 8px 0",
+          fontSize: "28px",
+          fontWeight: 600,
           lineHeight: 1.2,
-          letterSpacing: "-0.01em",
+          letterSpacing: "-0.012em",
           color: "#1A1A1A",
+          fontFamily: '"Source Serif 4", "Source Serif Pro", Georgia, serif',
         }}
       >
         {ws.title}
