@@ -521,10 +521,11 @@ const WorksheetDetail = () => {
               <Printer size={14} /> Drucken
             </button>
             <button
-              onClick={handlePrint}
-              className="flex h-10 flex-1 items-center justify-center gap-2 rounded-pill bg-surface-2 ring-hairline text-[13px] font-medium text-text-primary hover:bg-surface-3 transition-colors"
+              onClick={handleExportPdf}
+              disabled={pdfBusy}
+              className="flex h-10 flex-1 items-center justify-center gap-2 rounded-pill bg-surface-2 ring-hairline text-[13px] font-medium text-text-primary hover:bg-surface-3 transition-colors disabled:opacity-60"
             >
-              <FileText size={14} /> Als PDF
+              <FileText size={14} /> {pdfBusy ? "PDF wird erstellt…" : "Als PDF"}
             </button>
           </div>
         </div>
