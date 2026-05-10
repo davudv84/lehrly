@@ -438,4 +438,72 @@ const Tag = ({ children }: { children: React.ReactNode }) => (
   </span>
 );
 
+const KlassenbuchView = ({
+  kb,
+  homework,
+  setHomework,
+  onSave,
+  onCopy,
+}: {
+  kb: KBEntry;
+  homework: string;
+  setHomework: (v: string) => void;
+  onSave: () => void;
+  onCopy: () => void;
+}) => {
+  const c = kb.content;
+  return (
+    <div className="rounded-card" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E5E5", padding: "28px 28px", color: "#1A1A1A" }}>
+      <p style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#666", fontWeight: 600, margin: 0 }}>
+        Klassenbucheintrag
+      </p>
+      <h2 style={{ fontSize: 20, fontWeight: 700, margin: "6px 0 0 0" }}>
+        {new Date(c.datum ?? Date.now()).toLocaleDateString("de-DE")} · {c.niveau} · {c.thema ?? ""}
+      </h2>
+      <Section title="Lerninhalt"><p style={{ margin: 0, fontSize: 14, lineHeight: 1.6 }}>{c.lerninhalt}</p></Section>
+      <Section title="Behandelte Aufgaben">
+        <ol style={{ margin: 0, paddingLeft: 18 }}>
+          {(c.behandelte_aufgaben ?? []).map((a) => (
+            <li key={a.nummer} style={{ fontSize: 13.5, lineHeight: 1.6, marginBottom: 4 }}>
+              <strong>{a.titel}</strong> — <span style={{ color: "#444" }}>{a.beschreibung}</span>
+            </li>
+          ))}
+        </ol>
+      </Section>
+      <Section title="Sprachliche Schwerpunkte"><p style={{ margin: 0, fontSize: 14, lineHeight: 1.6 }}>{c.sprachliche_schwerpunkte}</p></Section>
+      <Section title="Kompetenzbereiche">
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {(c.kompetenzbereiche ?? []).map((k) => (
+            <span key={k} style={{ display: "inline-flex", height: 24, padding: "0 10px", fontSize: 12, color: "#444", backgroundColor: "#F5F5F5", border: "1px solid #E5E5E5" }}>{k}</span>
+          ))}
+        </div>
+      </Section>
+      <Section title="Hausaufgabe">
+        <textarea
+          value={homework}
+          onChange={(e) => setHomework(e.target.value)}
+          onBlur={onSave}
+          placeholder="Hausaufgabe eintragen…"
+          style={{ width: "100%", minHeight: 60, padding: 10, fontSize: 13.5, border: "1px solid #E5E5E5", backgroundColor: "#FAFAFA", color: "#1A1A1A", fontFamily: "inherit", resize: "vertical" }}
+        />
+      </Section>
+      <div className="no-print" style={{ marginTop: 16, display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <button onClick={onCopy} style={{ flex: 1, height: 42, backgroundColor: "#1A1A1A", color: "#FFFFFF", fontSize: 13.5, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, border: "1px solid #1A1A1A" }}>
+          <ClipboardCopy size={14} /> In Klassenbuch-Format kopieren
+        </button>
+        <button onClick={() => window.print()} style={{ flex: 1, height: 42, backgroundColor: "#FFFFFF", color: "#1A1A1A", fontSize: 13.5, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, border: "1px solid #1A1A1A" }}>
+          <Printer size={14} /> Als PDF exportieren
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <section style={{ marginTop: 18 }}>
+    <h3 style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#666", margin: "0 0 8px 0" }}>{title}</h3>
+    {children}
+  </section>
+);
+
 export default WorksheetDetail;
