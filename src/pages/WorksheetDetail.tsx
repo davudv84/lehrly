@@ -184,13 +184,42 @@ const WorksheetDetail = () => {
       }
     : null;
 
+  const [pdfBusy, setPdfBusy] = useState(false);
+
   const handlePrint = () => {
     setMenuOpen(false);
-    window.print();
-    setTimeout(() => toast.success("Arbeitsblatt druckbereit"), 400);
+    try {
+      // Trigger native browser print. Works on desktop + mobile (iOS Safari, Android Chrome).
+      window.print();
+    } catch {
+      toast.error(
+        "Drucken ist auf diesem Gerät nicht direkt verfügbar. Bitte nutze ‚Als PDF‘ und drucke die PDF-Datei.",
+      );
+    }
   };
 
-  // share removed
+  const handleExportPdf = async () => {
+    if (!sheet || !ws || pdfBusy) return;
+    setMenuOpen(false);
+    setPdfBusy(true);
+    const tId = toast.loading("PDF wird erstellt…");
+    try {
+      const blob = await generateWorksheetPdf({
+        ws: sheet,
+        meta,
+        includeSolutions: printSolutions && ws.has_solution,
+        klassenbuch: kb ? { content: kb.content, homework } : null,
+      });
+      const safeTitle = (ws.title || "Arbeitsblatt").replace(/[^a-z0-9äöüß\-_ ]/gi, "").trim().slice(0, 60) || "Arbeitsblatt";
+      downloadPdfBlob(blob, `${safeTitle}.pdf`);
+      toast.success("PDF bereit", { id: tId });
+    } catch (e) {
+      console.error(e);
+      toast.error("PDF konnte nicht erstellt werden. Bitte erneut versuchen.", { id: tId });
+    } finally {
+      setPdfBusy(false);
+    }
+  };
 
   const handleDuplicate = async () => {
     if (!ws || !user) return;
