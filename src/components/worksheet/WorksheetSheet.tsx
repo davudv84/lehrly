@@ -349,14 +349,14 @@ const WorksheetSheet = ({
     <article
       className={cn("mx-auto w-full", className)}
       style={{
-        maxWidth: "720px",
+        maxWidth: "760px",
         backgroundColor: "#FFFFFF",
         color: "#1A1A1A",
-        padding: "44px 56px 56px 56px",
-        border: "1px solid #E5E5E5",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 14px rgba(0,0,0,0.04)",
+        padding: "48px 56px 56px 56px",
+        borderRadius: "8px",
+        boxShadow: "0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.25)",
         fontFamily:
-          'Inter, "Source Serif 4", -apple-system, BlinkMacSystemFont, sans-serif',
+          'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
         colorScheme: "light",
       }}
     >
