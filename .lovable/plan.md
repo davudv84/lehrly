@@ -1,101 +1,63 @@
-# Lehrly — Premium Design Refactor
+## Two new features for Lehrly
 
-Ziel: ruhiges, editorial-professionelles Design (Apple Education / Linear / Notion). Kein Neon, kein Spielzeug, weniger visuelle Lautstärke.
-
-Da der Scope sehr groß ist, schlage ich vor, in **3 fokussierten Phasen** zu arbeiten. Diese Runde liefere ich **Phase 1 + 2 komplett**. Phase 3 (neue Features wie Mappen/Wochenplan/Versionen/QR/Teilen) als separate Runde, weil dort Datenbank-Änderungen + neue Routes nötig sind.
+Both features run via **Lovable AI** (built-in gateway, no external API keys, no user setup). Onboarding, dashboard layout, and worksheet generation logic stay untouched except where explicitly noted.
 
 ---
 
-## Phase 1 — Design-System-Foundation (in dieser Runde)
+### Feature 1 — Arbeitsblatt scannen & korrigieren
 
-**`src/index.css` — Token-Refactor**
-- Softeres Dark: `--background` von reinem Schwarz auf `222 18% 7%`, Surface-Layer (`--surface-1/2/3`) für Tiefe statt harter Borders
-- Ruhigere Brand-Farbe: Grün auf `152 60% 48%` (weniger Neon), `--brand-soft` für Hintergründe
-- Borders: `--border` auf `220 12% 18%` (weicher), zusätzlich `--hairline` für 0.5px-Effekte
-- Shadows neu: `--shadow-xs/sm/md` als sehr weiche, niedrig-opake Layer (kein harter Drop)
-- Radius-Skala konsolidieren (8/12/16/20)
-- Glass-Utility verfeinern: `backdrop-blur-xl` + 6 % Weiß, statt 12 %
+**Database** (new migration)
+- `corrections` table: `id`, `user_id`, `worksheet_id` (nullable), `student_name`, `score`, `max_score`, `grade` (1–6), `exercise_breakdown` jsonb, `image_path` (storage), `created_at`, `updated_at`
+- RLS: owner-only select/insert/update/delete
+- Storage bucket `correction-uploads` (private), with RLS so users only access their own folder
 
-**Typografie**
-- `Inter Tight` für Display (Headlines), `Inter` für Body — bereits im Projekt, neu strukturiert in `font-display` / `font-sans`
-- `Source Serif 4` für Worksheet-Inhalt (Lesetext + Aufgaben) → editorial Look
-- Type-Scale: `text-display`, `text-h1/h2/h3`, `text-body`, `text-caption` als Utility-Klassen in `index.css`
-- Weniger Bold: Default `font-medium`, Bold nur für Display
-- Line-Heights großzügiger (1.6 Body, 1.2 Display)
+**Edge function** `correct-worksheet`
+- Accepts `{ worksheetId?, imageBase64, mimeType, studentName? }`
+- Loads original worksheet (if `worksheetId` given) for the solution key
+- Calls Lovable AI with `google/gemini-2.5-pro` (vision-capable) using the exact prompt from the spec, structured tool-call output: `total_score`, `max_score`, `grade`, `exercises[]` (`number`, `score`, `max`, `wrong_answers[]` with `student`/`correct`)
+- If no worksheetId, returns `{ needsOriginal: true }` so the client can show the picker
+- Inserts into `corrections` and returns the row
 
-**`tailwind.config.ts`**
-- Neue Token-Aliasse (surface-1/2/3, hairline, brand-soft)
-- `fontFamily.display`, `fontFamily.serif`
-- Radius-Skala
-
-## Phase 2 — Komponenten & Screens (in dieser Runde)
-
-**Atomare Komponenten überarbeiten**
-- `Card`: keine harte Border, stattdessen `bg-surface-1` + 1px hairline + `shadow-xs`
-- `Button` Varianten: `default` (brand, sanfter), `ghost` (mehr Padding, subtilere Hover), neue `soft`-Variante (brand-soft Hintergrund)
-- `Badge` / `NiveauBadge`: ruhiger, kleinerer Text, mehr Padding
-- `Input`: keine harte Border, `bg-surface-2`, focus mit brand-ring statt outline
-- `Chip` (Generate-Sheet): eleganter, weniger Kontrast im Default-Zustand
-
-**`WorksheetCard`**
-- Weniger visuelle Elemente, ruhigeres Paper-Preview
-- Editorial: Titel groß und klar, Meta in Caption-Größe, Trennlinie als Hairline
-- Hover: minimal (translate-y-0.5 + shadow-sm), kein Glow
-
-**`WorksheetSheet` (Druck-Layout)**
-- Source Serif für Aufgabentexte, Inter Tight für Headlines
-- Großzügigere Aufgabenblöcke, dezenter linker Kompetenzstreifen (2px)
-- Section-Labels in Caps + Tracking
-- Hairline-Divider zwischen Aufgaben statt Boxen
-- Mehr Schreibraum, perfekt druckbar
-
-**Bottom Navigation**
-- Floating Pill mit Glass-Effekt, weniger Höhe, sanftere aktive States
-- Safe-Area-Padding (`pb-[env(safe-area-inset-bottom)]`)
-
-**`Index.tsx` (Home)**
-- Editorial-Header: Großer ruhiger Title, „Heute, 7. Mai" Caption
-- StatRow ruhiger (keine Glows, hairline statt Border)
-- Quick Actions als minimale Pills mit Icon
-- AI-Empfehlung-Card („Für morgen vorbereiten") als hervorgehobene Soft-Brand-Surface
-- Section-Headers: Caps + Tracking, dezent
-
-**`Generate.tsx` + `GenerationOverlay`**
-- Loading-Texte verfeinern: „Wortschatz wird ausgewählt" → „Pädagogische Progression wird optimiert" → „Lösungen werden geprüft"
-- Ruhigere Animation: subtile Pulse statt großem Glow, monochromer Spinner mit Brand-Akzent
-- Stepper als minimale Liste mit Hairline-Verbinder
-
-**`Library.tsx`**
-- Filter-Pills ruhiger, Grid/List-Toggle (lokaler State)
-- Search mit Soft-Focus
-- Tag-Vorschläge unter Search
-
-**`WorksheetDetail.tsx`**
-- Sticky Action Bar als floating Glass-Pill (statt Bar)
-- Lehrer/Schüler-Toggle als Segmented Control
-- Aktionen: Drucken, Duplizieren, Favorit, Mit Lösung exportieren (toggle)
-
-## Phase 3 — Neue Features (NÄCHSTE Runde, nicht jetzt)
-
-Brauchen DB-Migration + neue Routes:
-- Unterrichtsmappen / Wochenplanung
-- Versionen / Verlauf
-- QR-Codes & Teilen
-- Kompetenztracking
-- Auto-Save & „Für morgen"-Workflow
-
-Diese würde ich nach Approval in einer dedizierten Runde umsetzen, damit Phase 1 + 2 sauber landen.
+**Frontend**
+- New `Schnellaktion` on dashboard: camera-icon button "Arbeitsblatt scannen" (added to the existing Quick Actions row — no layout change to the dashboard structure)
+- New route `/scan` → `Scan.tsx`:
+  1. File/camera input (`<input capture="environment" accept="image/*,application/pdf">`)
+  2. Optional original-worksheet picker (auto-suggested by recent + manual select)
+  3. Loading state "Korrigiere Arbeitsblatt…"
+  4. Calls `correct-worksheet` edge function
+- New route `/corrections/:id` → `CorrectionResult.tsx`:
+  - Header: worksheet title + editable student name
+  - Score card: "X / Y Punkte" + percentage + Note
+  - Per-exercise list with green ✓ or strike-through wrong → green correct
+  - "Als PDF exportieren" (uses existing print css pattern) + "Korrektur speichern"
+- New "Korrekturen" tab inside Bibliothek (Library.tsx gets a top-level tabs switch: Arbeitsblätter / Korrekturen) listing saved corrections
 
 ---
 
-## Geplante Datei-Änderungen (Phase 1+2)
+### Feature 2 — Klassenbucheintrag
 
-**Edit:** `src/index.css`, `tailwind.config.ts`, `index.html` (Source Serif laden), `src/components/ui/{card,button,badge,input}.tsx`, `src/components/{WorksheetCard,NiveauBadge,BottomNav,GenerationOverlay,StatCard,EmptyState}.tsx`, `src/components/worksheet/WorksheetSheet.tsx`, `src/pages/{Index,Generate,Library,Templates,WorksheetDetail}.tsx`
+**Database** (same migration)
+- `klassenbuch_entries`: `id`, `user_id`, `worksheet_id`, `content` jsonb, `homework` text (nullable), `created_at`, `updated_at` — RLS owner-only
 
-**Neu:** `src/components/ui/segmented.tsx` (Lehrer/Schüler-Toggle), `src/components/ui/section-header.tsx`
+**Edge function**
+- Extend `generate-worksheet` to accept `generateKlassenbuch: boolean`
+- After worksheet insert, if true, makes a second Lovable AI call (`google/gemini-2.5-flash`) using the exact spec prompt with structured output: `lerninhalt`, `behandelte_aufgaben[]`, `sprachliche_schwerpunkte`, `kompetenzbereiche[]`, `datum`
+- Inserts into `klassenbuch_entries`, returns `klassenbuchId` alongside worksheet id
 
-**Nicht angefasst:** Edge Function, DB-Schema, Auth-Flow, Routes.
+**Frontend**
+- `Generate.tsx` form: add toggle "Klassenbucheintrag generieren" (default ON) in a new Section block
+- `CompletionOverview` (worksheet/CompletionOverview.tsx): add tab switch "Arbeitsblatt | Klassenbuch" when a Klassenbuch entry exists. Klassenbuch tab renders white-card academic style with: Datum, Niveau, Thema, Lerninhalt, Behandelte Aufgaben, Sprachliche Schwerpunkte, Kompetenzbereiche, editable Hausaufgabe textarea, footer with "In Klassenbuch-Format kopieren" (clipboard) and "Als PDF exportieren" (print)
+- `WorksheetDetail.tsx`: same tab switch when a Klassenbuch entry exists for that worksheet
 
 ---
 
-Soll ich so loslegen? Falls du eine andere Reihenfolge willst (z. B. **nur Worksheet-Druck-Look** zuerst, oder **Phase 3-Features sofort statt Polish**), sag kurz Bescheid.
+### What stays unchanged
+- Onboarding (`FirstLaunch`, gate logic)
+- Dashboard layout (only adding one Quick Action chip)
+- Worksheet generation prompt/logic — only adds an optional secondary call
+- Auth, routing guards, design tokens
+
+### Tech notes
+- All AI via existing `https://ai.gateway.lovable.dev/v1/chat/completions` pattern using `LOVABLE_API_KEY` (already configured)
+- New deps: none required (image upload via native `<input type="file">`, base64 in browser); jsPDF/print uses existing print.css pattern
+- Will surface 402/429 errors via toasts as in current edge function
