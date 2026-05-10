@@ -71,7 +71,7 @@ export async function generateWorksheetPdf({
     doc.setTextColor(...color);
     const cleaned = safe(text);
     const lines = doc.splitTextToSize(cleaned, CONTENT_W - indent);
-    const lineH = size * 0.45;
+    const lineH = size * 0.52;
     for (const line of lines) {
       ensureSpace(lineH);
       doc.text(line, MARGIN + indent, y, { align: "left" });
@@ -122,15 +122,15 @@ export async function generateWorksheetPdf({
   if (ws.competencies?.length) metaParts.push(ws.competencies.join(" · "));
   writeWrapped(metaParts.join(" · "), { size: 9.5, color: [110, 110, 110], gap: 3 });
 
-  // Learning goal
+  // Learning goal (B&W)
   if (ws.learning_goal) {
     ensureSpace(14);
-    doc.setFillColor(243, 250, 245);
-    doc.setDrawColor(200, 224, 207);
+    doc.setFillColor(250, 250, 250);
+    doc.setDrawColor(200, 200, 200);
     doc.rect(MARGIN, y, CONTENT_W, 12, "FD");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
-    doc.setTextColor(31, 122, 63);
+    doc.setTextColor(60, 60, 60);
     doc.text("LERNZIEL", MARGIN + 2.5, y + 4);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
@@ -166,7 +166,7 @@ export async function generateWorksheetPdf({
       y = MARGIN;
     }
     drawExercise(doc, ex, i, ensureSpace, writeWrapped, () => y, (v) => { y = v; });
-    y += 4; // extra spacing between Aufgaben
+    y += 7; // extra spacing between Aufgaben
   });
 
   drawFooter(doc, meta);
@@ -308,7 +308,7 @@ function drawExercise(
 
 function measureWrapped(doc: jsPDF, text: string, size: number, indent = 0, gap = 1.5): number {
   const lines = doc.splitTextToSize(safe(text), CONTENT_W - indent);
-  return lines.length * size * 0.45 + gap;
+  return lines.length * size * 0.52 + gap;
 }
 
 function measureExercise(doc: jsPDF, ex: Exercise): number {

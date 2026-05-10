@@ -67,7 +67,7 @@ const PrintExercise = ({ ex, index }: { ex: Exercise; index: number }) => {
     : "";
 
   return (
-    <li className="ws-exercise avoid-break" style={{ marginTop: "6mm", listStyle: "none" }}>
+    <li className="ws-exercise avoid-break" style={{ marginTop: "9mm", listStyle: "none", lineHeight: 1.6 }}>
       <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
         <span
           style={{
@@ -294,19 +294,6 @@ const PrintWorksheetView = ({ ws, meta, includeSolutions = false }: Props) => {
       }}
     >
       <section className="a4-page">
-        {competencies.length > 0 && (
-          <div style={{ display: "flex", height: "1.5mm", width: "100%" }}>
-            {competencies.map((c) => (
-              <div
-                key={c}
-                style={{
-                  flex: 1,
-                  background: COMPETENCE_STRIPE[c] ?? "#999",
-                }}
-              />
-            ))}
-          </div>
-        )}
 
         {/* Header */}
         <header
@@ -413,8 +400,8 @@ const PrintWorksheetView = ({ ws, meta, includeSolutions = false }: Props) => {
           <div
             style={{
               marginTop: "3mm",
-              border: "1px solid #c8e0cf",
-              background: "#f3faf5",
+              border: "1px solid #c8c8c8",
+              background: "#fafafa",
               padding: "2.5mm 3mm",
             }}
           >
@@ -425,13 +412,13 @@ const PrintWorksheetView = ({ ws, meta, includeSolutions = false }: Props) => {
                 fontWeight: 700,
                 textTransform: "uppercase",
                 letterSpacing: "0.1em",
-                color: "#1f7a3f",
+                color: "#333",
                 margin: 0,
               }}
             >
               Lernziel
             </p>
-            <p style={{ marginTop: "1mm", fontSize: "10.5pt", color: "#1a1a1a" }}>
+            <p style={{ marginTop: "1mm", fontSize: "10.5pt", color: "#1a1a1a", lineHeight: 1.55 }}>
               {ws.learning_goal}
             </p>
           </div>
