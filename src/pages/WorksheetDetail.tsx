@@ -22,6 +22,7 @@ import PrintWorksheetView from "@/components/worksheet/PrintWorksheetView";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { generateWorksheetPdf, downloadPdfBlob } from "@/lib/worksheetPdf";
 
 type KlassenbuchContent = {
   lerninhalt?: string;
@@ -183,13 +184,42 @@ const WorksheetDetail = () => {
       }
     : null;
 
+  const [pdfBusy, setPdfBusy] = useState(false);
+
   const handlePrint = () => {
     setMenuOpen(false);
-    window.print();
-    setTimeout(() => toast.success("Arbeitsblatt druckbereit"), 400);
+    try {
+      // Trigger native browser print. Works on desktop + mobile (iOS Safari, Android Chrome).
+      window.print();
+    } catch {
+      toast.error(
+        "Drucken ist auf diesem Gerät nicht direkt verfügbar. Bitte nutze ‚Als PDF‘ und drucke die PDF-Datei.",
+      );
+    }
   };
 
-  // share removed
+  const handleExportPdf = async () => {
+    if (!sheet || !ws || pdfBusy) return;
+    setMenuOpen(false);
+    setPdfBusy(true);
+    const tId = toast.loading("PDF wird erstellt…");
+    try {
+      const blob = await generateWorksheetPdf({
+        ws: sheet,
+        meta,
+        includeSolutions: printSolutions && ws.has_solution,
+        klassenbuch: kb ? { content: kb.content, homework } : null,
+      });
+      const safeTitle = (ws.title || "Arbeitsblatt").replace(/[^a-z0-9äöüß\-_ ]/gi, "").trim().slice(0, 60) || "Arbeitsblatt";
+      downloadPdfBlob(blob, `${safeTitle}.pdf`);
+      toast.success("PDF bereit", { id: tId });
+    } catch (e) {
+      console.error(e);
+      toast.error("PDF konnte nicht erstellt werden. Bitte erneut versuchen.", { id: tId });
+    } finally {
+      setPdfBusy(false);
+    }
+  };
 
   const handleDuplicate = async () => {
     if (!ws || !user) return;
@@ -491,10 +521,11 @@ const WorksheetDetail = () => {
               <Printer size={14} /> Drucken
             </button>
             <button
-              onClick={handlePrint}
-              className="flex h-10 flex-1 items-center justify-center gap-2 rounded-pill bg-surface-2 ring-hairline text-[13px] font-medium text-text-primary hover:bg-surface-3 transition-colors"
+              onClick={handleExportPdf}
+              disabled={pdfBusy}
+              className="flex h-10 flex-1 items-center justify-center gap-2 rounded-pill bg-surface-2 ring-hairline text-[13px] font-medium text-text-primary hover:bg-surface-3 transition-colors disabled:opacity-60"
             >
-              <FileText size={14} /> Als PDF
+              <FileText size={14} /> {pdfBusy ? "PDF wird erstellt…" : "Als PDF"}
             </button>
           </div>
         </div>
