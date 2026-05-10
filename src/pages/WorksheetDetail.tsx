@@ -413,7 +413,7 @@ const WorksheetDetail = () => {
             <div className="mx-auto mt-6 w-full" style={{ maxWidth: 760 }}>
               {/* View toggle (Schüler/Lehrkraft) — secondary, less prominent */}
               <div className="flex items-center justify-between gap-3 px-2">
-                <CompactSegmented
+                <CompactSegmented<"student" | "teacher">
                   value={view}
                   onChange={setView}
                   options={[
