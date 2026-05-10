@@ -382,8 +382,6 @@ const Generate = () => {
         )}
       </motion.div>
       <GenerationOverlay active={phase === "loading"} onCancel={() => setPhase("form")} />
-      {/* Hidden Check import keeps lint happy */}
-      <Check size={0} className="hidden" />
     </div>
   );
 };
