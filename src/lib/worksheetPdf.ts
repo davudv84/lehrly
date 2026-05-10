@@ -91,11 +91,11 @@ export async function generateWorksheetPdf({
   doc.setTextColor(17, 17, 17);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10.5);
-  doc.text(meta.schoolLabel, MARGIN + 12, y + 4);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(110, 110, 110);
-  doc.text(`Arbeitsblatt · ${formatDate(meta.createdAt)}`, MARGIN + 12, y + 8);
+    doc.text(safe(meta.schoolLabel), MARGIN + 12, y + 4);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(110, 110, 110);
+    doc.text(safe(`Arbeitsblatt · ${formatDate(meta.createdAt)}`), MARGIN + 12, y + 8);
 
   // Niveau badge
   doc.setDrawColor(17, 17, 17);
