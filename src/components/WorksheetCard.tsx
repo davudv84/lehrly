@@ -115,7 +115,10 @@ const WorksheetCard = ({ ws, variant = "grid", className }: Props) => {
             {formatRelative(ws.created_at)}
           </span>
         </div>
-        <p className="mt-1.5 line-clamp-2 text-[13px] font-medium leading-snug text-text-primary tracking-[-0.005em]">
+        <p
+          className="mt-1.5 line-clamp-2 text-[13px] font-medium text-text-primary tracking-[-0.005em]"
+          style={{ lineHeight: 1.7 }}
+        >
           {ws.title}
         </p>
         {variant === "grid" && ws.task_types.length > 0 && (
