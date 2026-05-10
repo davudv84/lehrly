@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, FileText, Sparkles, GraduationCap } from "lucide-react";
+import { ArrowRight, Check, GraduationCap, BookOpen, FileText, X } from "lucide-react";
 import LehrlyMark from "@/components/LehrlyMark";
 import { cn } from "@/lib/utils";
 
 export const ONBOARDED_KEY = "lehrly_onboarded";
+export const GUEST_KEY = "is_guest";
 
-type Step = 0 | 1 | 2 | 3; // 0 = landing, 1-3 = onboarding
+const TOTAL = 5;
 
 const markOnboarded = () => {
   try {
@@ -17,10 +18,33 @@ const markOnboarded = () => {
   }
 };
 
+const setGuest = () => {
+  try {
+    localStorage.setItem(GUEST_KEY, "true");
+  } catch {
+    /* ignore */
+  }
+};
+
 const FirstLaunch = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState<Step>(0);
+  const [step, setStep] = useState(0); // 0..4
+  const [dir, setDir] = useState(1);
 
+  const next = () => {
+    setDir(1);
+    setStep((s) => Math.min(TOTAL - 1, s + 1));
+  };
+  const skip = () => {
+    setDir(1);
+    setStep(TOTAL - 1);
+  };
+
+  const startGuest = () => {
+    setGuest();
+    markOnboarded();
+    navigate("/generate", { replace: true });
+  };
   const goRegister = () => {
     markOnboarded();
     navigate("/auth/register", { replace: true });
@@ -29,325 +53,371 @@ const FirstLaunch = () => {
     markOnboarded();
     navigate("/auth/login", { replace: true });
   };
-  const goGuest = () => {
-    markOnboarded();
-    navigate("/", { replace: true });
-  };
 
   return (
     <div
-      className="relative min-h-dvh w-full overflow-hidden bg-bg-base text-text-primary"
-      style={{
-        paddingTop: "env(safe-area-inset-top, 0px)",
-        paddingBottom: "env(safe-area-inset-bottom, 0px)",
-      }}
+      className="relative min-h-dvh w-full overflow-hidden text-text-primary"
+      style={{ background: "#0E0F11" }}
     >
-      {/* soft brand glow */}
+      {/* Subtle radial green glow at top center */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[60vh] opacity-60"
+        className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2"
         style={{
+          width: 560,
+          height: 280,
           background:
-            "radial-gradient(60% 60% at 50% 0%, hsl(var(--brand) / 0.18) 0%, transparent 70%)",
+            "radial-gradient(50% 100% at 50% 0%, rgba(16,185,129,0.10) 0%, transparent 70%)",
         }}
       />
 
-      <AnimatePresence mode="wait">
-        {step === 0 && <Landing key="landing" onStart={() => setStep(1)} />}
-        {step === 1 && (
-          <Welcome
-            key="welcome"
-            onSkip={() => setStep(3)}
-            onNext={() => setStep(2)}
-          />
-        )}
-        {step === 2 && (
-          <HowItWorks
-            key="how"
-            onSkip={() => setStep(3)}
-            onNext={() => setStep(3)}
-          />
-        )}
-        {step === 3 && (
-          <GetStarted
-            key="get-started"
-            onRegister={goRegister}
-            onLogin={goLogin}
-            onGuest={goGuest}
-          />
-        )}
-      </AnimatePresence>
+      <div
+        className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col"
+        style={{
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 56px)",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 32px)",
+          paddingLeft: 24,
+          paddingRight: 24,
+        }}
+      >
+        {/* Progress dots */}
+        <Dots active={step} />
+
+        {/* Screens */}
+        <div className="relative flex flex-1 flex-col">
+          <AnimatePresence mode="wait" custom={dir}>
+            <motion.div
+              key={step}
+              custom={dir}
+              initial={{ opacity: 0, x: 24 * dir }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -24 * dir }}
+              transition={{ duration: 0.24, ease: [0.22, 0.61, 0.36, 1] }}
+              className="flex flex-1 flex-col"
+            >
+              {step === 0 && <ScreenWelcome />}
+              {step === 1 && <ScreenValue />}
+              {step === 2 && <ScreenHow />}
+              {step === 3 && <ScreenKorrektur />}
+              {step === 4 && (
+                <ScreenStart
+                  onGuest={startGuest}
+                  onRegister={goRegister}
+                  onLogin={goLogin}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Footer nav */}
+        {step < TOTAL - 1 && <FooterNav onSkip={skip} onNext={next} />}
+      </div>
     </div>
   );
 };
 
-/* ---------------- Screen 1 — Landing ---------------- */
+/* ---------------- Shared bits ---------------- */
 
-const Landing = ({ onStart }: { onStart: () => void }) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    transition={{ duration: 0.32 }}
-    className="relative mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center px-6 text-center"
-  >
-    <span className="inline-flex items-center gap-1.5 rounded-pill bg-brand-soft px-3 py-1 text-[11.5px] font-medium text-brand-hover ring-1 ring-brand/30">
-      <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-      Für DaF/DaZ-Lehrkräfte
-    </span>
-
-    <div style={{ marginTop: "12px" }}>
-      <LehrlyMark size={22} />
-    </div>
-
-    <h1
-      className="font-display font-bold leading-[1.05] tracking-[-0.025em]"
-      style={{ marginTop: "32px", fontSize: "42px" }}
-    >
-      Arbeitsblätter,
-      <br />
-      in Sekunden.
-    </h1>
-
-    <p
-      className="max-w-[300px] text-[14px] leading-relaxed text-text-secondary"
-      style={{ marginTop: "16px" }}
-    >
-      Lehrly erstellt druckfertige DaF/DaZ-Arbeitsblätter — mit KI.
-    </p>
-
-    <button
-      onClick={onStart}
-      className="flex h-12 w-full items-center justify-center gap-2 rounded-pill bg-brand text-[14px] font-medium text-primary-foreground transition-colors hover:bg-brand-hover active:scale-[0.99]"
-      style={{ marginTop: "32px" }}
-    >
-      Kostenlos starten <ArrowRight size={15} />
-    </button>
-
-    <p className="text-[11.5px] text-text-tertiary" style={{ marginTop: "12px" }}>
-      Kein Konto nötig · 3 Blätter kostenlos
-    </p>
-
-    <div
-      className="flex items-center justify-center gap-2"
-      style={{ marginTop: "24px" }}
-    >
-      <FeaturePill icon={<GraduationCap size={12} />}>A1–C1</FeaturePill>
-      <FeaturePill icon={<Sparkles size={12} />}>30 Sek.</FeaturePill>
-      <FeaturePill icon={<FileText size={12} />}>PDF</FeaturePill>
-    </div>
-
-    <footer
-      className="absolute inset-x-0 flex items-center justify-center gap-3 text-[10.5px] uppercase tracking-[0.12em] text-text-tertiary/70"
-      style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)" }}
-    >
-      <span>Impressum</span>
-      <span>·</span>
-      <span>Datenschutz</span>
-      <span>·</span>
-      <span>Kontakt</span>
-    </footer>
-  </motion.div>
-);
-
-const FeaturePill = ({
-  children,
-  icon,
-}: {
-  children: React.ReactNode;
-  icon: React.ReactNode;
-}) => (
-  <span className="inline-flex items-center gap-1.5 rounded-pill bg-surface-2 px-3 py-1.5 text-[11.5px] font-medium text-text-secondary ring-1 ring-hairline/15">
-    <span className="text-brand-hover">{icon}</span>
-    {children}
-  </span>
-);
-
-/* ---------------- Onboarding shell with progress dots ---------------- */
-
-const Dots = ({ active }: { active: 0 | 1 | 2 }) => (
-  <div className="flex items-center justify-center gap-1.5 pt-3">
-    {[0, 1, 2].map((i) => (
+const Dots = ({ active }: { active: number }) => (
+  <div className="flex items-center justify-center" style={{ gap: 8, marginTop: -32, marginBottom: 16 }}>
+    {Array.from({ length: TOTAL }).map((_, i) => (
       <span
         key={i}
-        className={cn(
-          "h-1 rounded-full transition-all duration-300",
-          i === active ? "w-6 bg-brand" : "w-1.5 bg-hairline/20",
-        )}
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: 999,
+          background: i === active ? "#FFFFFF" : "rgba(255,255,255,0.25)",
+          transition: "background 200ms",
+        }}
       />
     ))}
   </div>
 );
 
-const StepFrame = ({
-  active,
-  children,
-  bottom,
-}: {
-  active: 0 | 1 | 2;
-  children: React.ReactNode;
-  bottom: React.ReactNode;
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: 8 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -8 }}
-    transition={{ duration: 0.3, ease: [0.22, 0.61, 0.36, 1] }}
-    className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 pb-8"
-  >
-    <Dots active={active} />
-    <div className="flex flex-1 flex-col items-center justify-center text-center">
-      {children}
-    </div>
-    <div className="pt-4">{bottom}</div>
-  </motion.div>
-);
-
-const SkipNextBar = ({
-  onSkip,
-  onNext,
-}: {
-  onSkip: () => void;
-  onNext: () => void;
-}) => (
-  <div className="flex items-center justify-between">
+const FooterNav = ({ onSkip, onNext }: { onSkip: () => void; onNext: () => void }) => (
+  <div className="flex items-center justify-between pt-4">
     <button
       onClick={onSkip}
-      className="px-2 py-2 text-[13px] text-text-tertiary transition-colors hover:text-text-secondary"
+      className="px-2 py-2 text-[13.5px] transition-colors"
+      style={{ color: "rgba(255,255,255,0.55)" }}
     >
       Überspringen
     </button>
     <button
       onClick={onNext}
-      className="flex h-11 items-center gap-1.5 rounded-pill bg-brand px-5 text-[13.5px] font-medium text-primary-foreground transition-colors hover:bg-brand-hover"
+      className="flex h-11 items-center gap-1.5 rounded-pill px-5 text-[14px] font-semibold text-white transition-colors hover:opacity-90"
+      style={{ background: "#10B981" }}
     >
-      Weiter <ArrowRight size={14} />
+      Weiter <ArrowRight size={15} />
     </button>
   </div>
 );
 
-/* ---------------- Screen 2 — Welcome ---------------- */
-
-const Welcome = ({
-  onSkip,
-  onNext,
-}: {
-  onSkip: () => void;
-  onNext: () => void;
-}) => (
-  <StepFrame active={0} bottom={<SkipNextBar onSkip={onSkip} onNext={onNext} />}>
-    <LehrlyMark size={36} />
-    <h2 className="mt-6 font-display text-[26px] font-bold tracking-[-0.02em]">
-      Willkommen bei Lehrly
-    </h2>
-    <p className="mt-3 max-w-[280px] text-[14px] leading-relaxed text-text-secondary">
-      Dein KI-Assistent für DaF/DaZ-Arbeitsblätter.
-    </p>
-  </StepFrame>
+const Headline = ({ children }: { children: React.ReactNode }) => (
+  <h1
+    className="font-bold tracking-[-0.02em] text-text-primary"
+    style={{ fontSize: 28, lineHeight: 1.15 }}
+  >
+    {children}
+  </h1>
 );
 
-/* ---------------- Screen 3 — How it works ---------------- */
+const Body = ({ children }: { children: React.ReactNode }) => (
+  <p
+    className="mt-3"
+    style={{ fontSize: 15, lineHeight: 1.55, color: "rgba(255,255,255,0.65)" }}
+  >
+    {children}
+  </p>
+);
 
-const STEPS = [
-  {
-    n: 1,
-    title: "Niveau wählen",
-    desc: "A1 bis C1",
-    icon: <GraduationCap size={16} />,
-  },
-  {
-    n: 2,
-    title: "Thema & Aufgaben",
-    desc: "Lückentext, Grammatik & mehr",
-    icon: <Sparkles size={16} />,
-  },
-  {
-    n: 3,
-    title: "PDF herunterladen",
-    desc: "Druckfertig mit Lösungsblatt",
-    icon: <FileText size={16} />,
-  },
+/* ---------------- Screen 1 — Welcome ---------------- */
+
+const ScreenWelcome = () => (
+  <div className="flex flex-1 flex-col items-center justify-center text-center">
+    <LehrlyMark size={26} />
+    <div style={{ height: 28 }} />
+    <Headline>Druckfertige Arbeitsblätter in 30 Sekunden.</Headline>
+    <div className="max-w-[300px]">
+      <Body>Für DaF/DaZ-Lehrkräfte. Von A1 bis C1.</Body>
+    </div>
+  </div>
+);
+
+/* ---------------- Screen 2 — Value ---------------- */
+
+const ScreenValue = () => (
+  <div className="flex flex-1 flex-col items-center text-center">
+    <div className="flex flex-col items-center" style={{ marginTop: 24 }}>
+      <span
+        className="text-[11px] font-semibold uppercase"
+        style={{ color: "#10B981", letterSpacing: "0.14em" }}
+      >
+        Dein AI-Assistent
+      </span>
+      <div style={{ height: 14 }} />
+      <Headline>Sag, was du brauchst. Lehrly macht den Rest.</Headline>
+      <div className="max-w-[320px]">
+        <Body>
+          Niveau, Thema, Aufgabentyp wählen — fertig. Keine leeren Word-Vorlagen mehr.
+        </Body>
+      </div>
+    </div>
+
+    {/* Worksheet mock */}
+    <div className="relative mt-10 flex flex-1 items-center justify-center">
+      <div
+        className="relative bg-white shadow-2xl"
+        style={{
+          width: 200,
+          height: 260,
+          borderRadius: 8,
+          transform: "rotate(-3deg)",
+          padding: 18,
+        }}
+      >
+        <div style={{ height: 8, width: "70%", borderRadius: 2, background: "#E5E7EB" }} />
+        <div style={{ height: 6, width: "45%", borderRadius: 2, background: "#EEF0F2", marginTop: 8 }} />
+        <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 10 }}>
+          {[100, 90, 95, 80, 92, 70].map((w, i) => (
+            <div key={i} style={{ height: 6, width: `${w}%`, borderRadius: 2, background: "#E5E7EB" }} />
+          ))}
+        </div>
+        {/* green check corner */}
+        <div
+          className="absolute"
+          style={{
+            right: 12,
+            bottom: 12,
+            width: 26,
+            height: 26,
+            borderRadius: 999,
+            background: "#10B981",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Check size={15} color="#fff" strokeWidth={3} />
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+/* ---------------- Screen 3 — How ---------------- */
+
+const HOW_STEPS = [
+  { n: 1, title: "Niveau wählen", desc: "A1 bis C1 — passgenau für deine Lerngruppe", Icon: GraduationCap },
+  { n: 2, title: "Thema & Aufgaben", desc: "Lückentext, Dialog, Grammatik & mehr", Icon: BookOpen },
+  { n: 3, title: "PDF herunterladen", desc: "Druckfertig mit Lösungsblatt", Icon: FileText },
 ];
 
-const HowItWorks = ({
-  onSkip,
-  onNext,
-}: {
-  onSkip: () => void;
-  onNext: () => void;
-}) => (
-  <StepFrame active={1} bottom={<SkipNextBar onSkip={onSkip} onNext={onNext} />}>
-    <h2 className="font-display text-[24px] font-bold leading-tight tracking-[-0.02em]">
+const ScreenHow = () => (
+  <div className="flex flex-1 flex-col" style={{ paddingTop: 24 }}>
+    <Headline>
       In drei Schritten
       <br />
       zum Arbeitsblatt
-    </h2>
+    </Headline>
 
-    <ul className="mt-8 flex w-full flex-col gap-2.5 text-left">
-      {STEPS.map((s) => (
+    <ul className="mt-8 flex w-full flex-col" style={{ gap: 10 }}>
+      {HOW_STEPS.map(({ n, title, desc, Icon }) => (
         <li
-          key={s.n}
-          className="flex items-center gap-3 rounded-card bg-surface-1 p-3.5 ring-1 ring-hairline/10"
+          key={n}
+          className="flex items-center"
+          style={{
+            background: "rgba(255,255,255,0.04)",
+            borderRadius: 12,
+            padding: 14,
+            gap: 14,
+          }}
         >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand-hover ring-1 ring-brand/20 text-[12.5px] font-semibold tabular-nums">
-            {s.n}
+          <span
+            className="flex shrink-0 items-center justify-center text-white"
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 999,
+              background: "#10B981",
+              fontSize: 14,
+              fontWeight: 700,
+            }}
+          >
+            {n}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-[13.5px] font-semibold text-text-primary">
-              {s.title}
+            <p className="text-[14.5px] font-semibold text-text-primary">{title}</p>
+            <p className="mt-0.5 text-[12.5px]" style={{ color: "rgba(255,255,255,0.55)" }}>
+              {desc}
             </p>
-            <p className="mt-0.5 text-[12px] text-text-tertiary">{s.desc}</p>
           </div>
-          <span className="text-text-tertiary/70">{s.icon}</span>
+          <Icon size={18} color="rgba(255,255,255,0.35)" />
         </li>
       ))}
     </ul>
-  </StepFrame>
+  </div>
 );
 
-/* ---------------- Screen 4 — Get Started ---------------- */
+/* ---------------- Screen 4 — Korrektur ---------------- */
 
-const GetStarted = ({
+const ScreenKorrektur = () => (
+  <div className="flex flex-1 flex-col" style={{ paddingTop: 16 }}>
+    <span
+      className="inline-flex items-center self-start rounded-pill px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.12em] text-white"
+      style={{ background: "#10B981" }}
+    >
+      Neu
+    </span>
+    <div style={{ height: 16 }} />
+    <Headline>
+      Foto scannen. Korrektur in Sekunden.
+    </Headline>
+    <div className="max-w-[340px]">
+      <Body>
+        Fotografiere ein ausgefülltes Arbeitsblatt — die KI vergleicht es mit dem
+        Lösungsschlüssel und gibt eine Note.
+      </Body>
+    </div>
+
+    {/* Worksheet mock with marks */}
+    <div className="relative mt-8 flex flex-1 items-center justify-center">
+      <div
+        className="relative bg-white shadow-2xl"
+        style={{
+          width: 220,
+          height: 280,
+          borderRadius: 8,
+          padding: 20,
+        }}
+      >
+        <div style={{ height: 8, width: "60%", borderRadius: 2, background: "#E5E7EB" }} />
+        <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 14 }}>
+          {[
+            { w: 90, ok: true },
+            { w: 80, ok: true },
+            { w: 95, ok: false },
+            { w: 70, ok: true },
+            { w: 88, ok: true },
+          ].map((r, i) => (
+            <div key={i} className="flex items-center" style={{ gap: 8 }}>
+              <div style={{ height: 6, flex: 1, borderRadius: 2, background: "#E5E7EB", maxWidth: `${r.w}%` }} />
+              {r.ok ? (
+                <Check size={14} color="#10B981" strokeWidth={3} />
+              ) : (
+                <X size={14} color="#EF4444" strokeWidth={3} />
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* floating points chip */}
+        <div
+          className="absolute flex items-center justify-center text-[11.5px] font-semibold text-white"
+          style={{
+            top: -12,
+            right: -10,
+            background: "#1A1B1E",
+            border: "1px solid rgba(255,255,255,0.12)",
+            borderRadius: 999,
+            padding: "6px 10px",
+          }}
+        >
+          17 / 20 Punkte
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+/* ---------------- Screen 5 — Start ---------------- */
+
+const ScreenStart = ({
+  onGuest,
   onRegister,
   onLogin,
-  onGuest,
 }: {
+  onGuest: () => void;
   onRegister: () => void;
   onLogin: () => void;
-  onGuest: () => void;
 }) => (
-  <StepFrame
-    active={2}
-    bottom={
-      <div className="flex flex-col items-center gap-3">
-        <button
-          onClick={onRegister}
-          className="flex h-12 w-full items-center justify-center rounded-pill bg-brand text-[14px] font-medium text-primary-foreground transition-colors hover:bg-brand-hover active:scale-[0.99]"
-        >
-          Konto erstellen
-        </button>
-        <button
-          onClick={onLogin}
-          className="text-[13px] font-medium text-text-secondary transition-colors hover:text-text-primary"
-        >
-          Ich habe schon ein Konto
-        </button>
-        <button
-          onClick={onGuest}
-          className="text-[11.5px] text-text-tertiary transition-colors hover:text-text-secondary"
-        >
-          Erst mal als Gast ausprobieren
-        </button>
+  <div className="flex flex-1 flex-col">
+    <div className="flex flex-1 flex-col items-center justify-center text-center">
+      <Headline>Bereit?</Headline>
+      <div className="max-w-[300px]">
+        <Body>3 Arbeitsblätter gratis. Ohne Anmeldung.</Body>
       </div>
-    }
-  >
-    <h2 className="font-display text-[26px] font-bold tracking-[-0.02em]">
-      Lass uns loslegen
-    </h2>
-    <p className="mt-3 max-w-[280px] text-[14px] leading-relaxed text-text-secondary">
-      Wir richten dich kurz ein — dauert keine Minute.
-    </p>
-  </StepFrame>
+    </div>
+
+    <div className="flex flex-col items-center" style={{ gap: 12 }}>
+      <button
+        onClick={onGuest}
+        className="w-full rounded-pill text-[15px] font-semibold text-white transition-opacity hover:opacity-90"
+        style={{ height: 52, background: "#10B981" }}
+      >
+        Als Gast starten
+      </button>
+      <button
+        onClick={onRegister}
+        className="w-full rounded-pill bg-transparent text-[15px] font-semibold text-text-primary transition-colors"
+        style={{ height: 52, border: "1px solid rgba(255,255,255,0.4)" }}
+      >
+        Konto erstellen
+      </button>
+      <button
+        onClick={onLogin}
+        className="text-[13.5px] font-medium transition-colors"
+        style={{ color: "rgba(255,255,255,0.65)", marginTop: 4 }}
+      >
+        Ich habe schon ein Konto
+      </button>
+      <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.45)" }}>
+        Kostenlos · Keine Kreditkarte
+      </p>
+    </div>
+  </div>
 );
 
 export default FirstLaunch;
