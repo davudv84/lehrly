@@ -150,31 +150,24 @@ const Library = () => {
 
       {/* Tabs */}
       <div className="mb-4 flex gap-1 rounded-pill bg-surface-2 ring-hairline p-1">
-        <button
-          onClick={() => setTab("worksheets")}
-          className={cn(
-            "flex h-9 flex-1 items-center justify-center gap-1.5 rounded-pill text-[12.5px] font-medium transition-colors",
-            tab === "worksheets" ? "bg-surface-3 text-text-primary shadow-xs" : "text-text-tertiary hover:text-text-secondary",
-          )}
-        >
+        <TabButton active={tab === "worksheets"} onClick={() => setTab("worksheets")}>
           Arbeitsblätter
-        </button>
-        <button
-          onClick={() => setTab("corrections")}
-          className={cn(
-            "flex h-9 flex-1 items-center justify-center gap-1.5 rounded-pill text-[12.5px] font-medium transition-colors",
-            tab === "corrections" ? "bg-surface-3 text-text-primary shadow-xs" : "text-text-tertiary hover:text-text-secondary",
-          )}
-        >
+        </TabButton>
+        <TabButton active={tab === "corrections"} onClick={() => setTab("corrections")}>
           <ClipboardCheck size={13} /> Korrekturen
           {corrections.length > 0 && (
             <span className="ml-1 rounded-pill bg-surface-3 px-1.5 text-[10px] text-text-secondary">{corrections.length}</span>
           )}
-        </button>
+        </TabButton>
+        <TabButton active={tab === "templates"} onClick={() => setTab("templates")}>
+          <Bookmark size={13} /> Vorlagen
+        </TabButton>
       </div>
 
       {tab === "corrections" ? (
         <CorrectionsTab corrections={corrections} loading={loading} navigate={navigate} />
+      ) : tab === "templates" ? (
+        <TemplatesTab templates={templates} navigate={navigate} />
       ) : (
         <>
       {/* Search */}
