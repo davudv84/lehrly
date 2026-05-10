@@ -22,6 +22,7 @@ import PrintWorksheetView from "@/components/worksheet/PrintWorksheetView";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { generateWorksheetPdf, downloadPdfBlob } from "@/lib/worksheetPdf";
 
 type KlassenbuchContent = {
   lerninhalt?: string;
