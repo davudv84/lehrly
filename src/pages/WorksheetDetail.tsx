@@ -102,6 +102,29 @@ const WorksheetDetail = () => {
     };
   }, [id, user]);
 
+  // Scroll-aware top bar
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // First-visit tooltip near segmented control
+  useEffect(() => {
+    if (loading || !kb) return;
+    try {
+      if (!localStorage.getItem("lehrly_worksheet_tooltip_seen")) {
+        setShowTooltip(true);
+      }
+    } catch { /* ignore */ }
+  }, [loading, kb]);
+
+  const dismissTooltip = () => {
+    setShowTooltip(false);
+    try { localStorage.setItem("lehrly_worksheet_tooltip_seen", "1"); } catch { /* ignore */ }
+  };
+
   const saveHomework = async () => {
     if (!kb) return;
     const { error } = await supabase
