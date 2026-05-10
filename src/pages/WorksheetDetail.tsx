@@ -651,6 +651,9 @@ const ReadingMode = ({
   teacherMode: boolean;
 }) => {
   const reduce = useReducedMotion();
+  const [expanded, setExpanded] = useState(false);
+  const visibleExercises = expanded ? ws.exercises : ws.exercises.slice(0, 1);
+  const remaining = ws.exercises.length - visibleExercises.length;
   const stagger = (i: number) =>
     reduce
       ? { initial: false as const, animate: { opacity: 1, y: 0 } }
