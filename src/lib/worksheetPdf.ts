@@ -166,7 +166,7 @@ export async function generateWorksheetPdf({
       y = MARGIN;
     }
     drawExercise(doc, ex, i, ensureSpace, writeWrapped, () => y, (v) => { y = v; });
-    y += 4; // extra spacing between Aufgaben
+    y += 7; // extra spacing between Aufgaben
   });
 
   drawFooter(doc, meta);
