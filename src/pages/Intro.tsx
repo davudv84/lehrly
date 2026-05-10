@@ -123,7 +123,7 @@ const Intro = () => {
   const isLast = step === SLIDES.length - 1;
 
   const next = () => {
-    if (isLast) navigate("/auth/register");
+    if (isLast) navigate("/generate");
     else setStep((s) => s + 1);
   };
 
@@ -141,7 +141,7 @@ const Intro = () => {
       >
         <LehrlyMark size={18} />
         <TapButton
-          onClick={() => navigate("/auth/register")}
+          onClick={() => navigate("/generate")}
           className="text-[13px] font-medium text-text-tertiary hover:text-text-secondary"
         >
           Überspringen
@@ -183,27 +183,27 @@ const Intro = () => {
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 32px)" }}
       >
         {isLast ? (
-          <div className="flex w-full flex-col gap-3">
-            <PrimaryButton onClick={() => navigate("/auth/register")}>
-              Konto erstellen
+          <div className="flex w-full flex-col gap-2.5">
+            <PrimaryButton onClick={() => navigate("/generate")}>
+              Kostenlos als Gast testen
             </PrimaryButton>
-            <Link
-              to="/auth/login"
-              className="text-center text-[13px] font-medium text-text-secondary hover:text-text-primary"
-            >
-              Ich habe schon ein Konto
-            </Link>
             <button
               onClick={() => navigate("/auth/register")}
-              className="text-center text-[12px] text-text-tertiary hover:text-text-secondary"
+              className="h-11 w-full rounded-pill border border-white/10 bg-surface text-[14px] font-medium text-text-primary hover:bg-surface-2 transition-colors"
             >
-              Erst mal als Gast ausprobieren
+              Konto erstellen
             </button>
+            <Link
+              to="/auth/login"
+              className="mt-1 text-center text-[13px] font-medium text-text-secondary hover:text-text-primary"
+            >
+              Anmelden
+            </Link>
           </div>
         ) : (
           <>
             <TapButton
-              onClick={() => navigate("/auth/register")}
+              onClick={() => navigate("/generate")}
               className="text-[14px] font-medium text-text-tertiary hover:text-text-secondary"
             >
               Überspringen
