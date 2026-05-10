@@ -32,7 +32,7 @@ const CorrectionResult = () => {
     if (!id || !user) return;
     (async () => {
       const { data } = await supabase.from("corrections").select("*").eq("id", id).maybeSingle();
-      const row = data as Correction | null;
+      const row = data as unknown as Correction | null;
       setC(row);
       setName(row?.student_name ?? "");
       setLoading(false);
