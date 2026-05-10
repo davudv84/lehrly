@@ -135,7 +135,7 @@ export async function generateWorksheetPdf({
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(26, 26, 26);
-    const goalLines = doc.splitTextToSize(ws.learning_goal, CONTENT_W - 5);
+    const goalLines = doc.splitTextToSize(safe(ws.learning_goal), CONTENT_W - 5);
     doc.text(goalLines.slice(0, 2), MARGIN + 2.5, y + 8.5);
     y += 14;
   }
