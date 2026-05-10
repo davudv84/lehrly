@@ -69,11 +69,12 @@ export async function generateWorksheetPdf({
     doc.setFont("helvetica", bold ? (italic ? "bolditalic" : "bold") : italic ? "italic" : "normal");
     doc.setFontSize(size);
     doc.setTextColor(...color);
-    const lines = doc.splitTextToSize(text, CONTENT_W - indent);
+    const cleaned = safe(text);
+    const lines = doc.splitTextToSize(cleaned, CONTENT_W - indent);
     const lineH = size * 0.45;
     for (const line of lines) {
       ensureSpace(lineH);
-      doc.text(line, MARGIN + indent, y);
+      doc.text(line, MARGIN + indent, y, { align: "left" });
       y += lineH;
     }
     y += gap;
