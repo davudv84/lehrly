@@ -26,6 +26,8 @@ import Onboarding from "./pages/Onboarding";
 import Intro from "./pages/Intro";
 import Welcome from "./pages/Welcome";
 import WorksheetDetail from "./pages/WorksheetDetail";
+import Scan from "./pages/Scan";
+import CorrectionResult from "./pages/CorrectionResult";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import AuthCallback from "./pages/auth/Callback";
@@ -83,6 +85,8 @@ const AnimatedRoutes = () => {
           <Route path="/templates" element={<Templates />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/worksheets/:id" element={<WorksheetDetail />} />
+          <Route path="/scan" element={<Scan />} />
+          <Route path="/corrections/:id" element={<CorrectionResult />} />
         </Route>
 
         <Route path="/welcome" element={<Welcome />} />
