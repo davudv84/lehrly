@@ -189,25 +189,7 @@ const WorksheetDetail = () => {
     setTimeout(() => toast.success("Arbeitsblatt druckbereit"), 400);
   };
 
-  const handleShare = async () => {
-    if (!ws) return;
-    setMenuOpen(false);
-    const url = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: ws.title, text: ws.title, url });
-      } catch {
-        /* user cancelled */
-      }
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success("Link kopiert");
-    } catch {
-      toast.error("Konnte Link nicht kopieren");
-    }
-  };
+  // share removed
 
   const handleDuplicate = async () => {
     if (!ws || !user) return;
