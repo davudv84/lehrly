@@ -34,6 +34,19 @@ const CONTENT_W = PAGE_W - MARGIN * 2;
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
 
+/** Replace characters jsPDF's standard Helvetica (WinAnsi) renders poorly. */
+const safe = (s: string | null | undefined): string => {
+  if (!s) return "";
+  return s
+    .replace(/\u2248/g, "ca.") // ≈
+    .replace(/[\u2018\u2019\u201A\u2032]/g, "'") // ‘ ’ ‚ ′
+    .replace(/[\u201C\u201D\u201E\u2033]/g, '"') // “ ” „ ″
+    .replace(/[\u2013\u2014]/g, "-") // – —
+    .replace(/\u2026/g, "...") // …
+    .replace(/[\u00A0\u202F\u2009\u200A\u2007]/g, " ") // non-breaking / thin spaces
+    .replace(/\u2022/g, "·"); // • → · (WinAnsi-safe middle dot)
+};
+
 export async function generateWorksheetPdf({
   ws,
   meta,
@@ -56,11 +69,12 @@ export async function generateWorksheetPdf({
     doc.setFont("helvetica", bold ? (italic ? "bolditalic" : "bold") : italic ? "italic" : "normal");
     doc.setFontSize(size);
     doc.setTextColor(...color);
-    const lines = doc.splitTextToSize(text, CONTENT_W - indent);
+    const cleaned = safe(text);
+    const lines = doc.splitTextToSize(cleaned, CONTENT_W - indent);
     const lineH = size * 0.45;
     for (const line of lines) {
       ensureSpace(lineH);
-      doc.text(line, MARGIN + indent, y);
+      doc.text(line, MARGIN + indent, y, { align: "left" });
       y += lineH;
     }
     y += gap;
@@ -72,16 +86,16 @@ export async function generateWorksheetPdf({
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.text(meta.authorInitials, MARGIN + 4.5, y + 6, { align: "center" });
+  doc.text(safe(meta.authorInitials), MARGIN + 4.5, y + 6, { align: "center" });
 
   doc.setTextColor(17, 17, 17);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10.5);
-  doc.text(meta.schoolLabel, MARGIN + 12, y + 4);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(110, 110, 110);
-  doc.text(`Arbeitsblatt · ${formatDate(meta.createdAt)}`, MARGIN + 12, y + 8);
+    doc.text(safe(meta.schoolLabel), MARGIN + 12, y + 4);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(110, 110, 110);
+    doc.text(safe(`Arbeitsblatt · ${formatDate(meta.createdAt)}`), MARGIN + 12, y + 8);
 
   // Niveau badge
   doc.setDrawColor(17, 17, 17);
@@ -90,7 +104,7 @@ export async function generateWorksheetPdf({
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(17, 17, 17);
-  doc.text(ws.niveau, PAGE_W - MARGIN - 8, y + 6, { align: "center" });
+  doc.text(safe(ws.niveau), PAGE_W - MARGIN - 8, y + 6, { align: "center" });
 
   y += 12;
   doc.setDrawColor(208, 208, 208);
@@ -104,9 +118,9 @@ export async function generateWorksheetPdf({
   const metaParts: string[] = [];
   if (ws.topic) metaParts.push(`Thema: ${ws.topic}`);
   metaParts.push(`${ws.task_count} Aufgaben`);
-  if (ws.duration_min) metaParts.push(`≈ ${ws.duration_min} Min.`);
+  if (ws.duration_min) metaParts.push(`ca. ${ws.duration_min} Min.`);
   if (ws.competencies?.length) metaParts.push(ws.competencies.join(" · "));
-  writeWrapped(metaParts.join("  ·  "), { size: 9.5, color: [110, 110, 110], gap: 3 });
+  writeWrapped(metaParts.join(" · "), { size: 9.5, color: [110, 110, 110], gap: 3 });
 
   // Learning goal
   if (ws.learning_goal) {
@@ -121,7 +135,7 @@ export async function generateWorksheetPdf({
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(26, 26, 26);
-    const goalLines = doc.splitTextToSize(ws.learning_goal, CONTENT_W - 5);
+    const goalLines = doc.splitTextToSize(safe(ws.learning_goal), CONTENT_W - 5);
     doc.text(goalLines.slice(0, 2), MARGIN + 2.5, y + 8.5);
     y += 14;
   }
@@ -237,7 +251,7 @@ function drawExercise(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
   doc.setTextColor(120, 120, 120);
-  doc.text(ex.type.toUpperCase(), PAGE_W - MARGIN, y, { align: "right" });
+  doc.text(safe(ex.type).toUpperCase(), PAGE_W - MARGIN, y, { align: "right" });
   y += 1.5;
   doc.setDrawColor(207, 207, 207);
   doc.line(MARGIN, y, PAGE_W - MARGIN, y);
@@ -289,7 +303,7 @@ function drawFooter(doc: jsPDF, meta: Meta) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(136, 136, 136);
-  doc.text(`Lehrly · ${meta.schoolLabel}`, MARGIN, yy + 2);
+  doc.text(safe(`Lehrly · ${meta.schoolLabel}`), MARGIN, yy + 2);
   doc.text(`ID ${meta.worksheetId.slice(0, 8).toUpperCase()}`, PAGE_W - MARGIN, yy + 2, { align: "right" });
 }
 
