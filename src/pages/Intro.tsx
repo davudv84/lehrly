@@ -188,7 +188,7 @@ const Intro = () => {
               Kostenlos als Gast testen
             </PrimaryButton>
             <button
-              onClick={() => navigate("/generate")}
+              onClick={() => navigate("/auth/register")}
               className="h-11 w-full rounded-pill border border-white/10 bg-surface text-[14px] font-medium text-text-primary hover:bg-surface-2 transition-colors"
             >
               Konto erstellen
