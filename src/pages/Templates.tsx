@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, MoreHorizontal, Plus, Star } from "lucide-react";
+import { ArrowRight, MoreHorizontal, Star } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useSeedDemoOnce } from "@/hooks/useSeedDemoOnce";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,21 +53,27 @@ const Templates = () => {
   return (
     <div className="relative px-5">
       <header
-        className="pb-6"
-        style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 22px)" }}
+        className="flex items-end justify-between pb-6"
+        style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 24px)" }}
       >
-        <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-text-tertiary">
-          Wiederverwendbar
-        </p>
-        <h1 className="mt-2 font-display text-[26px] font-semibold leading-tight tracking-[-0.022em] text-text-primary">
-          Vorlagen
-        </h1>
-        <p className="mt-2 max-w-[320px] text-[14px] leading-relaxed text-text-secondary">
-          Speichere deine Lieblings-Konfigurationen und starte jede Stunde in Sekunden.
-        </p>
+        <div>
+          <p className="section-label">Wiederverwendbar</p>
+          <h1 className="mt-2 font-display text-[26px] font-semibold leading-tight tracking-[-0.022em] text-text-primary">
+            Vorlagen
+          </h1>
+          <p className="mt-2 max-w-[320px] text-[14px] leading-relaxed text-text-secondary">
+            Speichere deine Lieblings-Konfigurationen und starte jede Stunde in Sekunden.
+          </p>
+        </div>
+        <button
+          onClick={() => navigate("/generate")}
+          className="text-[13px] font-medium text-text-secondary hover:text-text-primary transition-colors"
+        >
+          + Neu
+        </button>
       </header>
 
-      <div className="flex flex-col gap-2.5 pb-24">
+      <div className="flex flex-col gap-3 pb-16">
         {items.map((t) => (
           <TemplateCard
             key={t.id}
@@ -95,14 +101,6 @@ const Templates = () => {
           </div>
         )}
       </div>
-
-      <TapButton
-        onClick={() => navigate("/generate")}
-        aria-label="Neue Vorlage"
-        className="absolute bottom-2 right-5 flex h-12 w-12 items-center justify-center rounded-pill bg-brand text-primary-foreground shadow-[0_8px_24px_-10px_hsl(var(--brand)/0.5)] hover:bg-brand-hover transition-colors"
-      >
-        <Plus size={20} strokeWidth={2.2} />
-      </TapButton>
     </div>
   );
 };
@@ -129,7 +127,7 @@ const TemplateCard = ({
             {template.title}
           </p>
           {template.is_new && (
-            <span className="mt-1.5 inline-flex h-5 items-center rounded-pill bg-brand-soft px-2 text-[10px] font-semibold uppercase tracking-wide text-brand-hover">
+            <span className="mt-1.5 inline-flex h-5 items-center rounded-pill bg-surface-2 ring-hairline px-2 text-[10px] font-semibold uppercase tracking-wide text-text-secondary">
               Neu
             </span>
           )}
@@ -161,7 +159,7 @@ const TemplateCard = ({
         </div>
         <TapButton
           onClick={onUse}
-          className="flex items-center gap-1 text-[12.5px] font-medium text-brand-hover hover:text-brand transition-colors"
+          className="flex items-center gap-1 text-[12.5px] font-medium text-text-primary hover:text-white transition-colors"
         >
           Verwenden <ArrowRight size={13} />
         </TapButton>

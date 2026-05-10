@@ -168,9 +168,7 @@ const Index = () => {
         style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 22px)" }}
       >
         <div className="min-w-0">
-          <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-text-tertiary">
-            {todayLabel()}
-          </p>
+          <p className="section-label">{todayLabel()}</p>
           <div className="mt-2">
             <Greeting name={profile?.name ?? null} />
           </div>
@@ -285,9 +283,18 @@ const Index = () => {
             initial="hidden"
             animate="show"
             className="-mx-5 mt-3.5 flex gap-3 overflow-x-auto px-5 pb-2"
+            style={{
+              scrollSnapType: "x mandatory",
+              scrollPaddingLeft: 20,
+              paddingRight: 32,
+            }}
           >
             {recents.map((w) => (
-              <motion.div key={w.id} variants={fadeUp}>
+              <motion.div
+                key={w.id}
+                variants={fadeUp}
+                style={{ scrollSnapAlign: "start" }}
+              >
                 <WorksheetCard ws={w} variant="row" />
               </motion.div>
             ))}
