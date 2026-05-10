@@ -266,7 +266,7 @@ const WorksheetDetail = () => {
 
   return (
     <>
-      <div ref={scrollRef} className="no-print" style={{ paddingBottom: 32 }}>
+      <div ref={scrollRef} className="no-print" style={{ paddingBottom: tab === "sheet" ? 96 : 32 }}>
         {/* Top bar — 48px, scroll-aware blur */}
         <header
           className={cn(
