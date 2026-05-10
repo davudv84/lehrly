@@ -71,7 +71,7 @@ export async function generateWorksheetPdf({
     doc.setTextColor(...color);
     const cleaned = safe(text);
     const lines = doc.splitTextToSize(cleaned, CONTENT_W - indent);
-    const lineH = size * 0.45;
+    const lineH = size * 0.52;
     for (const line of lines) {
       ensureSpace(lineH);
       doc.text(line, MARGIN + indent, y, { align: "left" });
