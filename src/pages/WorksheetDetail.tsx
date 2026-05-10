@@ -1,16 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   ArrowLeft,
-  BookOpen,
   ClipboardCopy,
   Copy,
   FileText,
   GraduationCap,
   MoreHorizontal,
   Printer,
-  Scroll,
   Share2,
   Star,
   Trash2,
@@ -19,7 +17,6 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import TapButton from "@/components/TapButton";
-import Segmented from "@/components/ui/segmented";
 import WorksheetSheet, { type WorksheetData } from "@/components/worksheet/WorksheetSheet";
 import PrintWorksheetView from "@/components/worksheet/PrintWorksheetView";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
