@@ -177,11 +177,25 @@ const Body = ({ children }: { children: React.ReactNode }) => (
 
 const ScreenWelcome = () => (
   <div className="flex flex-1 flex-col items-center justify-center text-center">
-    <LehrlyMark size={26} />
-    <div style={{ height: 28 }} />
-    <Headline>Druckfertige Arbeitsblätter in 30 Sekunden.</Headline>
-    <div className="max-w-[300px]">
-      <Body>Für DaF/DaZ-Lehrkräfte. Von A1 bis C1.</Body>
+    <span
+      aria-hidden
+      className="inline-block rounded-full"
+      style={{ width: 12, height: 12, background: "#10B981" }}
+    />
+    <h1
+      className="font-bold tracking-[-0.02em] text-text-primary"
+      style={{ fontSize: 36, lineHeight: 1.1, marginTop: 28 }}
+    >
+      Lehrly
+    </h1>
+    <h2
+      className="font-bold tracking-[-0.02em] text-text-primary"
+      style={{ fontSize: 24, lineHeight: 1.2, marginTop: 22 }}
+    >
+      Willkommen bei Lehrly
+    </h2>
+    <div className="max-w-[280px]">
+      <Body>Dein KI-Assistent für DaF/DaZ-Arbeitsblätter.</Body>
     </div>
   </div>
 );
