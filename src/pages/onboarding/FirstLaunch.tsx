@@ -43,7 +43,7 @@ const FirstLaunch = () => {
   const startGuest = () => {
     setGuest();
     markOnboarded();
-    navigate("/", { replace: true });
+    navigate("/generate", { replace: true });
   };
   const goRegister = () => {
     markOnboarded();
