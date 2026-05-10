@@ -908,7 +908,7 @@ const ReadingMode = ({
               cursor: "pointer",
             }}
           >
-            Weitere Aufgaben anzeigen ({remaining})
+            Weitere {remaining} Aufgaben anzeigen
             <ChevronDown size={14} />
           </button>
         </div>
