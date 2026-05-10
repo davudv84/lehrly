@@ -123,7 +123,7 @@ const Intro = () => {
   const isLast = step === SLIDES.length - 1;
 
   const next = () => {
-    if (isLast) navigate("/auth/register");
+    if (isLast) navigate("/generate");
     else setStep((s) => s + 1);
   };
 
@@ -141,7 +141,7 @@ const Intro = () => {
       >
         <LehrlyMark size={18} />
         <TapButton
-          onClick={() => navigate("/auth/register")}
+          onClick={() => navigate("/generate")}
           className="text-[13px] font-medium text-text-tertiary hover:text-text-secondary"
         >
           Überspringen
@@ -188,7 +188,7 @@ const Intro = () => {
               Kostenlos als Gast testen
             </PrimaryButton>
             <button
-              onClick={() => navigate("/auth/register")}
+              onClick={() => navigate("/generate")}
               className="h-11 w-full rounded-pill border border-white/10 bg-surface text-[14px] font-medium text-text-primary hover:bg-surface-2 transition-colors"
             >
               Konto erstellen
@@ -203,7 +203,7 @@ const Intro = () => {
         ) : (
           <>
             <TapButton
-              onClick={() => navigate("/auth/register")}
+              onClick={() => navigate("/generate")}
               className="text-[14px] font-medium text-text-tertiary hover:text-text-secondary"
             >
               Überspringen
