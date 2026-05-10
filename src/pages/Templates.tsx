@@ -127,7 +127,7 @@ const TemplateCard = ({
             {template.title}
           </p>
           {template.is_new && (
-            <span className="mt-1.5 inline-flex h-5 items-center rounded-pill bg-brand-soft px-2 text-[10px] font-semibold uppercase tracking-wide text-brand-hover">
+            <span className="mt-1.5 inline-flex h-5 items-center rounded-pill bg-surface-2 ring-hairline px-2 text-[10px] font-semibold uppercase tracking-wide text-text-secondary">
               Neu
             </span>
           )}
