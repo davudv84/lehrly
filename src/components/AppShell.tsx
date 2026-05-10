@@ -11,7 +11,7 @@ const AppShell = () => {
   const location = useLocation();
   return (
     <div className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col bg-bg-base">
-      <main className="flex-1 pb-24">
+      <main className="flex-1 pb-20">
         <AnimatePresence mode="wait" initial={false}>
           <PageTransition key={location.pathname}>
             <Outlet />
