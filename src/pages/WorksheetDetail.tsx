@@ -849,6 +849,30 @@ const ReadingMode = ({
           </motion.section>
         ))}
       </div>
+      {remaining > 0 && (
+        <div style={{ marginTop: 32, display: "flex", justifyContent: "center" }}>
+          <button
+            onClick={() => setExpanded(true)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              height: 40,
+              padding: "0 18px",
+              fontSize: 13,
+              fontWeight: 500,
+              color: "#1A1A1A",
+              backgroundColor: "#F5F5F5",
+              border: "1px solid #E5E5E5",
+              borderRadius: 999,
+              cursor: "pointer",
+            }}
+          >
+            Weitere Aufgaben anzeigen ({remaining})
+            <ChevronDown size={14} />
+          </button>
+        </div>
+      )}
     </article>
   );
 };
