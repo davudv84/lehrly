@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Bookmark, Home, Library, User } from "lucide-react";
+import { ClipboardCheck, Home, Library, User } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
