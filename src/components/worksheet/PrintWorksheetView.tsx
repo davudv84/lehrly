@@ -67,7 +67,7 @@ const PrintExercise = ({ ex, index }: { ex: Exercise; index: number }) => {
     : "";
 
   return (
-    <li className="ws-exercise avoid-break" style={{ marginTop: "6mm", listStyle: "none" }}>
+    <li className="ws-exercise avoid-break" style={{ marginTop: "9mm", listStyle: "none", lineHeight: 1.6 }}>
       <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
         <span
           style={{
