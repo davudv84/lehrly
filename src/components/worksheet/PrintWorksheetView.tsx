@@ -400,8 +400,8 @@ const PrintWorksheetView = ({ ws, meta, includeSolutions = false }: Props) => {
           <div
             style={{
               marginTop: "3mm",
-              border: "1px solid #c8e0cf",
-              background: "#f3faf5",
+              border: "1px solid #c8c8c8",
+              background: "#fafafa",
               padding: "2.5mm 3mm",
             }}
           >
@@ -412,13 +412,13 @@ const PrintWorksheetView = ({ ws, meta, includeSolutions = false }: Props) => {
                 fontWeight: 700,
                 textTransform: "uppercase",
                 letterSpacing: "0.1em",
-                color: "#1f7a3f",
+                color: "#333",
                 margin: 0,
               }}
             >
               Lernziel
             </p>
-            <p style={{ marginTop: "1mm", fontSize: "10.5pt", color: "#1a1a1a" }}>
+            <p style={{ marginTop: "1mm", fontSize: "10.5pt", color: "#1a1a1a", lineHeight: 1.55 }}>
               {ws.learning_goal}
             </p>
           </div>
