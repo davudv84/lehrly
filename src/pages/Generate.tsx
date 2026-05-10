@@ -68,6 +68,7 @@ const Generate = () => {
     prefill?.taskTypes ?? ["Lückentext"],
   );
   const [count, setCount] = useState<number>(prefill?.count ?? 6);
+  const [generateKlassenbuch, setGenerateKlassenbuch] = useState(true);
 
   const [phase, setPhase] = useState<Phase>("form");
   const [createdId, setCreatedId] = useState<string | null>(null);
