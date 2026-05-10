@@ -218,6 +218,66 @@ const Library = () => {
           ))}
         </motion.div>
       )}
+        </>
+      )}
+    </div>
+  );
+};
+
+const CorrectionsTab = ({
+  corrections,
+  loading,
+  navigate,
+}: {
+  corrections: Correction[];
+  loading: boolean;
+  navigate: (path: string) => void;
+}) => {
+  if (loading) return <div className="py-10 text-center text-text-tertiary text-[13px]">Lädt…</div>;
+  if (corrections.length === 0) {
+    return (
+      <EmptyState
+        icon={<ClipboardCheck size={22} className="text-brand-hover" />}
+        title="Noch keine Korrekturen"
+        description="Scanne ein ausgefülltes Arbeitsblatt — die KI korrigiert es in Sekunden."
+        action={
+          <TapButton
+            onClick={() => navigate("/scan")}
+            className="flex h-11 items-center gap-1.5 rounded-pill bg-brand px-5 text-[13.5px] font-medium text-primary-foreground hover:bg-brand-hover transition-colors"
+          >
+            Arbeitsblatt scannen
+          </TapButton>
+        }
+      />
+    );
+  }
+  return (
+    <div className="flex flex-col gap-2 pb-8">
+      {corrections.map((c) => {
+        const pct = c.max_score > 0 ? Math.round((Number(c.score) / Number(c.max_score)) * 100) : 0;
+        return (
+          <Link
+            key={c.id}
+            to={`/corrections/${c.id}`}
+            className="float-card flex items-center gap-3.5 rounded-card bg-surface-1 ring-hairline p-3.5"
+          >
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-pill bg-brand-soft text-brand-hover text-[13px] font-semibold">
+              {c.grade ?? "—"}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[13.5px] font-medium text-text-primary">
+                {c.student_name?.trim() || "Unbenannt"}
+              </p>
+              <p className="mt-0.5 text-[11.5px] text-text-tertiary">
+                {c.exercise_breakdown?.title ?? "Korrektur"} · {c.score}/{c.max_score} ({pct}%)
+              </p>
+            </div>
+            <span className="text-[11px] text-text-tertiary">
+              {new Date(c.created_at).toLocaleDateString("de-DE", { day: "2-digit", month: "short" })}
+            </span>
+          </Link>
+        );
+      })}
     </div>
   );
 };
