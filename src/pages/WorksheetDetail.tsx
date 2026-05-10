@@ -723,7 +723,7 @@ const ReadingMode = ({
       </motion.header>
 
       <div>
-        {ws.exercises.map((ex, i) => (
+        {visibleExercises.map((ex, i) => (
           <motion.section
             key={i}
             {...stagger(i)}
