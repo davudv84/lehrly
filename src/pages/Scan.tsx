@@ -1,12 +1,28 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, FileImage, Loader2, Upload, X } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  Camera,
+  ChevronDown,
+  Loader2,
+  ScanLine,
+  Search,
+  Upload,
+  X,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import TapButton from "@/components/TapButton";
+import NiveauBadge from "@/components/NiveauBadge";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
-type Original = { id: string; title: string; niveau: string };
+type Original = {
+  id: string;
+  title: string;
+  niveau: string;
+  task_types: string[] | null;
+};
 
 const fileToBase64 = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -28,13 +44,14 @@ const Scan = () => {
   const [worksheetId, setWorksheetId] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
       const { data } = await supabase
         .from("worksheets")
-        .select("id,title,niveau")
+        .select("id,title,niveau,task_types")
         .order("created_at", { ascending: false })
         .limit(50);
       setOriginals((data as Original[] | null) ?? []);
@@ -54,7 +71,6 @@ const Scan = () => {
     }
     setLoading(true);
     try {
-      // optional upload to storage
       let imagePath: string | undefined;
       try {
         const path = `${user.id}/${Date.now()}-${file.name}`;
@@ -62,9 +78,7 @@ const Scan = () => {
           .from("correction-uploads")
           .upload(path, file, { upsert: false });
         if (up?.path) imagePath = up.path;
-      } catch {
-        /* non-fatal */
-      }
+      } catch { /* non-fatal */ }
 
       const { data, error } = await supabase.functions.invoke("correct-worksheet", {
         body: {
@@ -74,151 +88,249 @@ const Scan = () => {
           imagePath,
         },
       });
-      if (error || (data as any)?.error) {
-        toast.error((data as any)?.error || error?.message || "Korrektur fehlgeschlagen");
+      if (error || (data as { error?: string } | null)?.error) {
+        toast.error((data as { error?: string } | null)?.error || error?.message || "Korrektur fehlgeschlagen");
         setLoading(false);
         return;
       }
-      navigate(`/corrections/${(data as any).id}`);
+      navigate(`/corrections/${(data as { id: string }).id}`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Fehler");
       setLoading(false);
     }
   };
 
-  const filtered = search
+  const filteredAll = search
     ? originals.filter((o) => o.title.toLowerCase().includes(search.toLowerCase()))
     : originals;
+  const visible = showAll || search ? filteredAll : filteredAll.slice(0, 3);
+
+  const ready = !!preview;
 
   return (
-    <div className="px-5 pb-10">
+    <div className="px-5 pb-32">
       <header
-        className="flex items-center gap-3 pb-4"
-        style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}
+        className="pb-6"
+        style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 24px)" }}
       >
-        <TapButton
-          onClick={() => navigate(-1)}
-          aria-label="Zurück"
-          className="h-9 w-9 rounded-pill bg-surface-2 text-text-secondary ring-hairline"
-        >
-          <ArrowLeft size={17} />
-        </TapButton>
-        <h1 className="font-display text-[20px] font-semibold tracking-[-0.018em] text-text-primary">
-          Arbeitsblatt scannen
+        <p className="section-label">KI-Korrektur</p>
+        <h1 className="mt-2 font-display text-[26px] font-semibold leading-tight tracking-[-0.022em] text-text-primary">
+          Korrektur
         </h1>
+        <p className="mt-2 max-w-[340px] text-[14px] leading-relaxed text-text-secondary">
+          Scanne ein ausgefülltes Arbeitsblatt. Lehrly erkennt die Antworten und
+          erstellt die Korrektur automatisch.
+        </p>
       </header>
 
-      <p className="text-[13px] text-text-secondary">
-        Fotografiere oder lade ein ausgefülltes Arbeitsblatt hoch — die KI korrigiert es automatisch.
-      </p>
+      {/* Upload area */}
+      {preview ? (
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.24 }}
+          className="relative overflow-hidden rounded-card ring-hairline bg-surface-1"
+        >
+          <img src={preview} alt="Vorschau" className="w-full max-h-[420px] object-contain bg-black/30" />
+          <button
+            onClick={() => { setPreview(null); setFile(null); }}
+            className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-bg-base/70 text-text-primary"
+            aria-label="Entfernen"
+          >
+            <X size={15} />
+          </button>
+        </motion.div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          <input
+            ref={cameraRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            hidden
+            onChange={(e) => onPick(e.target.files?.[0] ?? null)}
+          />
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*,application/pdf"
+            hidden
+            onChange={(e) => onPick(e.target.files?.[0] ?? null)}
+          />
+          <ActionCard
+            icon={<Camera size={20} />}
+            title="Foto aufnehmen"
+            subtitle="Arbeitsblatt mit der Kamera scannen"
+            onClick={() => cameraRef.current?.click()}
+          />
+          <ActionCard
+            icon={<Upload size={20} />}
+            title="Datei hochladen"
+            subtitle="PDF oder Bild auswählen"
+            onClick={() => inputRef.current?.click()}
+          />
+        </div>
+      )}
 
-      {/* Upload */}
-      <div className="mt-5">
-        {preview ? (
-          <div className="relative overflow-hidden rounded-card ring-hairline bg-surface-1">
-            <img src={preview} alt="Vorschau" className="w-full max-h-[420px] object-contain bg-black/30" />
-            <button
-              onClick={() => {
-                setPreview(null);
-                setFile(null);
-              }}
-              className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-bg-base/70 text-text-primary"
-              aria-label="Entfernen"
-            >
-              <X size={15} />
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            <input
-              ref={cameraRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              hidden
-              onChange={(e) => onPick(e.target.files?.[0] ?? null)}
-            />
-            <input
-              ref={inputRef}
-              type="file"
-              accept="image/*,application/pdf"
-              hidden
-              onChange={(e) => onPick(e.target.files?.[0] ?? null)}
-            />
-            <TapButton
-              onClick={() => cameraRef.current?.click()}
-              className="flex h-32 flex-col items-center justify-center gap-2 rounded-card bg-surface-1 ring-hairline text-text-primary"
-            >
-              <Camera size={22} />
-              <span className="text-[13px] font-medium">Kamera</span>
-            </TapButton>
-            <TapButton
-              onClick={() => inputRef.current?.click()}
-              className="flex h-32 flex-col items-center justify-center gap-2 rounded-card bg-surface-1 ring-hairline text-text-primary"
-            >
-              <Upload size={22} />
-              <span className="text-[13px] font-medium">Hochladen</span>
-            </TapButton>
-          </div>
-        )}
-      </div>
+      {/* Workflow steps */}
+      {!preview && (
+        <section className="mt-8">
+          <p className="section-label mb-3">So funktioniert's</p>
+          <ol className="space-y-2.5">
+            <Step n={1} label="Arbeitsblatt hochladen" />
+            <Step n={2} label="Original auswählen" />
+            <Step n={3} label="Korrektur starten" />
+          </ol>
+        </section>
+      )}
 
       {/* Original picker */}
-      <div className="mt-6">
-        <p className="section-label mb-2">Original-Arbeitsblatt (optional)</p>
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Suche…"
-          className="h-10 w-full rounded-input bg-surface-2 px-3 text-[13px] text-text-primary placeholder:text-text-tertiary outline-none ring-hairline"
-        />
-        <div className="mt-2 max-h-48 overflow-y-auto rounded-card ring-hairline bg-surface-1">
-          {filtered.length === 0 && (
-            <p className="p-3 text-[12px] text-text-tertiary">Keine Arbeitsblätter gefunden.</p>
-          )}
-          {filtered.map((o) => (
-            <button
-              key={o.id}
-              onClick={() => setWorksheetId(o.id === worksheetId ? "" : o.id)}
-              className={`flex w-full items-center justify-between border-b border-hairline/10 px-3 py-2.5 text-left text-[13px] hover:bg-surface-2 ${
-                worksheetId === o.id ? "bg-brand-soft text-brand-hover" : "text-text-primary"
-              }`}
-            >
-              <span className="truncate">{o.title}</span>
-              <span className="ml-2 text-[11px] text-text-tertiary">{o.niveau}</span>
-            </button>
-          ))}
+      <section className="mt-8">
+        <p className="section-label mb-3">Original-Arbeitsblatt</p>
+        <div className="relative">
+          <Search
+            size={14}
+            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-tertiary"
+          />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Suche nach Titel…"
+            className="h-10 w-full rounded-input bg-surface-2 pl-9 pr-3 text-[13px] text-text-primary placeholder:text-text-tertiary outline-none ring-hairline focus:bg-surface-3"
+          />
         </div>
-      </div>
+
+        <div className="mt-3 flex flex-col gap-1.5">
+          {visible.length === 0 && (
+            <p className="rounded-card bg-surface-1 ring-hairline px-4 py-6 text-center text-[12.5px] text-text-tertiary">
+              Keine Arbeitsblätter gefunden.
+            </p>
+          )}
+          {visible.map((o) => {
+            const selected = worksheetId === o.id;
+            return (
+              <button
+                key={o.id}
+                onClick={() => setWorksheetId(selected ? "" : o.id)}
+                className={cn(
+                  "group flex items-center gap-3 rounded-card bg-surface-1 ring-hairline px-3.5 py-3 text-left transition-all",
+                  selected
+                    ? "ring-1 ring-brand/60 bg-brand-soft/40"
+                    : "hover:bg-surface-2",
+                )}
+                style={selected ? { borderLeft: "3px solid hsl(var(--brand))" } : undefined}
+              >
+                <NiveauBadge niveau={o.niveau} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13.5px] font-medium text-text-primary">
+                    {o.title}
+                  </p>
+                  {o.task_types && o.task_types.length > 0 && (
+                    <p className="mt-0.5 truncate text-[11.5px] text-text-tertiary">
+                      {o.task_types.slice(0, 2).join(" · ")}
+                    </p>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {!search && filteredAll.length > 3 && (
+          <button
+            onClick={() => setShowAll((v) => !v)}
+            className="mt-3 inline-flex items-center gap-1 text-[12.5px] font-medium text-text-secondary hover:text-text-primary transition-colors"
+          >
+            {showAll ? "Weniger anzeigen" : `Mehr anzeigen (${filteredAll.length - 3})`}
+            <ChevronDown
+              size={13}
+              className={cn("transition-transform", showAll && "rotate-180")}
+            />
+          </button>
+        )}
+      </section>
 
       {/* Student name */}
-      <div className="mt-5">
-        <p className="section-label mb-2">Schüler:in (optional)</p>
+      <section className="mt-8">
+        <p className="section-label mb-2 text-text-tertiary">Schüler:in (optional)</p>
         <input
           value={studentName}
           onChange={(e) => setStudentName(e.target.value)}
-          placeholder="Name"
-          className="h-11 w-full rounded-input bg-surface-2 px-3.5 text-[14px] text-text-primary placeholder:text-text-tertiary outline-none ring-hairline"
+          placeholder="Name optional"
+          className="h-10 w-full rounded-input bg-surface-2 px-3 text-[13.5px] text-text-primary placeholder:text-text-tertiary outline-none ring-hairline focus:bg-surface-3"
         />
-      </div>
+      </section>
 
-      <button
-        onClick={submit}
-        disabled={!preview || loading}
-        className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-pill bg-brand text-[14px] font-medium text-primary-foreground transition-all hover:bg-brand-hover disabled:opacity-50"
+      {/* Sticky CTA above bottom nav */}
+      <div
+        className="fixed inset-x-0 z-30"
+        style={{
+          bottom: "calc(56px + env(safe-area-inset-bottom, 0px))",
+          backgroundColor: "rgba(14,15,17,0.92)",
+          backdropFilter: "blur(20px) saturate(160%)",
+          WebkitBackdropFilter: "blur(20px) saturate(160%)",
+          borderTop: "1px solid hsl(var(--hairline) / 0.1)",
+        }}
       >
-        {loading ? (
-          <>
-            <Loader2 size={16} className="animate-spin" /> Korrigiere Arbeitsblatt…
-          </>
-        ) : (
-          <>
-            <FileImage size={16} /> Korrektur starten
-          </>
-        )}
-      </button>
+        <div className="mx-auto w-full max-w-md px-5 py-3">
+          <button
+            onClick={submit}
+            disabled={!ready || loading}
+            className={cn(
+              "flex h-12 w-full items-center justify-center gap-2 rounded-pill text-[14px] font-medium transition-all",
+              ready && !loading
+                ? "bg-brand text-primary-foreground hover:bg-brand-hover"
+                : "bg-surface-2 text-text-tertiary cursor-not-allowed",
+            )}
+          >
+            {loading ? (
+              <>
+                <Loader2 size={16} className="animate-spin" /> Korrigiere…
+              </>
+            ) : (
+              <>
+                <ScanLine size={16} /> Korrektur starten
+              </>
+            )}
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
+
+const ActionCard = ({
+  icon,
+  title,
+  subtitle,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  onClick: () => void;
+}) => (
+  <TapButton
+    onClick={onClick}
+    className="flex h-36 flex-col items-start justify-between rounded-card bg-surface-1 ring-hairline p-4 text-left hover:bg-surface-2 transition-colors"
+  >
+    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-2 text-text-primary">
+      {icon}
+    </div>
+    <div>
+      <p className="text-[13.5px] font-medium text-text-primary">{title}</p>
+      <p className="mt-1 text-[11.5px] leading-snug text-text-tertiary">{subtitle}</p>
+    </div>
+  </TapButton>
+);
+
+const Step = ({ n, label }: { n: number; label: string }) => (
+  <li className="flex items-center gap-3">
+    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-2 text-[11px] font-semibold text-text-secondary ring-hairline">
+      {n}
+    </span>
+    <span className="text-[13.5px] text-text-secondary">{label}</span>
+  </li>
+);
 
 export default Scan;
