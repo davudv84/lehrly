@@ -283,9 +283,18 @@ const Index = () => {
             initial="hidden"
             animate="show"
             className="-mx-5 mt-3.5 flex gap-3 overflow-x-auto px-5 pb-2"
+            style={{
+              scrollSnapType: "x mandatory",
+              scrollPaddingLeft: 20,
+              paddingRight: 32,
+            }}
           >
             {recents.map((w) => (
-              <motion.div key={w.id} variants={fadeUp}>
+              <motion.div
+                key={w.id}
+                variants={fadeUp}
+                style={{ scrollSnapAlign: "start" }}
+              >
                 <WorksheetCard ws={w} variant="row" />
               </motion.div>
             ))}
