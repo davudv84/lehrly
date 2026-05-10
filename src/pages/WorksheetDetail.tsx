@@ -862,12 +862,15 @@ const KlassenbuchView = ({
   const c = kb.content;
   return (
     <div
-      className="rounded-card"
+      className="mx-auto w-full"
       style={{
-        backgroundColor: "#FFFFFF",
-        border: "1px solid #E5E5E5",
-        padding: "24px 24px",
+        maxWidth: 760,
+        backgroundColor: "#FAFAF7",
+        borderRadius: 8,
+        boxShadow: "0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.25)",
+        padding: "32px 32px",
         color: "#1A1A1A",
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
       }}
     >
       <p
