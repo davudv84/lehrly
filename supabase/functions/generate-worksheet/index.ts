@@ -120,8 +120,8 @@ Deno.serve(async (req) => {
       return json({ error: "Mindestens ein Aufgabentyp erforderlich" }, 400);
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
+    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
+    if (!ANTHROPIC_API_KEY) {
       return json({ error: "AI gateway nicht konfiguriert" }, 500);
     }
 
@@ -161,126 +161,108 @@ Deno.serve(async (req) => {
       `• Pro Aufgabe: type, instruction (klare TN-Anweisung in Du- oder Sie-Form, konsistent), context ` +
       `(optional: 1 Satz Situation), content (Aufgabentext nach Typvorgabe), solution (vollständig + korrekt).\n`;
 
-    const aiRes = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
+    const worksheetSchema = {
+      type: "object",
+      properties: {
+        title: {
+          type: "string",
+          description:
+            "Konkreter, ansprechender Titel mit Niveau-Hinweis. Beispiel: 'Beim Hausarzt — Beschwerden beschreiben (A2)'.",
         },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-pro",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
-          ],
-          tools: [
-            {
-              type: "function",
-              function: {
-                name: "create_worksheet",
+        learning_goal: {
+          type: "string",
+          description: "Ein Satz im Können-Format: 'Die Lernenden können …'.",
+        },
+        teacher_notes: {
+          type: "array",
+          description:
+            "2–4 kurze Hinweise für die Lehrkraft (Sozialform, Differenzierung, Stolpersteine).",
+          items: { type: "string" },
+          minItems: 2,
+          maxItems: 4,
+        },
+        competencies: {
+          type: "array",
+          description:
+            "1–3 trainierte Kompetenzen aus: Lesen, Schreiben, Hören, Sprechen, Wortschatz, Grammatik.",
+          items: {
+            type: "string",
+            enum: ["Lesen", "Schreiben", "Hören", "Sprechen", "Wortschatz", "Grammatik"],
+          },
+          minItems: 1,
+          maxItems: 3,
+        },
+        duration_min: {
+          type: "number",
+          description: "Geschätzte Bearbeitungszeit in Minuten (15–60).",
+        },
+        exercises: {
+          type: "array",
+          minItems: count,
+          maxItems: count,
+          items: {
+            type: "object",
+            properties: {
+              type: { type: "string", enum: taskTypes },
+              instruction: {
+                type: "string",
                 description:
-                  "Liefert das vollständige didaktisierte Arbeitsblatt als strukturierte Daten.",
-                parameters: {
-                  type: "object",
-                  properties: {
-                    title: {
-                      type: "string",
-                      description:
-                        "Konkreter, ansprechender Titel mit Niveau-Hinweis. Beispiel: 'Beim Hausarzt — Beschwerden beschreiben (A2)'.",
-                    },
-                    learning_goal: {
-                      type: "string",
-                      description:
-                        "Ein Satz im Können-Format: 'Die Lernenden können …'.",
-                    },
-                    teacher_notes: {
-                      type: "array",
-                      description:
-                        "2–4 kurze Hinweise für die Lehrkraft (Sozialform, Differenzierung, Stolpersteine).",
-                      items: { type: "string" },
-                      minItems: 2,
-                      maxItems: 4,
-                    },
-                    competencies: {
-                      type: "array",
-                      description:
-                        "1–3 trainierte Kompetenzen aus: Lesen, Schreiben, Hören, Sprechen, Wortschatz, Grammatik.",
-                      items: {
-                        type: "string",
-                        enum: [
-                          "Lesen",
-                          "Schreiben",
-                          "Hören",
-                          "Sprechen",
-                          "Wortschatz",
-                          "Grammatik",
-                        ],
-                      },
-                      minItems: 1,
-                      maxItems: 3,
-                    },
-                    duration_min: {
-                      type: "number",
-                      description: "Geschätzte Bearbeitungszeit in Minuten (15–60).",
-                    },
-                    exercises: {
-                      type: "array",
-                      minItems: count,
-                      maxItems: count,
-                      items: {
-                        type: "object",
-                        properties: {
-                          type: { type: "string", enum: taskTypes },
-                          instruction: {
-                            type: "string",
-                            description:
-                              "Klare, kurze TN-Anweisung auf Deutsch (konsistente Anrede du/Sie).",
-                          },
-                          context: {
-                            type: "string",
-                            description:
-                              "Optional: 1 Satz Situations-/Kontextrahmen vor der Aufgabe.",
-                          },
-                          content: {
-                            type: "string",
-                            description:
-                              "Aufgabentext entsprechend dem Typ-Format. Bei Lückentext: Lücken als '_____' (5 Unterstriche). " +
-                              "Bei Multiple Choice: Stamm + 'a) …\\nb) …\\nc) …'. Bei Zuordnung/Wortschatz/Satzbau: ein Eintrag pro Zeile.",
-                          },
-                          solution: {
-                            type: "string",
-                            description:
-                              "Vollständige, klar formatierte Lösung. Nummeriert wenn mehrteilig. " +
-                              "Bei Schreibaufgaben: kompletter Mustertext.",
-                          },
-                        },
-                        required: ["type", "instruction", "content", "solution"],
-                        additionalProperties: false,
-                      },
-                    },
-                  },
-                  required: [
-                    "title",
-                    "learning_goal",
-                    "teacher_notes",
-                    "competencies",
-                    "duration_min",
-                    "exercises",
-                  ],
-                  additionalProperties: false,
-                },
+                  "Klare, kurze TN-Anweisung auf Deutsch (konsistente Anrede du/Sie).",
+              },
+              context: {
+                type: "string",
+                description:
+                  "Optional: 1 Satz Situations-/Kontextrahmen vor der Aufgabe.",
+              },
+              content: {
+                type: "string",
+                description:
+                  "Aufgabentext entsprechend dem Typ-Format. Bei Lückentext: Lücken als '_____' (5 Unterstriche). " +
+                  "Bei Multiple Choice: Stamm + 'a) …\\nb) …\\nc) …'. Bei Zuordnung/Wortschatz/Satzbau: ein Eintrag pro Zeile.",
+              },
+              solution: {
+                type: "string",
+                description:
+                  "Vollständige, klar formatierte Lösung. Nummeriert wenn mehrteilig. Bei Schreibaufgaben: kompletter Mustertext.",
               },
             },
-          ],
-          tool_choice: {
-            type: "function",
-            function: { name: "create_worksheet" },
+            required: ["type", "instruction", "content", "solution"],
           },
-        }),
+        },
       },
-    );
+      required: [
+        "title",
+        "learning_goal",
+        "teacher_notes",
+        "competencies",
+        "duration_min",
+        "exercises",
+      ],
+    };
+
+    const aiRes = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 2048,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userPrompt }],
+        tools: [
+          {
+            name: "create_worksheet",
+            description:
+              "Liefert das vollständige didaktisierte Arbeitsblatt als strukturierte Daten.",
+            input_schema: worksheetSchema,
+          },
+        ],
+        tool_choice: { type: "tool", name: "create_worksheet" },
+      }),
+    });
 
     if (aiRes.status === 429) {
       return json(
@@ -288,26 +270,27 @@ Deno.serve(async (req) => {
         429,
       );
     }
-    if (aiRes.status === 402) {
+    if (aiRes.status === 402 || aiRes.status === 401) {
+      const t = await aiRes.text();
+      console.error("Anthropic auth/credit error", aiRes.status, t);
       return json(
-        {
-          error:
-            "AI-Guthaben aufgebraucht. Bitte in Lovable Cloud → Workspace → Usage aufladen.",
-        },
-        402,
+        { error: "AI-Dienst nicht verfügbar (Authentifizierung/Guthaben)." },
+        aiRes.status,
       );
     }
     if (!aiRes.ok) {
       const t = await aiRes.text();
-      console.error("AI gateway error", aiRes.status, t);
+      console.error("Anthropic API error", aiRes.status, t);
       return json({ error: "AI-Generator fehlgeschlagen" }, 500);
     }
 
     const aiJson = await aiRes.json();
-    const toolCall =
-      aiJson?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+    const toolUse = Array.isArray(aiJson?.content)
+      ? aiJson.content.find((b: any) => b?.type === "tool_use")
+      : null;
+    const toolCall = toolUse?.input;
     if (!toolCall) {
-      console.error("Missing tool call in AI response", JSON.stringify(aiJson));
+      console.error("Missing tool_use in Anthropic response", JSON.stringify(aiJson));
       return json({ error: "Antwort des AI-Modells unvollständig" }, 502);
     }
 
