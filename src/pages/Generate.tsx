@@ -84,17 +84,46 @@ const Generate = () => {
   };
 
   const submit = async () => {
-    if (!user) return toast.error("Bitte zuerst anmelden.");
+    if (!user) {
+      toast.error("Bitte melde dich an, um ein Arbeitsblatt zu erstellen.");
+      navigate("/auth/login");
+      return;
+    }
+    if (!niveau) return toast.error("Bitte wähle ein Sprachniveau.");
+    if (topics.length === 0) return toast.error("Bitte wähle mindestens ein Thema.");
     if (taskTypes.length === 0) return toast.error("Wähle mindestens einen Aufgabentyp.");
+    if (!count || count < 3) return toast.error("Anzahl Aufgaben muss mindestens 3 sein.");
     setErrorMsg(null);
     setPhase("loading");
     try {
+      const payload = { niveau, topics, taskTypes, count };
       const { data, error } = await supabase.functions.invoke("generate-worksheet", {
-        body: { niveau, topics, taskTypes, count },
+        body: payload,
       });
+
+      // Extract real server error from FunctionsHttpError (non-2xx)
+      let serverError: string | null = null;
+      if (error && (error as any).context instanceof Response) {
+        try {
+          const body = await (error as any).context.clone().json();
+          serverError = body?.error ?? null;
+        } catch {
+          try {
+            serverError = await (error as any).context.clone().text();
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+
       if (error || !data || (data as any).error) {
-        const msg = (data as any)?.error || error?.message || "Unbekannter Fehler";
-        setErrorMsg(msg);
+        const raw =
+          serverError ||
+          (data as any)?.error ||
+          error?.message ||
+          "Unbekannter Fehler";
+        const friendly = friendlyError(raw);
+        setErrorMsg(friendly);
         setPhase("error");
         return;
       }
@@ -398,6 +427,32 @@ async function getUsage(id: string): Promise<number> {
     .eq("id", id)
     .maybeSingle();
   return (data?.usage_count as number) ?? 0;
+}
+
+function friendlyError(raw: string): string {
+  const msg = String(raw || "").toLowerCase();
+  if (msg.includes("non-2xx") || msg.includes("failed to send")) {
+    return "Verbindung zum Server fehlgeschlagen. Bitte erneut versuchen.";
+  }
+  if (msg.includes("ai gateway nicht konfiguriert") || msg.includes("ai-generator")) {
+    return "Der KI-Dienst ist gerade nicht verfügbar. Bitte später erneut versuchen.";
+  }
+  if (msg.includes("guthaben") || msg.includes("402")) {
+    return "AI-Guthaben aufgebraucht. Bitte in den Einstellungen aufladen.";
+  }
+  if (msg.includes("zu viele") || msg.includes("429") || msg.includes("rate")) {
+    return "Zu viele Anfragen. Bitte einen Moment warten und erneut versuchen.";
+  }
+  if (msg.includes("not authenticated") || msg.includes("missing authorization")) {
+    return "Bitte melde dich an, um fortzufahren.";
+  }
+  if (msg.includes("ungültiges sprachniveau")) {
+    return "Ungültiges Sprachniveau ausgewählt.";
+  }
+  if (msg.includes("aufgabentyp")) {
+    return "Bitte wähle mindestens einen Aufgabentyp.";
+  }
+  return raw || "Unbekannter Fehler";
 }
 
 export default Generate;
