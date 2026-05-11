@@ -122,26 +122,33 @@ export async function generateWorksheetPdf({
   if (ws.competencies?.length) metaParts.push(ws.competencies.join(" · "));
   writeWrapped(metaParts.join(" · "), { size: 9.5, color: [110, 110, 110], gap: 3 });
 
-  // Learning goal (B&W)
+  // Learning goal (B&W) — grows with content
   if (ws.learning_goal) {
-    ensureSpace(14);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    const goalLines = doc.splitTextToSize(safe(ws.learning_goal), CONTENT_W - 5);
+    const labelH = 4;
+    const lineH = 10 * 0.5;
+    const padTop = 2;
+    const padBottom = 3;
+    const boxH = Math.max(12, padTop + labelH + goalLines.length * lineH + padBottom);
+    ensureSpace(boxH + 6);
     doc.setFillColor(250, 250, 250);
     doc.setDrawColor(200, 200, 200);
-    doc.rect(MARGIN, y, CONTENT_W, 12, "FD");
+    doc.rect(MARGIN, y, CONTENT_W, boxH, "FD");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
     doc.setTextColor(60, 60, 60);
-    doc.text("LERNZIEL", MARGIN + 2.5, y + 4);
+    doc.text("LERNZIEL", MARGIN + 2.5, y + padTop + 2);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(26, 26, 26);
-    const goalLines = doc.splitTextToSize(safe(ws.learning_goal), CONTENT_W - 5);
-    doc.text(goalLines.slice(0, 2), MARGIN + 2.5, y + 8.5);
-    y += 14;
+    doc.text(goalLines, MARGIN + 2.5, y + padTop + labelH + lineH);
+    y += boxH + 6; // spacing before Name/Klasse/Datum
   }
 
   // Name/Klasse/Datum
-  ensureSpace(10);
+  ensureSpace(12);
   const colW = (CONTENT_W - 12) / 3;
   ["Name", "Klasse", "Datum"].forEach((label, i) => {
     const x = MARGIN + i * (colW + 6);
