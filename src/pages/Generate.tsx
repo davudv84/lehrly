@@ -429,4 +429,30 @@ async function getUsage(id: string): Promise<number> {
   return (data?.usage_count as number) ?? 0;
 }
 
+function friendlyError(raw: string): string {
+  const msg = String(raw || "").toLowerCase();
+  if (msg.includes("non-2xx") || msg.includes("failed to send")) {
+    return "Verbindung zum Server fehlgeschlagen. Bitte erneut versuchen.";
+  }
+  if (msg.includes("ai gateway nicht konfiguriert") || msg.includes("ai-generator")) {
+    return "Der KI-Dienst ist gerade nicht verfügbar. Bitte später erneut versuchen.";
+  }
+  if (msg.includes("guthaben") || msg.includes("402")) {
+    return "AI-Guthaben aufgebraucht. Bitte in den Einstellungen aufladen.";
+  }
+  if (msg.includes("zu viele") || msg.includes("429") || msg.includes("rate")) {
+    return "Zu viele Anfragen. Bitte einen Moment warten und erneut versuchen.";
+  }
+  if (msg.includes("not authenticated") || msg.includes("missing authorization")) {
+    return "Bitte melde dich an, um fortzufahren.";
+  }
+  if (msg.includes("ungültiges sprachniveau")) {
+    return "Ungültiges Sprachniveau ausgewählt.";
+  }
+  if (msg.includes("aufgabentyp")) {
+    return "Bitte wähle mindestens einen Aufgabentyp.";
+  }
+  return raw || "Unbekannter Fehler";
+}
+
 export default Generate;
