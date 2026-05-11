@@ -249,7 +249,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 2048,
+        max_tokens: 8192,
         system: systemPrompt,
         messages: [{ role: "user", content: userPrompt }],
         tools: [
@@ -285,13 +285,21 @@ Deno.serve(async (req) => {
     }
 
     const aiJson = await aiRes.json();
+    console.log("Anthropic stop_reason", aiJson?.stop_reason, "usage", JSON.stringify(aiJson?.usage));
     const toolUse = Array.isArray(aiJson?.content)
       ? aiJson.content.find((b: any) => b?.type === "tool_use")
       : null;
     const toolCall = toolUse?.input;
     if (!toolCall) {
-      console.error("Missing tool_use in Anthropic response", JSON.stringify(aiJson));
+      console.error("Missing tool_use in Anthropic response", JSON.stringify(aiJson).slice(0, 2000));
       return json({ error: "Antwort des AI-Modells unvollständig" }, 502);
+    }
+    if (aiJson?.stop_reason === "max_tokens") {
+      console.error("Anthropic response truncated (max_tokens). Partial input:", JSON.stringify(toolCall).slice(0, 2000));
+      return json(
+        { error: "AI-Antwort wurde abgeschnitten — bitte mit weniger Aufgaben erneut versuchen." },
+        502,
+      );
     }
 
     let parsed: {
@@ -306,6 +314,11 @@ Deno.serve(async (req) => {
       parsed = typeof toolCall === "string" ? JSON.parse(toolCall) : toolCall;
     } catch {
       return json({ error: "AI-Antwort konnte nicht gelesen werden" }, 502);
+    }
+
+    if (!Array.isArray(parsed?.exercises) || parsed.exercises.length === 0) {
+      console.error("Parsed worksheet has no exercises", JSON.stringify(parsed).slice(0, 2000));
+      return json({ error: "AI-Modell hat keine Aufgaben geliefert — bitte erneut versuchen." }, 502);
     }
 
     const title = parsed.title?.trim() || `${niveau} ${topics[0] ?? "Arbeitsblatt"}`;
