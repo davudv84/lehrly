@@ -120,8 +120,8 @@ Deno.serve(async (req) => {
       return json({ error: "Mindestens ein Aufgabentyp erforderlich" }, 400);
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
+    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
+    if (!ANTHROPIC_API_KEY) {
       return json({ error: "AI gateway nicht konfiguriert" }, 500);
     }
 
