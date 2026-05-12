@@ -1,5 +1,9 @@
 # Lehrly
 
+<img width="1536" height="862" alt="image" src="https://github.com/user-attachments/assets/03b3156e-71ce-4e76-8556-a38119c06636" />
+
+
+
 > Arbeitsblätter für Lehrerinnen und Lehrer — worksheet management built for teachers.
 
 ![CI](https://github.com/davudv84-lgtm/lehrly/actions/workflows/ci.yml/badge.svg)
