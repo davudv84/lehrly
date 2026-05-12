@@ -1,18 +1,24 @@
 # Lehrly
 
-A modern worksheet management app built for teachers. Organize your materials into collections, browse templates, and get ready for AI-powered worksheet generation — all in a clean, mobile-first interface.
+> Arbeitsblätter für Lehrerinnen und Lehrer — worksheet management built for teachers.
 
-> "Lehrly" is derived from the German word *Lehrer* (teacher).
+![CI](https://github.com/davudv84-lgtm/lehrly/actions/workflows/ci.yml/badge.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-backend-3ECF8E?logo=supabase&logoColor=white)
+
+Lehrly is a mobile-first web app that lets teachers organize worksheets into collections, browse templates, and prepare for AI-powered worksheet generation. *"Lehrly"* is derived from the German word *Lehrer* (teacher).
 
 ---
 
 ## Features
 
-- **Dashboard** — greeting, recent worksheets, and quick access to collections
-- **Library** — browse and manage all your worksheets with favorite and solution flags
+- **Dashboard** — personalized greeting, recent worksheets, and quick access to collections
+- **Library** — browse and manage all worksheets; mark favorites and flag solution sheets
 - **Collections** — organize worksheets into color-coded, icon-labeled folders
 - **Templates** — reusable starting points for common worksheet types
-- **Profile** — set your school, abbreviation (*Kürzel*), default course type, and difficulty level (*Niveau*)
+- **Profile** — configure school, abbreviation (*Kürzel*), default course type, and difficulty level (*Niveau*)
 - **Authentication** — email/password sign-up and login via Supabase Auth
 - **Onboarding** — guided first-run setup for new teachers
 - **AI Generator** *(coming soon)* — generate worksheets by topic, level, and task type
@@ -29,9 +35,8 @@ A modern worksheet management app built for teachers. Organize your materials in
 | Animations | Framer Motion |
 | Routing | React Router v6 |
 | Data fetching | TanStack Query v5 |
-| Backend / Auth / DB | Supabase |
+| Backend / Auth / DB | Supabase (PostgreSQL) |
 | Forms | React Hook Form + Zod |
-| Charts | Recharts |
 | Testing | Vitest + Testing Library |
 
 ---
@@ -46,7 +51,7 @@ A modern worksheet management app built for teachers. Organize your materials in
 ### Installation
 
 ```bash
-git clone https://github.com/your-username/lehrly.git
+git clone https://github.com/davudv84-lgtm/lehrly.git
 cd lehrly
 npm install
 ```
@@ -63,21 +68,11 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ### Development
 
 ```bash
-npm run dev
-```
-
-The app runs at `http://localhost:8080` by default.
-
-### Build
-
-```bash
-npm run build
-```
-
-Preview the production build:
-
-```bash
-npm run preview
+npm run dev        # start dev server at http://localhost:8080
+npm run build      # production build
+npm run preview    # preview production build locally
+npm run test       # run test suite
+npm run lint       # lint with ESLint
 ```
 
 ---
@@ -93,34 +88,21 @@ src/
 ├── hooks/              # Custom hooks
 ├── integrations/
 │   └── supabase/       # Supabase client + generated types
-├── lib/                # Utility functions
-└── pages/              # Route-level page components
-    └── auth/           # Login + Register pages
+├── lib/                # Utilities
+└── pages/              # Route-level pages
+    └── auth/           # Login + Register
 ```
 
 ---
 
-## Database Schema (Supabase)
+## Database Schema
 
 | Table | Description |
 |---|---|
 | `profiles` | Teacher profile: name, school, Kürzel, default Niveau & Kurstyp |
-| `worksheets` | Individual worksheets with favorite flag and solution indicator |
-| `collections` | Named, colored, icon-labeled folders |
+| `worksheets` | Individual worksheets with favorite and solution flags |
+| `collections` | Named, color-coded, icon-labeled folders |
 | `collection_worksheets` | Join table linking worksheets to collections |
-
----
-
-## Scripts
-
-| Command | Description |
-|---|---|
-| `npm run dev` | Start dev server |
-| `npm run build` | Production build |
-| `npm run preview` | Preview production build locally |
-| `npm run lint` | Run ESLint |
-| `npm run test` | Run tests (Vitest) |
-| `npm run test:watch` | Run tests in watch mode |
 
 ---
 
@@ -136,6 +118,12 @@ src/
 
 ---
 
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you'd like to change.
+
+---
+
 ## License
 
-MIT
+[MIT](LICENSE)
