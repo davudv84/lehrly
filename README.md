@@ -1,7 +1,6 @@
 # Lehrly
 
-<img width="1536" height="862" alt="image" src="https://github.com/user-attachments/assets/03b3156e-71ce-4e76-8556-a38119c06636" />
-
+<img width="1536" height="862" alt="image" src="https://github.com/user-attachments/assets/20842880-7ded-4272-8c01-52c36da73295" />
 
 
 > Arbeitsblätter für Lehrerinnen und Lehrer — worksheet management built for teachers.
