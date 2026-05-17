@@ -131,7 +131,32 @@ Deno.serve(async (req) => {
       .map((t) => `• ${t}: ${TYPE_GUIDE[t] ?? ""}`)
       .join("\n");
 
+    // Variation seed forces the model to pick fresh names per worksheet.
+    const variationSeed = crypto.randomUUID();
+
+    const namesRule =
+      "NAMEN-REGEL (verbindlich):\n" +
+      "- Erfinde für JEDES Arbeitsblatt komplett neue Vornamen. Niemals zweimal denselben Namen im selben Blatt.\n" +
+      "- VERBOTEN als Standardnamen: Anna, Tom, Maria, Peter, Lisa, Max.\n" +
+      "- Nutze den VARIATIONS-SEED unten, um aus diesem Pool auszuwählen (oder erfinde passende eigene Namen):\n" +
+      "  • Arabisch: Amina, Yusuf, Fatima, Omar, Layla, Karim, Nour, Hassan, Zaynab, Tariq\n" +
+      "  • Türkisch: Elif, Mehmet, Aylin, Burak, Zeynep, Emre, Selin, Kaan, Derya, Ahmet\n" +
+      "  • Kurdisch: Berivan, Şivan, Rojin, Diyar, Helin, Azad\n" +
+      "  • Persisch/Farsi: Darius, Shirin, Reza, Nasrin, Kian, Parisa\n" +
+      "  • Ukrainisch/Russisch: Olena, Dmytro, Iryna, Andrij, Kateryna, Pavlo\n" +
+      "  • Bosnisch/Balkan: Amra, Edin, Selma, Mirsad, Lejla, Adnan\n" +
+      "  • Afghanisch: Zarah, Farid, Mariam, Nasir\n" +
+      "  • Westafrikanisch: Aisha, Kwame, Fatou, Ibrahim\n" +
+      "  • Vietnamesisch: Linh, Minh, Thao, Duc\n" +
+      "  • Spanisch/Lateinamerikanisch: Carmen, Diego, Lucia, Mateo\n" +
+      "- Mische Herkünfte INNERHALB eines Arbeitsblatts (realistische Kursrealität).\n" +
+      "- Bei Dialogen: unterschiedliche Herkünfte für unterschiedliche Rollen.\n" +
+      "- Auch Nachnamen variieren, wenn nötig (Yılmaz, Al-Rashid, Nguyen, Hadžić, Kovalenko, Begović …).\n" +
+      "- Ortsnamen variieren: nicht immer Berlin — auch Mülheim, Essen, Duisburg, Oberhausen, Köln, Hamburg, Dortmund.\n" +
+      `VARIATIONS-SEED: ${variationSeed}\n\n`;
+
     const systemPrompt =
+      namesRule +
       "Du bist eine erfahrene DaF/DaZ-Dozentin (15 Jahre Integrationskurs- und Berufssprachkurs-Erfahrung, " +
       "telc- und Goethe-zertifiziert). Du erstellst Materialien wie sie in echten BAMF-Kursen verwendet werden — " +
       "qualitativ vergleichbar mit Hueber 'Schritte plus Neu' oder Klett 'Linie 1'.\n\n" +
