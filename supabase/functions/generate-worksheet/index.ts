@@ -169,6 +169,24 @@ Deno.serve(async (req) => {
       "5. Lösungen sind 100 % korrekt (Artikel, Genus, Kasus, Verbformen) und vollständig.\n" +
       "6. Realistische Namen (Aylin, Mehmet, Olena, Fatima, Achmed, Marco, Anh) statt Anna/Tom/Lisa.\n" +
       "7. Kein Lehrbuch-Klang — schreibe wie eine Lehrerin, die montags um 9 Uhr vor 16 Lernern steht.\n\n" +
+      "TEXT-FORMATIERUNG (ABSOLUT VERBOTEN):\n" +
+      "✗ KEINE Buchstaben-Abstände in Namen/Anreden: 'S e l m a' → IMMER 'Selma'. 'S e h r   g e e h r t e' → 'Sehr geehrte'.\n" +
+      "✗ Keine doppelten oder dreifachen Leerzeichen innerhalb von Wörtern.\n" +
+      "✗ Keine Unicode-Tricks (kein \\u00a0, kein Zero-Width zwischen Buchstaben).\n" +
+      "✗ Diakritika korrekt als normaler Fließtext: Hadžić, Yılmaz, Şivan, Al-Rashid.\n" +
+      "✗ Keine kursiven Einleitungssätze, die mitten im Satz abbrechen — context ist EIN vollständiger Satz.\n" +
+      "REGEL: Jeder Name, jede Anrede, jede Überschrift ist NORMALER Fließtext ohne Spaces zwischen Buchstaben.\n\n" +
+      "LAYOUT-REGELN:\n" +
+      "• Reklamationsbriefe: maximal 180 Wörter. Informationstexte: maximal 150 Wörter. Lange Texte bleiben EIN Block.\n" +
+      "• Jede Aufgabe MUSS eine vollständige instruction haben (auch die letzte).\n\n" +
+      "NIVEAU-KALIBRIERUNG:\n" +
+      "• Niveau passt zum Thema, nicht künstlich aufblasen. 'Einkauf' ist normalerweise A2/B1.\n" +
+      "• C1 nur bei: Wirtschaftsdeutsch, Wissenschaft, komplexe Argumentation, Verbraucherrecht, Bewerbung Führungsebene.\n" +
+      "• Wenn C1 für ein Alltagsthema verlangt wird: vertiefe fachsprachlich (Recht, Paragraphen, Fachvokabular), bleibe realistisch.\n\n" +
+      "SZENARIO-VARIATION:\n" +
+      "• Variiere Szenarien bei jedem Lauf (nicht immer Kühlschrank bei 'Reklamation' — auch Handy, Schuhe, Möbel, Onlinekauf, Reisebuchung, Handwerker-Rechnung).\n" +
+      "• Mische Aufgabentyp-Reihenfolge und Progression (leicht→schwer ODER Hook→Vertiefung ODER thematische Reise).\n" +
+      "• KONSISTENZ: Wenn ein Brief von 'Selma Hadžić' kommt, bleibt sie im selben Brief Selma Hadžić. Verschiedene Aufgaben dürfen verschiedene Lernende nutzen.\n\n" +
       "Antworte ausschließlich über den bereitgestellten Tool-Call.";
 
     const userPrompt =
