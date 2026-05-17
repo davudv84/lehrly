@@ -364,8 +364,30 @@ Deno.serve(async (req) => {
       return json({ error: "AI-Modell hat keine Aufgaben geliefert — bitte erneut versuchen." }, 502);
     }
 
-    const title = parsed.title?.trim() || `${niveau} ${topics[0] ?? "Arbeitsblatt"}`;
-    const exercises = (parsed.exercises ?? []).slice(0, count);
+    // Safety net: strip pathological letter-spacing like "S e l m a" → "Selma"
+    // and collapse zero-width / non-breaking spaces inside words.
+    const sanitize = (s: unknown): string => {
+      if (typeof s !== "string") return s as string;
+      let out = s
+        .replace(/[\u200B-\u200D\uFEFF]/g, "") // zero-width
+        .replace(/\u00a0/g, " "); // nbsp → normal space
+      // Collapse runs of single letters separated by single spaces (3+ in a row).
+      out = out.replace(
+        /(?<![\p{L}\p{N}])(\p{L})(?:[ \t]\p{L}){2,}(?![\p{L}\p{N}])/gu,
+        (m) => m.replace(/[ \t]/g, ""),
+      );
+      return out.replace(/[ \t]{2,}/g, " ");
+    };
+    const sanitizeExercise = (e: Record<string, unknown>) => {
+      const o: Record<string, unknown> = { ...e };
+      for (const k of ["instruction", "context", "content", "solution", "type"]) {
+        if (typeof o[k] === "string") o[k] = sanitize(o[k]);
+      }
+      return o;
+    };
+
+    const title = sanitize(parsed.title?.trim() || `${niveau} ${topics[0] ?? "Arbeitsblatt"}`);
+    const exercises = (parsed.exercises ?? []).slice(0, count).map(sanitizeExercise);
     const competencies = Array.isArray(parsed.competencies)
       ? parsed.competencies.slice(0, 3)
       : [];
@@ -374,9 +396,9 @@ Deno.serve(async (req) => {
         ? Math.max(10, Math.min(90, Math.round(parsed.duration_min)))
         : null;
     const learning_goal =
-      typeof parsed.learning_goal === "string" ? parsed.learning_goal.trim() : null;
+      typeof parsed.learning_goal === "string" ? sanitize(parsed.learning_goal.trim()) : null;
     const teacher_notes = Array.isArray(parsed.teacher_notes)
-      ? parsed.teacher_notes.filter((s) => typeof s === "string").slice(0, 4)
+      ? parsed.teacher_notes.filter((s) => typeof s === "string").map(sanitize).slice(0, 4)
       : [];
 
     const { data: inserted, error: insertErr } = await supa
